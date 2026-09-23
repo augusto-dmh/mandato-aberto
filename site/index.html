@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mandato Aberto</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --surface: #fff; --text: #1c1c1a; --muted: #6b6b66; --border: #e3e2de;
+    --accent: #1f5fbf; --sim: #1e7a44; --nao: #b3261e; --neutro: #8a6d1a; --chip: #efeeea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413; --surface: #1e1e1c; --text: #ecebe7; --muted: #9a9993; --border: #33322f;
+      --accent: #6ea2ff; --sim: #4cc27f; --nao: #ff7b72; --neutro: #e0bb55; --chip: #2a2a27;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.top { border-bottom: 1px solid var(--border); background: var(--surface); }
+  header.top .wrap { display: flex; align-items: baseline; gap: 12px; padding-block: 14px; }
+  header.top h1 { font-size: 18px; margin: 0; }
+  header.top span { color: var(--muted); font-size: 13px; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-inline: 16px; }
+  main { padding-block: 20px 48px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  input, select { font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  input[type=search] { flex: 1 1 260px; }
+  label.chk { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 14px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .card { display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: inherit; }
+  .card:hover { border-color: var(--accent); text-decoration: none; }
+  .card img, .hero img { width: 48px; height: 64px; object-fit: cover; border-radius: 6px; background: var(--chip); flex: none; }
+  .card .nome { font-weight: 600; }
+  .card .sub, .muted { color: var(--muted); font-size: 13px; }
+  .fora { opacity: .6; }
+  .hero { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; }
+  .hero img { width: 84px; height: 112px; }
+  .hero h2 { margin: 0 0 2px; font-size: 24px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .stat b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; }
+  .stat span { color: var(--muted); font-size: 13px; }
+  .promessas { border: 1px dashed var(--border); border-radius: 10px; padding: 14px; margin-bottom: 20px; color: var(--muted); }
+  .promessas strong { color: var(--text); }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .tabs button { font: inherit; background: none; border: 0; border-bottom: 2px solid transparent; padding: 8px 12px; color: var(--muted); cursor: pointer; }
+  .tabs button.on { color: var(--text); border-color: var(--accent); }
+  .lista { display: flex; flex-direction: column; gap: 8px; }
+  .item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  .item .linha { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; color: var(--muted); }
+  .item .titulo { font-weight: 600; margin: 4px 0 2px; }
+  .item .desc { font-size: 14px; }
+  .chip { display: inline-block; padding: 1px 8px; border-radius: 999px; background: var(--chip); font-size: 12px; font-weight: 600; color: var(--text); }
+  .v-Sim { color: var(--sim); } .v-Não { color: var(--nao); } .v-Abstenção, .v-Obstrução { color: var(--neutro); }
+  .diverge { border-left: 3px solid var(--nao); }
+  .mais { margin-top: 12px; font: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; cursor: pointer; color: inherit; }
+  footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); padding-block: 16px 32px; }
+  footer p { margin: 4px 0; }
+  @media (max-width: 520px) { .hero img { width: 64px; height: 86px; } .hero h2 { font-size: 20px; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><h1><a href="#/" style="color:inherit">Mandato Aberto</a></h1><span>o que cada deputado federal fez no mandato</span></div></header>
+<main class="wrap" id="app"><p class="muted">Carregando…</p></main>
+<footer class="wrap">
+  <p>Fonte: <a href="https://dadosabertos.camara.leg.br" target="_blank" rel="noopener">Dados Abertos da Câmara dos Deputados</a>, 57ª legislatura (desde fev/2023). <span id="gerado"></span></p>
+  <p><b>Presença</b>: votos no plenário ÷ votações nominais do plenário ocorridas enquanto o deputado estava em exercício (descontando licenças). Não diferencia falta justificada. <b>Com o governo</b>: votos iguais à orientação do líder do Governo. <b>Com o partido</b>: votos iguais à maioria dos colegas de partido na mesma votação.</p>
+</footer>
+<script>
+const $app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const pct = v => v == null ? '—' : v.toLocaleString('pt-BR') + '%';
+const dataBR = d => d ? d.split('-').reverse().join('/') : '';
+const linkProp = id => `https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=${id}`;
+const cache = {};
+const get = p => cache[p] ??= fetch('data/' + p).then(r => { if (!r.ok) throw new Error(p); return r.json(); });
+const estado = { busca: '', uf: '', partido: '', exercicio: true, ordem: 'nome' };
+
+async function home() {
+  const deps = await get('deputados.json');
+  const ufs = [...new Set(deps.map(d => d.uf))].sort();
+  const partidos = [...new Set(deps.map(d => d.partido))].sort();
+  const opt = (vals, sel, rotulo) => `<option value="">${rotulo}</option>` + vals.map(v => `<option ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
+  $app.innerHTML = `
+    <div class="controls">
+      <input type="search" id="busca" placeholder="Buscar deputado…" value="${esc(estado.busca)}" autofocus>
+      <select id="uf">${opt(ufs, estado.uf, 'Todos os estados')}</select>
+      <select id="partido">${opt(partidos, estado.partido, 'Todos os partidos')}</select>
+      <select id="ordem">
+        ${[['nome','Ordem alfabética'],['presenca','Menor presença'],['gov','Mais governistas'],['partido','Menos alinhados ao partido'],['props','Mais proposições']]
+          .map(([v,t]) => `<option value="${v}" ${v === estado.ordem ? 'selected' : ''}>${t}</option>`).join('')}
+      </select>
+      <label class="chk"><input type="checkbox" id="exercicio" ${estado.exercicio ? 'checked' : ''}> só em exercício</label>
+    </div>
+    <p class="muted" id="contagem"></p>
+    <div class="grid" id="grid"></div>`;
+  const render = () => {
+    const q = norm(estado.busca);
+    const ord = {
+      nome: (a, b) => a.nome.localeCompare(b.nome),
+      presenca: (a, b) => (a.stats.presenca ?? 999) - (b.stats.presenca ?? 999),
+      gov: (a, b) => (b.stats.gov ?? -1) - (a.stats.gov ?? -1),
+      partido: (a, b) => (a.stats.partido ?? 999) - (b.stats.partido ?? 999),
+      props: (a, b) => b.stats.props - a.stats.props,
+    }[estado.ordem];
+    const lista = deps.filter(d => (!q || norm(d.nome).includes(q)) && (!estado.uf || d.uf === estado.uf)
+      && (!estado.partido || d.partido === estado.partido) && (!estado.exercicio || d.emExercicio)).sort(ord);
+    document.getElementById('contagem').textContent = `${lista.length} deputado(s)`;
+    const destaque = d => ({ presenca: `presença ${pct(d.stats.presenca)}`, gov: `com o governo ${pct(d.stats.gov)}`,
+      partido: `com o partido ${pct(d.stats.partido)}`, props: `${d.stats.props} proposições` }[estado.ordem] ?? `presença ${pct(d.stats.presenca)}`);
+    document.getElementById('grid').innerHTML = lista.map(d => `
+      <a class="card ${d.emExercicio ? '' : 'fora'}" href="#/dep/${d.id}">
+        <img loading="lazy" src="${esc(d.foto)}" alt="">
+        <div><div class="nome">${esc(d.nome)}</div><div class="sub">${esc(d.partido)}-${esc(d.uf)}${d.emExercicio ? '' : ' · fora de exercício'}</div>
+        <div class="sub">${destaque(d)}</div></div>
+      </a>`).join('');
+  };
+  for (const id of ['busca', 'uf', 'partido', 'ordem', 'exercicio']) {
+    document.getElementById(id).addEventListener('input', e => {
+      estado[id] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; render();
+    });
+  }
+  render();
+}
+
+async function deputado(id) {
+  const [deps, votacoes, dados] = await Promise.all([get('deputados.json'), get('votacoes.json'), get(`dep/${id}.json`)]);
+  const d = deps.find(x => x.id === +id);
+  if (!d) { $app.innerHTML = '<p>Deputado não encontrado.</p>'; return; }
+  document.title = `${d.nome} · Mandato Aberto`;
+  const s = d.stats;
+  const divergencias = dados.votos.filter(v => v[3] && ['Sim','Não','Abstenção','Obstrução'].includes(v[1]) && v[1] !== v[3]).length;
+  $app.innerHTML = `
+    <p><a href="#/">← todos os deputados</a></p>
+    <div class="hero">
+      <img src="${esc(d.foto)}" alt="">
+      <div><h2>${esc(d.nome)}</h2>
+        <div class="muted">${esc(d.partido)}-${esc(d.uf)} · ${d.emExercicio ? 'em exercício' : 'fora de exercício'}</div>
+        <div><a href="https://www.camara.leg.br/deputados/${d.id}" target="_blank" rel="noopener">perfil na Câmara ↗</a></div></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${pct(s.presenca)}</b><span>presença em votações nominais do plenário</span></div>
+      <div class="stat"><b>${pct(s.gov)}</b><span>votou como o Governo orientou</span></div>
+      <div class="stat"><b>${pct(s.partido)}</b><span>votou com a maioria do partido (${divergencias} divergências)</span></div>
+      <div class="stat"><b>${s.propsPrincipal}</b><span>projetos como autor principal (+${s.props - s.propsPrincipal} coautoria)</span></div>
+      <div class="stat"><b>${s.requerimentos}</b><span>requerimentos e indicações</span></div>
+    </div>
+    ${dados.afastamentos.length > 1 ? `<details class="item" style="margin-bottom:20px"><summary>Histórico do mandato: ${dados.afastamentos.filter(a => a[1].startsWith('Saída')).length} afastamento(s)</summary>
+      <div class="lista" style="margin-top:8px">${dados.afastamentos.map(([dt, desc]) => `<div class="linha"><span>${dataBR(dt)}</span><span>${esc(desc)}</span></div>`).join('')}</div></details>` : ''}
+    <div class="promessas"><strong>Promessas × ações</strong> · em breve: as promessas de campanha deste deputado, cada uma ligada às votações e projetos acima que a cumprem ou contradizem.</div>
+    <div class="tabs"><button data-tab="votos" class="on">Votações (${dados.votos.length})</button><button data-tab="props">Proposições (${dados.props.length})</button></div>
+    <div class="controls" id="filtros"></div>
+    <div class="lista" id="lista"></div>
+    <button class="mais" id="mais" hidden>Mostrar mais</button>`;
+
+  let aba = 'votos', limite = 50;
+  const f = { q: '', plen: false, diverge: false, tipo: '' };
+  const filtros = document.getElementById('filtros');
+  const montarFiltros = () => {
+    filtros.innerHTML = aba === 'votos'
+      ? `<input type="search" id="fq" placeholder="Filtrar por tema ou proposição…" value="${esc(f.q)}">
+         <label class="chk"><input type="checkbox" id="fplen" ${f.plen ? 'checked' : ''}> só plenário</label>
+         <label class="chk"><input type="checkbox" id="fdiverge" ${f.diverge ? 'checked' : ''}> só onde divergiu do partido</label>`
+      : `<input type="search" id="fq" placeholder="Filtrar por tema…" value="${esc(f.q)}">
+         <select id="ftipo"><option value="">Todos os tipos</option>${['PL','PLP','PEC','PDL','PRC'].map(t => `<option ${t === f.tipo ? 'selected' : ''}>${t}</option>`).join('')}</select>`;
+    filtros.querySelectorAll('input,select').forEach(el => el.addEventListener('input', () => {
+      f.q = document.getElementById('fq').value;
+      if (aba === 'votos') { f.plen = document.getElementById('fplen').checked; f.diverge = document.getElementById('fdiverge').checked; }
+      else f.tipo = document.getElementById('ftipo').value;
+      limite = 50; render();
+    }));
+  };
+  const render = () => {
+    const q = norm(f.q);
+    let html, total;
+    if (aba === 'votos') {
+      const itens = dados.votos.filter(([vid, voto, , maioria]) => {
+        const v = votacoes[vid];
+        if (f.plen && v[1] !== 'PLEN') return false;
+        if (f.diverge && !(maioria && voto !== maioria && ['Sim','Não','Abstenção','Obstrução'].includes(voto))) return false;
+        return !q || norm(v[2] + ' ' + v[3] + ' ' + v[4]).includes(q);
+      });
+      total = itens.length;
+      html = itens.slice(0, limite).map(([vid, voto, partido, maioria]) => {
+        const [data, orgao, descricao, titulo, ementa, propId, aprov, sim, nao, gov] = votacoes[vid];
+        const diverge = maioria && voto !== maioria && ['Sim','Não','Abstenção','Obstrução'].includes(voto);
+        return `<div class="item ${diverge ? 'diverge' : ''}">
+          <div class="linha"><span>${dataBR(data)}</span><span>${esc(orgao)}</span>
+            <span>${voto ? `votou <span class="chip v-${esc(voto)}">${esc(voto)}</span>` : '<span class="chip">sem voto registrado</span>'}</span>
+            ${maioria ? `<span>${esc(partido)}: <span class="v-${esc(maioria)}">${esc(maioria)}</span></span>` : ''}
+            ${gov ? `<span>Governo: <span class="v-${esc(gov)}">${esc(gov)}</span></span>` : ''}
+            <span>${aprov === '1' ? 'aprovada' : aprov === '0' ? 'rejeitada' : ''}${sim + nao ? ` (${sim}×${nao})` : ''}</span></div>
+          ${titulo ? `<div class="titulo">${propId ? `<a href="${linkProp(propId)}" target="_blank" rel="noopener">${esc(titulo)}</a>` : esc(titulo)}</div><div class="desc">${esc(ementa)}</div>` : ''}
+          <div class="desc muted">${esc(descricao)}</div></div>`;
+      }).join('');
+    } else {
+      const itens = dados.props.filter(p => (!f.tipo || p[1] === f.tipo) && (!q || norm(p[4]).includes(q)));
+      total = itens.length;
+      html = itens.slice(0, limite).map(([pid, tipo, num, ano, ementa, data, situacao, principal]) => `
+        <div class="item"><div class="linha"><span>${dataBR(data)}</span><span class="chip">${principal ? 'autor principal' : 'coautor'}</span><span>${esc(situacao)}</span></div>
+        <div class="titulo"><a href="${linkProp(pid)}" target="_blank" rel="noopener">${esc(tipo)} ${esc(num)}/${esc(ano)}</a></div>
+        <div class="desc">${esc(ementa)}</div></div>`).join('');
+    }
+    document.getElementById('lista').innerHTML = html || '<p class="muted">Nada encontrado.</p>';
+    const mais = document.getElementById('mais');
+    mais.hidden = total <= limite;
+    mais.textContent = `Mostrar mais (${total - limite} restantes)`;
+  };
+  document.getElementById('mais').onclick = () => { limite += 50; render(); };
+  document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+    aba = b.dataset.tab; limite = 50; f.q = ''; montarFiltros(); render();
+  });
+  montarFiltros();
+  render();
+}
+
+async function rota() {
+  const m = location.hash.match(/^#\/dep\/(\d+)/);
+  document.title = 'Mandato Aberto';
+  try { m ? await deputado(m[1]) : await home(); }
+  catch (e) { $app.innerHTML = `<p>Erro ao carregar dados (${esc(e.message)}). Rode <code>python3 etl/build.py</code> e sirva a pasta <code>site/</code>.</p>`; }
+  scrollTo(0, 0);
+}
+addEventListener('hashchange', rota);
+get('meta.json').then(m => document.getElementById('gerado').textContent =
+  `Atualizado em ${new Date(m.geradoEm).toLocaleString('pt-BR')} · ${m.votacoes} votações nominais.`).catch(() => {});
+rota();
+</script>
+</body>
+</html>
