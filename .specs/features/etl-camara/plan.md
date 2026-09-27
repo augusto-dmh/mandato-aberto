@@ -61,6 +61,7 @@ One-way constraints: a `Vote` is unique per (`RollCall`, `Deputy`), latest `data
 | Cross-source match key | `(nfkd_strip_accents(civilName).casefold(), birthDate, uf)`; ambiguity leaves `candidacy2026: null` and lists the id in `meta.candidacy.ambiguous` | CPF join - the Câmara exposes it against its own FAQ and the TSE layout may drop it; AD-003 |
 | Runtime dependency set | `pyproject.toml` `dependencies = []`; `pytest` and `jsonschema` in the dev group only | pandas or polars - 700 MB of CSV per run where the prototype streams in constant memory |
 | Python project layout | `etl/pyproject.toml` managed by `uv`, package `mandato_etl`, console script `mandato-etl`; Python 3.13 | a single script like the prototype - no place for tests or the schema files |
+| Schema validation at runtime (added while deriving checks) | `mandato_etl.schema.validate(doc, schema)` implements the JSON Schema subset the contract uses - `type` (incl. lists), `properties`, `required`, `additionalProperties: false`, `items`, `enum`, `const`, `pattern`, `minimum`, `$ref` to `#/$defs/*`; `etl/schema/*.json` use no other keyword; tests prove it agrees with `jsonschema` | `jsonschema` as a runtime dependency - contradicts the approved `dependencies = []`; skipping validation when `jsonschema` is absent - the daily build would publish unvalidated output silently |
 
 - Nothing else in this change is hard to reverse
 
