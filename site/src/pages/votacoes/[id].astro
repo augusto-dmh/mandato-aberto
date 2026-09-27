@@ -1,0 +1,89 @@
+---
+import Base from "../../layouts/Base.astro";
+import { contract } from "../../lib/data";
+import { formatDate, formatNumber, groupVotes, organLabel, resultLabel } from "../../lib/format";
+
+export function getStaticPaths() {
+  return contract().rollCalls.map((r) => ({ params: { id: r.id } }));
+}
+
+const PROPOSITION_PAGE = "https://www.camara.leg.br/propostas-legislativas/";
+
+const { deputies } = contract();
+const rollCall = contract().rollCall(Astro.params.id!);
+const deputiesById = new Map(deputies.map((d) => [d.id, d]));
+const groups = groupVotes(
+  rollCall.votes.map((v) => {
+    const deputy = deputiesById.get(v.deputyId)!;
+    return { ...v, name: deputy.name, uf: deputy.uf };
+  }),
+);
+const date = formatDate(rollCall.date);
+const heading = rollCall.proposition?.title ?? `Votação nominal de ${date}`;
+---
+
+<Base
+  title={`${heading}: como cada deputado votou`}
+  description={`Votação nominal de ${date} (${organLabel(rollCall.organ)}) na Câmara dos Deputados, com o voto de cada deputado e o registro oficial.`}
+  path={`/votacoes/${rollCall.id}/`}
+  image="/cards/site.png"
+>
+  <p class="kicker">Votação nominal · {organLabel(rollCall.organ)} · {date}</p>
+  <h1>
+    {rollCall.proposition ? <a href={`${PROPOSITION_PAGE}${rollCall.proposition.id}`}>{rollCall.proposition.title}</a> : heading}
+  </h1>
+  {rollCall.proposition?.summary && <p class="lede">{rollCall.proposition.summary}</p>}
+  <p>{rollCall.description}</p>
+
+  <dl class="facts">
+    <div>
+      <dt>Resultado</dt>
+      <dd>{resultLabel(rollCall.approved)}</dd>
+    </div>
+    <div>
+      <dt>Votos</dt>
+      <dd class="tallies">
+        <span>Sim <strong>{formatNumber(rollCall.tallies.yes)}</strong></span>
+        <span>Não <strong>{formatNumber(rollCall.tallies.no)}</strong></span>
+        <span>Outros <strong>{formatNumber(rollCall.tallies.others)}</strong></span>
+      </dd>
+    </div>
+    <div>
+      <dt>Governo</dt>
+      <dd>
+        {
+          rollCall.governmentOrientation
+            ? `Orientação do governo: ${rollCall.governmentOrientation}`
+            : "Sem orientação do governo registrada"
+        }
+      </dd>
+    </div>
+  </dl>
+  <p><a href={rollCall.sourceUrl}>Registro oficial na Câmara dos Deputados</a></p>
+
+  <section class="section">
+    <h2>Como cada deputado votou</h2>
+    <p class="note">Agrupado pelo voto registrado; em cada grupo, ordem alfabética. Partido na data da votação.</p>
+    <div class="vote-groups">
+      {
+        groups.map((group) => (
+          <section class="vote-group" data-vote={group.value}>
+            <h3>
+              {group.label} ({formatNumber(group.entries.length)})
+            </h3>
+            <ul>
+              {group.entries.map((v) => (
+                <li>
+                  <a href={`/deputados/${v.deputyId}/`}>{v.name}</a>
+                  <span class="where">
+                    {v.party}-{v.uf}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </section>
+</Base>

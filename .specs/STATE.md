@@ -16,10 +16,11 @@
 
 ## Handoff
 
-**Feature**: etl-camara (verified); site (plan written, awaiting review)
-**Where**: etl-camara C1-C48 green (89 tests); verification round 4 PASS (scoped, self-verified inline at the maintainer's request; rounds 1-3 by independent sub-agents); doors 8 and 9 approved; site `plan.md` on branch `feat/site`
+**Feature**: site
+**Where**: built and verified - `verification.md` round 1 PASS (profile `light`, 41/41 checks, gate exit 0); commits `ed67062`..`8c5211e` plus the verification commit; nothing pushed
 **In progress**: none
-**Next step**: maintainer reviews the site plan; open the etl PR when asked
-**Blockers**: S5 badge stays null until `etl/inputs/tse/consulta_cand_2026_BRASIL.csv` is downloaded by hand; site go-live needs the `.org` domain; open maintainer questions on the TSE CSV holding CPF and the other personal columns in the raw cache
+**Next step**: maintainer reviews the pages in a browser (desktop and mobile) and decides the open items below; then PR `feat(site): ...` when asked; then plan `launch` (grilling decisions 6-8, legal checklist section 5) and stop for review
+**Blockers**: go-live needs the `.org` domain (`SITE_URL` stays a placeholder); open maintainer questions on the TSE CSV holding CPF and the other personal columns in the raw cache
+**Open for the maintainer**: (1) resolved 2026-09-27 - the maintainer confirmed the single photo credit on the home list (new `Landing` row); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator; (4) secret ballots: roll calls `2645346-18` and `2576389-4` (PLEN, choice of TCU ministers) carry one record per deputy with an empty vote in `votacoesVotos`, so the site shows tallies 0/0/0 and "Registro sem voto" against official totals in the description, and `participation` leaves them out of the numerator while keeping them in the denominator - needs a maintainer decision (etl-camara AC 17 plus site copy)
 **Uncommitted**: none
-**Branch**: `feat/etl-camara` (not pushed); `feat/site` stacked on it
+**Branch**: `feat/site`, PR #6 against `main` (PR #5 merged)

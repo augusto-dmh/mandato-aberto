@@ -1,0 +1,37 @@
+---
+import DeputySearch from "../components/DeputySearch.vue";
+import Base from "../layouts/Base.astro";
+import { contract } from "../lib/data";
+import { formatNumber } from "../lib/format";
+import { photoPath } from "../lib/photos";
+import { sortByName, type DeputyCard } from "../lib/search";
+
+const { meta, deputies } = contract();
+const cards: DeputyCard[] = sortByName(
+  await Promise.all(
+    deputies.map(async (d) => ({
+      id: d.id,
+      name: d.name,
+      party: d.party,
+      uf: d.uf,
+      inExercise: d.inExercise,
+      candidate: d.candidacy2026 !== null,
+      photo: await photoPath(d.id),
+    })),
+  ),
+);
+const about =
+  "O Mandato Aberto mostra, com dados oficiais da Câmara dos Deputados, o que cada deputado federal fez na 57ª legislatura.";
+---
+
+<Base title="Mandato Aberto" description={about} path="/" image="/cards/site.png">
+  <p class="kicker">Câmara dos Deputados · 57ª legislatura</p>
+  <h1>O que cada deputado federal fez no mandato</h1>
+  <p class="lede">{about}</p>
+  <ul class="totals">
+    <li><strong>{formatNumber(meta.counts.deputies)}</strong> deputados com voto registrado</li>
+    <li><strong>{formatNumber(meta.counts.rollCalls)}</strong> votações nominais</li>
+    <li><strong>{formatNumber(meta.counts.propositions)}</strong> proposições de autoria (PL, PLP, PEC, PDL e PRC)</li>
+  </ul>
+  <DeputySearch client:load deputies={cards} />
+</Base>

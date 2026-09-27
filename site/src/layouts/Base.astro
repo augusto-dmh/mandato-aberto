@@ -1,0 +1,65 @@
+---
+import "@fontsource-variable/source-serif-4";
+import "@fontsource-variable/inter";
+import "../styles/global.css";
+
+import { contract } from "../lib/data";
+import { collectedAt } from "../lib/format";
+
+interface Props {
+  /** Page title as shared: also `og:title`. */
+  title: string;
+  description: string;
+  /** Site-relative path of this page, e.g. `/deputados/101/`. */
+  path: string;
+  /** Site-relative path of the share card. */
+  image: string;
+}
+
+const { title, description, path, image } = Astro.props;
+const url = new URL(path, Astro.site).href;
+const imageUrl = new URL(image, Astro.site).href;
+const { meta } = contract();
+const documentTitle = path === "/" ? title : `${title} - Mandato Aberto`;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{documentTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={url} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mandato Aberto" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:url" content={url} />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="wrap">
+        <a class="brand" href="/">Mandato Aberto</a>
+        <p class="collected">{collectedAt(meta.generatedAt)}</p>
+      </div>
+    </header>
+    <main class="wrap">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          Fonte: <a href="https://dadosabertos.camara.leg.br/">dados abertos da Câmara dos Deputados</a>, 57ª legislatura
+          (desde 01/02/2023).
+        </p>
+        <p>Cada número mostra a sua base de cálculo e leva ao registro oficial.</p>
+      </div>
+    </footer>
+  </body>
+</html>

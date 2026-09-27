@@ -15,3 +15,6 @@ dist/
 !.env.example
 CLAUDE.local.md
 .DS_Store
+
+# Site photo cache (official photos, never committed)
+site/.cache/
