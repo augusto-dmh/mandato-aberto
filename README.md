@@ -8,3 +8,4 @@ Este repositório recomeça do zero em setembro de 2026. O protótipo anterior (
 
 - `research/` — pesquisas que precedem o código: viabilidade jurídica, fontes de dados, escopo do MVP.
 - `etl/` — ETL em Python (`uv`) que baixa os dados abertos da Câmara e publica o contrato JSON em `data/out/`, com esquemas em `etl/schema/`. Uso: `cd etl && uv run mandato-etl build` (opções em `--help`); testes: `uv run pytest`.
+- `site/` — site estático (Astro + Vue) gerado a partir de `data/out/`: home com busca, perfil por deputado, página por votação nominal e card de compartilhamento por deputado. Uso: `cd site && npm ci && npm run build` (lê `MANDATO_DATA_DIR`, padrão `../data/out`; `SITE_URL` define o domínio das tags de compartilhamento; `MANDATO_PHOTOS=off` usa só as fotos já em `site/.cache/photos/`); testes: `npm test`.
