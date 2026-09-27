@@ -45,6 +45,6 @@ def test_unsupported_keyword_is_refused():
 
 def test_const_violation_is_rejected_by_both(built):
     spec = schema.load("meta")
-    doc = {**load(built.out, "meta.json"), "schema_version": 2}
+    doc = {**load(built.out, "meta.json"), "schema_version": 3}
     assert schema.first_error(doc, spec) is not None
     assert not jsonschema.Draft202012Validator(spec).is_valid(doc)

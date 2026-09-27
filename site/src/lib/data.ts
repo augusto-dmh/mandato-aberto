@@ -7,7 +7,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export interface Indicator {
   count: number;
@@ -81,6 +81,8 @@ export interface RollCallSummary {
   description: string;
   proposition: Proposition | null;
   approved: boolean | null;
+  /** The Câmara records who voted, not the vote; `tallies` are then the official totals. */
+  secret: boolean;
   tallies: { yes: number; no: number; others: number };
   governmentOrientation: string | null;
   sourceUrl: string;
@@ -167,6 +169,7 @@ const rollCallSummary = (r: any): RollCallSummary => ({
   description: r.description,
   proposition: r.proposition === null ? null : { id: r.proposition.id, title: r.proposition.title, summary: r.proposition.summary },
   approved: r.approved,
+  secret: r.secret,
   tallies: { yes: r.tallies.yes, no: r.tallies.no, others: r.tallies.others },
   governmentOrientation: r.governmentOrientation,
   sourceUrl: r.sourceUrl,

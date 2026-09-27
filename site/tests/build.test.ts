@@ -1,5 +1,5 @@
 /**
- * One real `astro build` of the fixture contract (3 deputies, 7 roll calls), inspected on disk.
+ * One real `astro build` of the fixture contract (3 deputies, 8 roll calls, 100-6 secret), inspected on disk.
  *
  * SITE_URL differs from the default so a hard-coded origin fails; photo downloads are off and the
  * cache holds only a synthetic 400x300 JPEG for deputy 101, so 102 and 103 have no photo.
@@ -16,7 +16,7 @@ const FIXTURE = join(__dirname, "fixtures", "out");
 const PHOTO = join(__dirname, "fixtures", "photos", "101.jpg");
 const ORIGIN = "https://preview.example.org";
 const COLLECTED = "Dados coletados em 27/09/2026 às 09:00 (horário de Brasília)";
-const ROLL_CALLS = ["100-1", "100-2", "100-3", "100-4", "200-1", "200-2", "200-3"];
+const ROLL_CALLS = ["100-1", "100-2", "100-3", "100-4", "100-6", "200-1", "200-2", "200-3"];
 
 let work: string;
 let dist: string;
@@ -110,15 +110,15 @@ describe("S1 contract to pages", () => {
     for (const id of ROLL_CALLS) expect(existsSync(join(dist, "votacoes", id, "index.html"))).toBe(true);
   });
 
-  it("fails on schema_version 2", () => {
-    const dir = join(work, "v2");
+  it("fails on schema_version 3", () => {
+    const dir = join(work, "v3");
     cpSync(FIXTURE, dir, { recursive: true });
     const meta = JSON.parse(readFileSync(join(dir, "meta.json"), "utf8"));
-    writeFileSync(join(dir, "meta.json"), JSON.stringify({ ...meta, schema_version: 2 }));
-    const result = astroBuild(dir, join(work, "dist-v2"));
+    writeFileSync(join(dir, "meta.json"), JSON.stringify({ ...meta, schema_version: 3 }));
+    const result = astroBuild(dir, join(work, "dist-v3"));
     expect(result.status).not.toBe(0);
     expect(result.stdout + result.stderr).toContain(
-      "Unsupported data contract: meta.json has schema_version 2; this site reads 1",
+      "Unsupported data contract: meta.json has schema_version 3; this site reads 2",
     );
   });
 
@@ -132,7 +132,7 @@ describe("S1 contract to pages", () => {
 
   it("every page states the collection date", () => {
     const pages = allPages();
-    expect(pages).toHaveLength(11);
+    expect(pages).toHaveLength(12);
     for (const html of pages) expect(visible(html)).toContain(COLLECTED);
   });
 });
@@ -178,7 +178,7 @@ describe("S2 home", () => {
     expect(text).toContain(
       "O Mandato Aberto mostra, com dados oficiais da Câmara dos Deputados, o que cada deputado federal fez na 57ª legislatura.",
     );
-    for (const total of ["3 deputados", "7 votações nominais", "5 proposições de autoria"]) expect(text).toContain(total);
+    for (const total of ["3 deputados", "8 votações nominais", "5 proposições de autoria"]) expect(text).toContain(total);
   });
 });
 
@@ -196,7 +196,7 @@ describe("S3 profile", () => {
 
   it("profile indicators", () => {
     const blocks = [
-      ["participacao", "Participação em votações nominais do plenário", "3 de 4", "0.75", "2 de 2"],
+      ["participacao", "Participação em votações nominais do plenário", "4 de 5", "0.8", "3 de 3"],
       ["alinhamento-governo", "Votos iguais à orientação do governo", "2 de 3", "0.6667", "1 de 1"],
       ["alinhamento-partido", "Votos iguais à maioria do próprio partido", "2 de 3", "0.6667", "2 de 3"],
     ];
@@ -210,6 +210,8 @@ describe("S3 profile", () => {
       expect(block).toContain(`href="/metodologia/#${id}"`);
       expect(visible(element(profile(102), "section", `id="${id}"`))).toContain(value102);
     }
+    const participation = visible(element(profile(101), "section", 'id="participacao"'));
+    expect(participation).toMatch(/Base de cálculo: [^]*inclusive Art\. 17 e votações secretas\. Como este número é calculado$/);
   });
 
   it("indicator without base", () => {
@@ -252,7 +254,7 @@ describe("S3 profile", () => {
     const html = profile(101);
     const votes = element(html, "section", 'id="votos"');
     const linked = [...votes.matchAll(/href="\/votacoes\/([^/"]+)\/"/g)].map((m) => m[1]);
-    expect(linked).toEqual(["100-4", "200-3", "100-3", "100-2", "200-2", "200-1", "100-1"]);
+    expect(linked).toEqual(["100-6", "100-4", "200-3", "100-3", "100-2", "200-2", "200-1", "100-1"]);
     const years = [...votes.matchAll(/<h3[^>]*>\s*(\d{4})\s*<\/h3>/g)].map((m) => m[1]);
     expect(years).toEqual(["2025", "2024", "2023"]);
     const row = (id: string) => visible(element(votes, "li", `data-roll-call="${id}"`));
@@ -271,6 +273,13 @@ describe("S3 profile", () => {
   it("profile vote labels", () => {
     expect(visible(profile(102))).toContain("Art. 17 (presidente da sessão)");
     expect(visible(profile(101))).toContain("Registro sem voto");
+  });
+
+  it("profile secret vote", () => {
+    const votes = element(profile(101), "section", 'id="votos"');
+    const vote = (id: string) => visible(element(element(votes, "li", `data-roll-call="${id}"`), "span", 'class="vote"'));
+    expect(vote("100-6")).toBe("Votação secreta");
+    expect(vote("100-3")).toBe("Registro sem voto");
   });
 
   it("missing photo renders nothing", () => {
@@ -319,6 +328,45 @@ describe("S4 roll call", () => {
       { href: "/deputados/102/", text: "Bruno Lima PT-RJ" },
     ]);
     expect(entries(no)).toEqual([{ href: "/deputados/103/", text: "Carla Dias NOVO-MG" }]);
+  });
+
+  it("secret roll call", () => {
+    const html = rollCall("100-6");
+    const text = visible(html);
+    expect(text).toContain("Votação secreta: a Câmara registra quem votou, não o voto de cada deputado.");
+    expect(text).toContain("Totais oficiais da Câmara Sim 12 Não 5 Outros 2");
+    expect(text).not.toContain("Registro sem voto");
+    expect(meta(html, "og:title")).toBe("Votação nominal de 01/08/2025: votação secreta");
+    expect(meta(html, "og:description")).toBe(
+      "Votação secreta de 01/08/2025 (Plenário) na Câmara dos Deputados, com os totais oficiais e os deputados que votaram.",
+    );
+    const votes = element(html, "section", 'class="section"');
+    expect(visible(votes)).toMatch(/^Quem votou Em ordem alfabética\. Partido na data da votação\. Deputados que votaram \(3\)/);
+    expect([...html.matchAll(/<section\b[^>]*class="vote-group"/g)]).toHaveLength(1);
+    const group = element(html, "section", 'class="vote-group"');
+    expect(visible(group)).toMatch(/^Deputados que votaram \(3\)/);
+    const entries = [...group.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/g)].map((m) => ({
+      href: /href="([^"]*)"/.exec(m[1])?.[1],
+      text: visible(m[1]),
+    }));
+    expect(entries).toEqual([
+      { href: "/deputados/101/", text: "Ana Souza PT-SP" },
+      { href: "/deputados/102/", text: "Bruno Lima PT-RJ" },
+      { href: "/deputados/103/", text: "Carla Dias NOVO-MG" },
+    ]);
+  });
+
+  it("open roll calls carry no secret notice", () => {
+    const html = rollCall("100-1");
+    const text = visible(html);
+    expect(text).not.toContain("Votação secreta");
+    expect(text).not.toContain("Totais oficiais da Câmara");
+    expect(visible(element(html, "section", 'data-vote="Sim"'))).toMatch(/^Sim \(2\)/);
+    expect(visible(element(html, "section", 'data-vote="Não"'))).toMatch(/^Não \(1\)/);
+    const open = rollCall("100-3");
+    expect(visible(open)).not.toContain("Votação secreta");
+    // Astro renders an empty attribute bare: `data-vote`, not `data-vote=""`.
+    expect(visible(element(open, "section", "data-vote(?!=)"))).toMatch(/^Registro sem voto \(1\)/);
   });
 
   it("roll-call source link", () => {

@@ -4,7 +4,7 @@ export const INDICATORS = [
     field: "participation",
     anchor: "participacao",
     label: "Participação em votações nominais do plenário",
-    base: "votações nominais do plenário realizadas enquanto em exercício, descontadas as licenças; conta cada votação com qualquer voto registrado, inclusive Art. 17.",
+    base: "votações nominais do plenário realizadas enquanto em exercício, descontadas as licenças; conta cada votação com qualquer voto registrado, inclusive Art. 17 e votações secretas.",
   },
   {
     field: "governmentAlignment",

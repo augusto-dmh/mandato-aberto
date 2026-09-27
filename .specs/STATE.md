@@ -16,11 +16,12 @@
 
 ## Handoff
 
-**Feature**: site
-**Where**: built and verified - `verification.md` round 1 PASS (profile `light`, 41/41 checks, gate exit 0); commits `ed67062`..`8c5211e` plus the verification commit; nothing pushed
+**Feature**: secret-ballots
+**Where**: merged into `main` via PR #7 (CI green) on 2026-09-27; built and verified - round 2 PASS (profile `standard`, `daceaaf..75eb1df`), `validate_verification.py` exit 0; round 1 FAIL (surviving mutant on the no-record participation case) is kept in `6fa6c7b`
 **In progress**: none
-**Next step**: maintainer reviews the pages in a browser (desktop and mobile) and decides the open items below; then PR `feat(site): ...` when asked; then plan `launch` (grilling decisions 6-8, legal checklist section 5) and stop for review
+**Next step**: run `mandato-etl build --tse-csv <file>` so `data/out/` is on contract version 2 (the site rejects version 1); check `/votacoes/2645346-18/` and `/votacoes/2576389-4/` in a browser on desktop and phone; the `launch` methodology page must mention secret ballots in the participation method
 **Blockers**: go-live needs the `.org` domain (`SITE_URL` stays a placeholder); open maintainer questions on the TSE CSV holding CPF and the other personal columns in the raw cache
-**Open for the maintainer**: (1) resolved 2026-09-27 - the maintainer confirmed the single photo credit on the home list (new `Landing` row); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator; (4) secret ballots: roll calls `2645346-18` and `2576389-4` (PLEN, choice of TCU ministers) carry one record per deputy with an empty vote in `votacoesVotos`, so the site shows tallies 0/0/0 and "Registro sem voto" against official totals in the description, and `participation` leaves them out of the numerator while keeping them in the denominator - needs a maintainer decision (etl-camara AC 17 plus site copy)
+**Open for the maintainer**: (1) resolved 2026-09-27 - single photo credit on the home list (site `Landing` row); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator; (4) secret ballots - built as `secret-ballots` and verified 2026-09-27: contract version 2 with `secret`, official totals, a record in a secret ballot counts as participation; the build renegotiated the shared fixture (103 votes `Não` in `100-3`) and extended C4, C6, C12, all with the maintainer's approval, recorded in `checks.md`; (5) the profile vote list shows two roll calls on the same proposition with the same title - after launch
+**Merged**: PR #6 (`site`) and PR #7 (`secret-ballots`) into `main` on 2026-09-27
 **Uncommitted**: none
-**Branch**: `feat/site`, PR #6 against `main` (PR #5 merged)
+**Branch**: `main`; `fix/secret-ballots` was rebased on `main` after #6 merged (plan commit `daceaaf`, tree-identical to `9921e6c`); local `data/out/` was rebuilt by C8 without `--tse-csv`, so `candidacy2026` is null there until the next build with the TSE file

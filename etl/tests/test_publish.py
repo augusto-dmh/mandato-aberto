@@ -36,7 +36,7 @@ def test_validate_command_exit_codes(built, capsys):
 def test_meta_fields(built):
     meta = load(built.out, "meta.json")
     assert set(meta) == {"schema_version", "generatedAt", "years", "counts", "sources", "candidacy"}
-    assert meta["schema_version"] == 1
+    assert meta["schema_version"] == 2
     assert meta["generatedAt"] == "2026-09-27T12:00:00Z"
     assert meta["years"] == [2023]
     assert meta["counts"] == {"deputies": 3, "rollCalls": 7, "propositions": 5}

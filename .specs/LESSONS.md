@@ -56,6 +56,30 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification round 1 G4, site/tests/cards.test.ts:49 (site)
 - last seen: 2026-09-27T05:01:16Z
 
+### L-008 - When an indicator credits a record under a condition, prove the case where the condition holds and the deputy has no record
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `indicators` · harmful: 0
+- features: secret-ballots
+- evidence: verification round 1 F3, etl/src/mandato_etl/compute.py:232 (indicators)
+- last seen: 2026-09-27T18:47:48Z
+
+### L-009 - Enumerate a new contract field's validation once per schema file that carries it
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `contract` · harmful: 0
+- features: secret-ballots
+- evidence: verification round 1 C6, etl/schema/roll-call.schema.json:15 (contract)
+- last seen: 2026-09-27T18:47:48Z
+
+### L-010 - Pin every copy string a new page state introduces, including title and meta description
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `site` · harmful: 0
+- features: secret-ballots
+- evidence: verification round 1 C12, site/src/pages/votacoes/[id].astro:28 (site)
+- last seen: 2026-09-27T18:47:48Z
+
+### L-011 - Run a new classification rule over the shared test legislature before fixing expected values that assume its existing cases
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `fixtures` · harmful: 0
+- features: secret-ballots
+- evidence: checks.md renegotiation 2026-09-27, etl/tests/conftest.py 100-3 (fixtures)
+- last seen: 2026-09-27T18:47:48Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

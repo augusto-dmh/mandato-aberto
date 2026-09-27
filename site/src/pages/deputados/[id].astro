@@ -158,7 +158,7 @@ const c = deputy.candidacy2026;
                 <time datetime={rollCall.date}>{formatDate(rollCall.date)}</time>
                 <span class="organ">{organLabel(rollCall.organ)}</span>
                 <a href={`/votacoes/${rollCall.id}/`}>{rollCall.proposition?.title ?? rollCall.description}</a>
-                <span class="vote">{voteLabel(vote.vote)}</span>
+                <span class="vote">{voteLabel(vote.vote, rollCall.secret)}</span>
               </li>
             ))}
           </ol>

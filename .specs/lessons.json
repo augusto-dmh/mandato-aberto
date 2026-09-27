@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 8,
+  "next_id": 12,
   "lessons": [
     {
       "id": "L-001",
@@ -130,6 +130,78 @@
       ],
       "created": "2026-09-27T05:01:16Z",
       "last_seen": "2026-09-27T05:01:16Z"
+    },
+    {
+      "id": "L-008",
+      "key": "surviving_mutant::when an indicator credits a record under a condition prove the case where the condition holds and the deputy has no record",
+      "text": "When an indicator credits a record under a condition, prove the case where the condition holds and the deputy has no record",
+      "signal": "surviving_mutant",
+      "scope": "indicators",
+      "status": "candidate",
+      "features": [
+        "secret-ballots"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 1 F3, etl/src/mandato_etl/compute.py:232 (indicators)"
+      ],
+      "created": "2026-09-27T18:47:48Z",
+      "last_seen": "2026-09-27T18:47:48Z"
+    },
+    {
+      "id": "L-009",
+      "key": "spec_precision_gap::enumerate a new contract field s validation once per schema file that carries it",
+      "text": "Enumerate a new contract field's validation once per schema file that carries it",
+      "signal": "spec_precision_gap",
+      "scope": "contract",
+      "status": "candidate",
+      "features": [
+        "secret-ballots"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 1 C6, etl/schema/roll-call.schema.json:15 (contract)"
+      ],
+      "created": "2026-09-27T18:47:48Z",
+      "last_seen": "2026-09-27T18:47:48Z"
+    },
+    {
+      "id": "L-010",
+      "key": "spec_precision_gap::pin every copy string a new page state introduces including title and meta description",
+      "text": "Pin every copy string a new page state introduces, including title and meta description",
+      "signal": "spec_precision_gap",
+      "scope": "site",
+      "status": "candidate",
+      "features": [
+        "secret-ballots"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 1 C12, site/src/pages/votacoes/[id].astro:28 (site)"
+      ],
+      "created": "2026-09-27T18:47:48Z",
+      "last_seen": "2026-09-27T18:47:48Z"
+    },
+    {
+      "id": "L-011",
+      "key": "spec_deviation::run a new classification rule over the shared test legislature before fixing expected values that assume its existing cases",
+      "text": "Run a new classification rule over the shared test legislature before fixing expected values that assume its existing cases",
+      "signal": "spec_deviation",
+      "scope": "fixtures",
+      "status": "candidate",
+      "features": [
+        "secret-ballots"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "checks.md renegotiation 2026-09-27, etl/tests/conftest.py 100-3 (fixtures)"
+      ],
+      "created": "2026-09-27T18:47:48Z",
+      "last_seen": "2026-09-27T18:47:48Z"
     }
   ]
 }

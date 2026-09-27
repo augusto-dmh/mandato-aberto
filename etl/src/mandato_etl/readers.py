@@ -12,7 +12,17 @@ from pathlib import Path
 csv.field_size_limit(sys.maxsize)
 
 ALLOWLIST = {
-    "votacoes": ["id", "data", "dataHoraRegistro", "siglaOrgao", "aprovacao", "descricao"],
+    "votacoes": [
+        "id",
+        "data",
+        "dataHoraRegistro",
+        "siglaOrgao",
+        "aprovacao",
+        "votosSim",
+        "votosNao",
+        "votosOutros",
+        "descricao",
+    ],
     "votacoesVotos": [
         "idVotacao",
         "dataHoraVoto",
