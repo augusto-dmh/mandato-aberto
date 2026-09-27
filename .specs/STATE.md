@@ -17,11 +17,11 @@
 ## Handoff
 
 **Feature**: secret-ballots
-**Where**: `plan.md` approved by the maintainer on 2026-09-27 (option 1: a secret ballot counts as participation, contract version 2); `checks.md` written (18 checks, profile `standard`), `validate_checks.py` exit 0 with 3 warnings on command proofs; no code yet
+**Where**: built and verified - round 2 PASS (profile `standard`, `daceaaf..75eb1df`), `validate_verification.py` exit 0; round 1 FAIL (surviving mutant on the no-record participation case) is kept in `6fa6c7b`
 **In progress**: none
-**Next step**: build in a new Claude session from `research/HANDOFF-secret-ballots.md`, then the independent Verifier over `9921e6c..HEAD`
+**Next step**: maintainer review; on request, push `fix/secret-ballots` and open the PR against `main` (PR #6 merged 2026-09-27), title `fix(etl): mark secret ballots and count them as participation`
 **Blockers**: go-live needs the `.org` domain (`SITE_URL` stays a placeholder); open maintainer questions on the TSE CSV holding CPF and the other personal columns in the raw cache
-**Open for the maintainer**: (1) resolved 2026-09-27 - single photo credit on the home list (site `Landing` row); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator; (4) secret ballots - decided 2026-09-27 (option 1), being built as `secret-ballots`; (5) the profile vote list shows two roll calls on the same proposition with the same title - after launch
-**Site feature**: PR #6 open against `main`, CI green at `2bf08c4`; verified round 1 PASS (profile `light`) plus the browser check fixes in `2bf08c4`
+**Open for the maintainer**: (1) resolved 2026-09-27 - single photo credit on the home list (site `Landing` row); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator; (4) secret ballots - built as `secret-ballots` and verified 2026-09-27: contract version 2 with `secret`, official totals, a record in a secret ballot counts as participation; the build renegotiated the shared fixture (103 votes `Não` in `100-3`) and extended C4, C6, C12, all with the maintainer's approval, recorded in `checks.md`; (5) the profile vote list shows two roll calls on the same proposition with the same title - after launch
+**Site feature**: PR #6 merged into `main` on 2026-09-27
 **Uncommitted**: none
-**Branch**: `fix/secret-ballots`, stacked on `feat/site` (PR #6); rebase on `main` once #6 merges
+**Branch**: `fix/secret-ballots`, rebased on `main` after #6 merged (plan commit now `daceaaf`, tree-identical to `9921e6c`); local `data/out/` was rebuilt by C8 without `--tse-csv`, so `candidacy2026` is null there until the next build with the TSE file
