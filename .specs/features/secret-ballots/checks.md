@@ -19,6 +19,15 @@ from 7 to 8, 101's participation from `3 de 4` (`--share: 0.75`) to `4 de 5` (`-
 `etl/tests/`, `test_publish.py:39` expects `2` and `test_schema.py:48` injects `3`. No other approved
 assertion changes.
 
+Renegotiated during the build (maintainer, 2026-09-27), because the approved rule contradicted the approved
+fixture: `100-3`'s only record was 101's empty vote, so door 2 made it secret. `legislature()` gains
+`("103", R3, "Não")`, which keeps `100-3` open (103 is never in exercise and `100-3` has no Governo
+orientation, so no indicator moves). Consequences, and only these: `test_roll_calls.py` expects `secret` in the
+roll-call key set (door 1) and `100-3` tallies `0/1/0` instead of `0/0/0`; C7 admits `test_roll_calls.py`;
+in `site/tests/`, page `100-3` gains `Não (1)`, profile 103 gains a row, and site C20 lists 8 votes for 101 with
+`100-6` first. A roll call built without the official columns (only possible outside `readers`, which require
+them) keeps tallies counted from its records, so `test_valid_vote_set_table[empty]` runs unchanged.
+
 ## Checks
 
 ### S1 - The ETL publishes secret ballots with official totals · 8 files · 70 KB · ~18k
@@ -42,8 +51,8 @@ Proof: `P tests/test_secret_ballots.py::test_secret_record_is_not_a_valid_vote`
 Proof: `P tests/test_publish.py::test_meta_fields`
 Proof: `P tests/test_secret_ballots.py::test_validate_requires_a_boolean_secret`
 
-**C7** - The approved etl tests run unchanged apart from the two version lines: `git diff 9921e6c -- etl/tests` touches only `conftest.py` (the variant), `test_publish.py`, `test_schema.py` and the new `test_secret_ballots.py`, and the whole suite passes
-Proof: `test "$(git diff --name-only 9921e6c -- etl/tests | sort | tr '\n' ' ')" = "etl/tests/conftest.py etl/tests/test_publish.py etl/tests/test_schema.py etl/tests/test_secret_ballots.py " && uv run --directory etl pytest -q`
+**C7** - The approved etl tests run unchanged apart from the two version lines and the renegotiation above: `git diff 9921e6c -- etl/tests` touches only `conftest.py` (the variant and `100-3`), `test_publish.py`, `test_roll_calls.py`, `test_schema.py` and the new `test_secret_ballots.py`, and the whole suite passes
+Proof: `test "$(git diff --name-only 9921e6c -- etl/tests | sort | tr '\n' ' ')" = "etl/tests/conftest.py etl/tests/test_publish.py etl/tests/test_roll_calls.py etl/tests/test_schema.py etl/tests/test_secret_ballots.py " && uv run --directory etl pytest -q`
 
 **C8** - Over the real cache, `mandato-etl build` marks exactly 2 roll calls secret, `2645346-18` with tallies `404/61/1` and `2576389-4` with `388/22/11`, and `mandato-etl validate` exits 0 (AC 1, AC 2)
 Proof: `uv run --directory etl mandato-etl build --quiet && uv run --directory etl mandato-etl validate && python3 -c "import json; rc={r['id']:r for r in json.load(open('data/out/roll-calls.json'))}; s=sorted(i for i,r in rc.items() if r['secret']); assert s==['2576389-4','2645346-18'], s; assert rc['2645346-18']['tallies']=={'yes':404,'no':61,'others':1}; assert rc['2576389-4']['tallies']=={'yes':388,'no':22,'others':11}"`
