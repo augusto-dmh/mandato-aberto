@@ -80,6 +80,36 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: checks.md renegotiation 2026-09-27, etl/tests/conftest.py 100-3 (fixtures)
 - last seen: 2026-09-27T18:47:48Z
 
+### L-012 - Prove an order claim by comparing the first line number of each marker in the claimed order, never by sorting grep output that is already in file order
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `ci` · harmful: 0
+- features: launch
+- evidence: checks.md C40 (verification.md F1) (ci)
+- last seen: 2026-09-27T20:26:13Z
+
+### L-013 - Prove that several terms are present by checking each term on its own, since grep -c with many patterns counts matching lines
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `docs` · harmful: 0
+- features: launch
+- evidence: checks.md C61 (verification.md F2) (docs)
+- last seen: 2026-09-27T20:26:13Z
+
+### L-014 - Extend a placeholder guard to every published artifact that carries the placeholder, not only the rendered pages
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `research` · harmful: 0
+- features: launch
+- evidence: checks.md C58, research/03-teste-de-balanceamento-lgpd.md:4 (verification.md F4) (research)
+- last seen: 2026-09-27T20:26:13Z
+
+### L-015 - Derive a pattern's boundary cases by evaluating the exact pattern the plan fixes, not by reading it
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `site` · harmful: 0
+- features: launch
+- evidence: checks.md C10 vs plan AC 10 (renegotiated 2026-09-27) (site)
+- last seen: 2026-09-27T20:26:13Z
+
+### L-016 - Resolve every path in a workflow step against that step's working-directory
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `ci` · harmful: 0
+- features: launch
+- evidence: checks.md C41 vs publish.yml working-directory (renegotiated 2026-09-27) (ci)
+- last seen: 2026-09-27T20:26:14Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
