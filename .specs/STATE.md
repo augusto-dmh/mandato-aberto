@@ -13,17 +13,18 @@
 | AD-007 | The project runs under identified natural persons until 2026-10-26; no legal entity, no donations, no paid promotion until then | electoral law forbids campaign content on legal-entity sites and any paid boosting by non-candidates | active | 2026-09-26 |
 | AD-008 | Correction requests arrive by a form and a dedicated e-mail; corrections and parliamentarians' replies are versioned in the repository and rendered as a public page | audit trail in git; matches the voluntary right-of-reply policy from the legal research | active | 2026-09-26 |
 | AD-009 | No AI-generated content, no user comments, no polls in the MVP | each needs its own decision after the election window; the legal research lists the conditions | active | 2026-09-26 |
-| AD-010 | The site is hosted on Cloudflare Pages, deployed by direct upload from GitHub Actions; the daily publication rebuilds `data/out/` from empty and only the photo cache carries over | the 313 MB `dist/` and its share cards exceed what GitHub Pages' bandwidth cap tolerates for a site meant to spread; a cached `data/raw/` would freeze the current year's roll calls | active | 2026-09-27 |
+| AD-010 | The site is hosted on Cloudflare Pages, deployed by direct upload from GitHub Actions; the daily publication rebuilds `data/out/` from empty and only the photo cache carries over | the 313 MB `dist/` and its share cards exceed what GitHub Pages' bandwidth cap tolerates for a site meant to spread; a cached `data/raw/` would freeze the current year's roll calls | superseded by AD-012 | 2026-09-27 |
+| AD-012 | The site is published on GitHub Pages as a project site under `https://augusto-dmh.github.io/mandato-aberto/`, deployed by `actions/deploy-pages` with the repository token; every site-relative link goes through `withBase`, and `SITE_URL` (origin) plus `SITE_BASE` (path) locate the site; the daily publication still rebuilds `data/out/` from empty with only the photo cache carried over | the maintainer deferred the domain and any external host on 2026-09-27; GitHub Pages needs no account, secret or DNS, at the cost of a 100 GB/month soft bandwidth cap, no custom headers and no analytics, all acceptable until the later "professional deploy" | active | 2026-09-27 |
 | AD-011 | The only candidacy input CI reads is `etl/inputs/candidacy-2026.json`, a per-deputy-id export of one local match against the TSE file, holding only the four fields the contract publishes; no copy or subset of the TSE CSV enters the repository | AD-003: the TSE file carries CPF, and a column subset still carries name and birth date of every candidate | active | 2026-09-27 |
 
 ## Handoff
 
-**Feature**: launch
-**Where**: built and verified (round 1 PASS at `f984462`, profile light); PR #8 open against `main` (https://github.com/augusto-dmh/mandato-aberto/pull/8)
-**In progress**: none - PR #8 under maintainer review
-**Next step**: maintainer reviews PR #8 (copy sentence by sentence, the Verifier's F1-F4 notes); after merge, fill `site/src/lib/site.ts`, the balancing test's controllers and the `SITE_URL` default, export the candidacy JSON from the TSE CSV, set the Cloudflare secrets and `SITE_URL`, run `publish.yml`, then verification round 2 (C62 to C69) against the domain. Still pending from `secret-ballots`: check `/votacoes/2645346-18/` and `/votacoes/2576389-4/` in a browser on desktop and phone
-**Blockers**: plan open questions 1 to 4 block go-live and S10, not the PR; pages and the balancing test render `[a definir]` until then
+**Feature**: github-pages (after `launch`, merged as PR #8)
+**Where**: plan written and validated on `feat/github-pages`, approved by the maintainer's instruction in chat (2026-09-27); no checks, no code
+**In progress**: a builder pane derives `checks.md`, builds, and dispatches the Verifier (round 1 over AC 1 to 14)
+**Next step**: PR against `main`; the merge deploys to `https://augusto-dmh.github.io/mandato-aberto/`; then verification round 2 (AC 15 to 18 here, launch C62, C63, C67 to C69 as renegotiated). Maintainer decides the names on Quem somos (plan question 1). Still pending: the TSE file for the badge; browser check of `/votacoes/2645346-18/` and `/votacoes/2576389-4/`
+**Blockers**: none for the build; question 1 (maintainers' names) blocks a placeholder-free go-live
 **Open for the maintainer**: Verifier findings that change no result - C40's order proof (`grep -n | sort -c`) cannot fail and does not name `node-version: 24`; C61's proof counts lines, not terms; C41 and C43 greps are partial (all three confirmed by reading `publish.yml`); C58 passes while `research/03-teste-de-balanceamento-lgpd.md` still reads `**Controladores:** [a definir]`, and C68 does not cover that file; `correctionsDir()` resolves from `process.cwd()`, correct only from `site/` (true in vitest and `publish.yml`); plan question 5 - confirm in a browser that Cloudflare Web Analytics sets no cookie before setting `CF_ANALYTICS_TOKEN`
-**Merged**: PR #6 (`site`) and PR #7 (`secret-ballots`) into `main` on 2026-09-27
+**Merged**: PR #6 (`site`), PR #7 (`secret-ballots`) and PR #8 (`launch`) into `main` on 2026-09-27
 **Uncommitted**: none
-**Branch**: `feat/launch`; local `data/out/` is on contract version 2 with `candidacy2026` null (built without the TSE file)
+**Branch**: `feat/github-pages` from `main` at `5730572`
