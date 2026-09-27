@@ -1,6 +1,17 @@
+# ETL caches and outputs (hundreds of MB; provenance lives in data/raw/manifest.json)
+data/
+etl/inputs/
+# Python
 __pycache__/
+.venv/
+*.egg-info/
+# Node
 node_modules/
+dist/
+.astro/
+# Local
 .env
 .env.*
 !.env.example
+CLAUDE.local.md
 .DS_Store
