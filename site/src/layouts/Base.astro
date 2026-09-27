@@ -6,6 +6,7 @@ import "../styles/global.css";
 import { contract } from "../lib/data";
 import { collectedAt } from "../lib/format";
 import { REPO_URL } from "../lib/site";
+import { withBase } from "../lib/urls";
 
 interface Props {
   /** Page title as shared: also `og:title`. */
@@ -18,8 +19,9 @@ interface Props {
 }
 
 const { title, description, path, image } = Astro.props;
-const url = new URL(path, Astro.site).href;
-const imageUrl = new URL(image, Astro.site).href;
+// Astro.site is the origin only; the base path comes from withBase (AD-012).
+const url = new URL(withBase(path), Astro.site).href;
+const imageUrl = new URL(withBase(image), Astro.site).href;
 const { meta } = contract();
 const documentTitle = path === "/" ? title : `${title} - Mandato Aberto`;
 
@@ -55,7 +57,7 @@ const beacon = analyticsToken
   <body>
     <header class="masthead">
       <div class="wrap">
-        <a class="brand" href="/">Mandato Aberto</a>
+        <a class="brand" href={withBase("/")}>Mandato Aberto</a>
         <p class="collected">{collectedAt(meta.generatedAt)}</p>
       </div>
     </header>
@@ -67,7 +69,7 @@ const beacon = analyticsToken
         <p>Este site não apoia nem se opõe a candidaturas, partidos ou federações. Todos os dados provêm de fontes oficiais indicadas em cada página. Não recebe recursos de partidos, candidatos ou campanhas.</p>
         <p>Dados: <a href="https://dadosabertos.camara.leg.br/">Câmara dos Deputados</a> e <a href="https://dadosabertos.tse.jus.br/">TSE</a> (dados abertos). Fotos: Câmara dos Deputados.</p>
         <nav class="footer-links" aria-label="Sobre o site">
-          <a href="/metodologia/">Metodologia e fontes</a> <a href="/quem-somos/">Quem somos</a> <a href="/dados-e-privacidade/">Dados e privacidade</a> <a href="/correcoes/">Correções</a> <a href="/reportar-erro/">Reportar erro</a> <a href={REPO_URL}>Código-fonte</a>{" "}
+          <a href={withBase("/metodologia/")}>Metodologia e fontes</a> <a href={withBase("/quem-somos/")}>Quem somos</a> <a href={withBase("/dados-e-privacidade/")}>Dados e privacidade</a> <a href={withBase("/correcoes/")}>Correções</a> <a href={withBase("/reportar-erro/")}>Reportar erro</a> <a href={REPO_URL}>Código-fonte</a>{" "}
         </nav>
       </div>
     </footer>

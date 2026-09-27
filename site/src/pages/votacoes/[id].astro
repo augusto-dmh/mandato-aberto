@@ -2,6 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import { contract } from "../../lib/data";
 import { byName, formatDate, formatNumber, groupVotes, organLabel, resultLabel } from "../../lib/format";
+import { withBase } from "../../lib/urls";
 
 export function getStaticPaths() {
   return contract().rollCalls.map((r) => ({ params: { id: r.id } }));
@@ -87,7 +88,7 @@ const heading = rollCall.proposition?.title ?? `Votação nominal de ${date}`;
             <ul>
               {group.entries.map((v) => (
                 <li>
-                  <a href={`/deputados/${v.deputyId}/`}>{v.name}</a>
+                  <a href={withBase(`/deputados/${v.deputyId}/`)}>{v.name}</a>
                   <span class="where">
                     {v.party}-{v.uf}
                   </span>
@@ -100,5 +101,5 @@ const heading = rollCall.proposition?.title ?? `Votação nominal de ${date}`;
     </div>
   </section>
 
-  <p class="report"><a href={`/reportar-erro/?p=/votacoes/${rollCall.id}/`}>Reportar erro nesta página</a></p>
+  <p class="report"><a href={withBase(`/reportar-erro/?p=/votacoes/${rollCall.id}/`)}>Reportar erro nesta página</a></p>
 </Base>

@@ -26,11 +26,14 @@ let dist: string;
 let cache: string;
 
 function astroBuild(dataDir: string, outDir: string, env: Record<string, string> = {}) {
+  // Vitest sets BASE_URL=/ in its own environment, and Astro lets a BASE_URL in the environment
+  // override the configured base while prerendering: the child build must not inherit it.
+  const { BASE_URL: _, ...inherited } = process.env;
   return spawnSync(process.execPath, [join(SITE, "node_modules", "astro", "bin", "astro.mjs"), "build", "--outDir", outDir], {
     cwd: SITE,
     encoding: "utf8",
     env: {
-      ...process.env,
+      ...inherited,
       MANDATO_DATA_DIR: dataDir,
       MANDATO_PHOTOS: "off",
       MANDATO_PHOTO_CACHE: cache,
@@ -673,12 +676,15 @@ describe("launch S4 who we are and privacy", () => {
     ]);
   });
 
+  // Launch C30, superseded by github-pages C13 (2026-09-27): the host is GitHub Pages, with no analytics.
   it("privacy cookies analytics and host", () => {
-    expectHtml(privacy(), [
+    const html = privacy();
+    expectHtml(html, [
       "O site não grava cookie nem guarda nada no seu navegador.",
-      "A contagem de visitas vem do Cloudflare Web Analytics, sem cookie e sem identificador individual.",
-      'A hospedagem (Cloudflare) processa as requisições sob a <a href="https://www.cloudflare.com/privacypolicy/">política de privacidade dela</a>.',
+      'A hospedagem (GitHub Pages) processa as requisições sob a <a href="https://docs.github.com/pt/site-policy/privacy-policies/github-general-privacy-statement">política de privacidade do GitHub</a>.',
     ]);
+    expect(html).not.toContain("Cloudflare");
+    expect(html).not.toContain("Analytics");
   });
 
   it("privacy balancing test link", () => {
@@ -869,6 +875,100 @@ describe("launch S7 analytics without cookies", () => {
     );
     for (const text of [...scripts, ...inline]) {
       for (const api of ["document.cookie", "localStorage", "sessionStorage"]) expect(text).not.toContain(api);
+    }
+  });
+});
+
+// github-pages: the same fixture built under the base path GitHub Pages serves it from (AD-012).
+
+const BASE_ORIGIN = "https://augusto-dmh.github.io";
+let baseDist: string;
+/** Every file under `dir`, as paths relative to it, sorted. */
+function tree(dir: string, prefix = ""): string[] {
+  return readdirSync(join(dir, prefix), { withFileTypes: true })
+    .flatMap((entry) => {
+      const path = prefix ? `${prefix}/${entry.name}` : entry.name;
+      return entry.isDirectory() ? tree(dir, path) : [path];
+    })
+    .sort();
+}
+/** Every `href` or `src` value of a page that is a site path: starts with `/`, not with `//`. */
+const sitePaths = (html: string) => [...html.matchAll(/(?<![\w-])(?:href|src)="(\/(?!\/)[^"]*)"/g)].map((m) => m[1]);
+const basePage = (path: string) => readFileSync(join(baseDist, path), "utf8");
+
+describe("github-pages S1 base path", () => {
+  beforeAll(() => {
+    baseDist = join(work, "dist-base");
+    const result = astroBuild(FIXTURE, baseDist, { SITE_URL: BASE_ORIGIN, SITE_BASE: "/mandato-aberto" });
+    if (result.status !== 0) throw new Error(`astro build with SITE_BASE failed:\n${result.stdout}\n${result.stderr}`);
+  });
+
+  it("base build writes the same files", () => {
+    // `_astro/<name>.<hash>.<ext>`: the hash follows the content, and the base is in the content.
+    const unhashed = (files: string[]) => files.map((f) => f.replace(/^(_astro\/[^/]+)\.[A-Za-z0-9_-]{8}(\.[a-z0-9]+)$/, "$1$2"));
+    const files = tree(baseDist);
+    expect(files.length).toBeGreaterThan(18);
+    expect(unhashed(files)).toEqual(unhashed(tree(dist)));
+  });
+
+  it("every site path starts with the base", () => {
+    const pages = [
+      "index.html",
+      "deputados/101/index.html",
+      "votacoes/100-1/index.html",
+      "404.html",
+      "metodologia/index.html",
+      "quem-somos/index.html",
+      "dados-e-privacidade/index.html",
+      "correcoes/index.html",
+      "reportar-erro/index.html",
+    ];
+    for (const file of pages) {
+      const paths = sitePaths(basePage(file));
+      expect(paths.length, file).toBeGreaterThan(0);
+      for (const path of paths) expect(path, file).toMatch(/^\/mandato-aberto\//);
+    }
+    expect(basePage("index.html")).toContain('href="/mandato-aberto/metodologia/"');
+    expect(basePage("index.html")).toContain('href="/mandato-aberto/"');
+    expect(basePage("deputados/101/index.html")).toContain('src="/mandato-aberto/fotos/101.jpg"');
+    expect(basePage("correcoes/index.html")).toContain('<a href="/mandato-aberto/votacoes/100-1/">/votacoes/100-1/</a>');
+  });
+
+  it("no base prefix without SITE_BASE", () => {
+    for (const file of filesWith(dist, ".html")) {
+      for (const path of sitePaths(readFileSync(file, "utf8"))) expect(path, file).not.toMatch(/^\/mandato-aberto\//);
+    }
+    expect(home()).toContain('href="/deputados/101/"');
+    expect(home()).toContain('<a href="/metodologia/">Metodologia e fontes</a>');
+    expect(profile(101)).toContain('src="/fotos/101.jpg"');
+  });
+
+  it("share tags under the base", () => {
+    const html = basePage("deputados/101/index.html");
+    expect(canonical(html)).toBe("https://augusto-dmh.github.io/mandato-aberto/deputados/101/");
+    expect(meta(html, "og:url")).toBe("https://augusto-dmh.github.io/mandato-aberto/deputados/101/");
+    expect(meta(html, "og:image")).toBe("https://augusto-dmh.github.io/mandato-aberto/cards/deputados/101.png");
+    const start = basePage("index.html");
+    expect(meta(start, "og:image")).toBe("https://augusto-dmh.github.io/mandato-aberto/cards/site.png");
+    expect(canonical(start)).toBe("https://augusto-dmh.github.io/mandato-aberto/");
+  });
+
+  it("home island links under the base", () => {
+    const linked = [...basePage("index.html").matchAll(/href="([^"]*\/deputados\/[^"]*)"/g)].map((m) => m[1]);
+    expect(linked).toEqual(["/mandato-aberto/deputados/101/", "/mandato-aberto/deputados/102/"]);
+  });
+
+  it("report link keeps the site path", () => {
+    expect(basePage("deputados/101/index.html")).toContain(
+      '<a href="/mandato-aberto/reportar-erro/?p=/deputados/101/">Reportar erro nesta página</a>',
+    );
+  });
+});
+
+describe("github-pages S3 e-mail", () => {
+  it("corrections e-mail on the four pages", () => {
+    for (const name of ["reportar-erro", "correcoes", "dados-e-privacidade", "quem-somos"]) {
+      expect(page(name), name).toContain("mailto:mandatoaberto8@gmail.com");
     }
   });
 });

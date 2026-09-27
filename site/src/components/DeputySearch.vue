@@ -6,6 +6,7 @@
 import { computed, reactive } from "vue";
 
 import { clearFilters, filterDeputies, initialFilters, type DeputyCard } from "../lib/search";
+import { withBase } from "../lib/urls";
 
 const props = defineProps<{ deputies: DeputyCard[] }>();
 
@@ -48,7 +49,7 @@ const clear = () => Object.assign(filters, clearFilters());
     <p class="count" aria-live="polite">{{ shown.length }} {{ shown.length === 1 ? "deputado" : "deputados" }}, em ordem alfabética</p>
     <ul v-if="shown.length" class="deputy-list">
       <li v-for="d in shown" :key="d.id">
-        <a :href="`/deputados/${d.id}/`">
+        <a :href="withBase(`/deputados/${d.id}/`)">
           <img v-if="d.photo" :src="d.photo" alt="" width="48" height="64" loading="lazy" />
           <span class="name">{{ d.name }}</span>
           <span class="where">{{ d.party }} · {{ d.uf }}</span>

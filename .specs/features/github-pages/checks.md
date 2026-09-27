@@ -22,17 +22,23 @@ Interpretations settled while deriving:
 - AC 12 forbids `Cloudflare` and `Analytics` on the privacy page; the proof reads the whole built HTML of that page, not only its visible text.
 - Launch C30's test (`privacy cookies analytics and host`) asserts the old Cloudflare copy, which AC 12 forbids. C30 is superseded by C13 (dated paragraph in `launch/checks.md`); its test keeps its name and now asserts C13's sentences, so C30's proof stays executable against the renegotiated claim.
 
+Renegotiated during build (2026-09-27, checks author against the approved plan, before either proof was green):
+
+- C1: the base build writes the same paths as the main build except the content hash of the two `_astro/` assets whose content carries the base (`Base.<hash>.css`, whose font URLs Vite prefixes, and `DeputySearch.<hash>.js`, into which Vite inlines `BASE_URL`); a byte-for-byte equal name is impossible when the content must differ. The claim compares paths with the hash removed, which is what the plan's `Flow` hop 7 states ("`dist/` unchanged in layout"). Flagged for the maintainer.
+- C3: the main build legitimately contains `/mandato-aberto/` inside `https://github.com/augusto-dmh/mandato-aberto/...` (the balancing-test and source links); the claim now reads site paths only, as C2 does.
+- Test assembly: vitest puts `BASE_URL=/` in its own environment and Astro lets a `BASE_URL` in the environment override the configured base while prerendering, so `astroBuild` in `build.test.ts` drops `BASE_URL` from what the child build inherits. `publish.yml` sets no `BASE_URL`.
+
 ## Checks
 
 ### S1 - The site works under a base path · 14 files · 75 KB · ~19k
 
-**C1** - The base build exits `0` and the sorted list of file paths under its `dist/` equals the sorted list under the main build's `dist/` (AC 1)
+**C1** - The base build exits `0` and the sorted list of file paths under its `dist/` equals the sorted list under the main build's `dist/`, once the content hash is removed from each `_astro/<name>.<hash>.<ext>` (AC 1)
 Proof: `T tests/build.test.ts -t "base build writes the same files"`
 
 **C2** - In the base build, every site path in `index.html`, `deputados/101/index.html`, `votacoes/100-1/index.html`, `404.html`, `metodologia/index.html`, `quem-somos/index.html`, `dados-e-privacidade/index.html`, `correcoes/index.html` and `reportar-erro/index.html` starts with `/mandato-aberto/`, and each of those 9 pages has at least one site path; the home contains `href="/mandato-aberto/metodologia/"` and `href="/mandato-aberto/"`, profile 101 contains `src="/mandato-aberto/fotos/101.jpg"` and `/correcoes/` contains `<a href="/mandato-aberto/votacoes/100-1/">/votacoes/100-1/</a>` (AC 1)
 Proof: `T tests/build.test.ts -t "every site path starts with the base"`
 
-**C3** - In the main build no `.html` file under `dist/` contains `/mandato-aberto/`, the home contains `href="/deputados/101/"` and `<a href="/metodologia/">Metodologia e fontes</a>`, and profile 101 contains `src="/fotos/101.jpg"` (AC 2); the approved checks that pin root paths stay green unchanged
+**C3** - In the main build no site path in any `.html` file under `dist/` starts with `/mandato-aberto/`, the home contains `href="/deputados/101/"` and `<a href="/metodologia/">Metodologia e fontes</a>`, and profile 101 contains `src="/fotos/101.jpg"` (AC 2); the approved checks that pin root paths stay green unchanged
 Proof: `T tests/build.test.ts -t "no base prefix without SITE_BASE"`
 Proof: `T tests/build.test.ts -t "home lists in-exercise deputies as static links|profile share tags|footer links|report link on profile and roll call"`
 

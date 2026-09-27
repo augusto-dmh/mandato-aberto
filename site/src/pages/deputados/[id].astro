@@ -4,6 +4,7 @@ import { contract, type Indicator } from "../../lib/data";
 import { formatCount, formatDate, formatNumber, NO_BASE, organLabel, periodLabel, voteLabel } from "../../lib/format";
 import { INDICATORS } from "../../lib/indicators";
 import { photoPath } from "../../lib/photos";
+import { withBase } from "../../lib/urls";
 
 export function getStaticPaths() {
   return contract().deputies.map((d) => ({ params: { id: String(d.id) } }));
@@ -84,7 +85,7 @@ const c = deputy.candidacy2026;
                 </>
               )}
               <p class="base">Base de cálculo: {i.base}</p>
-              <a class="method" href={`/metodologia/#${i.anchor}`}>
+              <a class="method" href={withBase(`/metodologia/#${i.anchor}`)}>
                 Como este número é calculado
               </a>
             </section>
@@ -104,7 +105,7 @@ const c = deputy.candidacy2026;
     <p class="note">
       Base de cálculo: projetos de lei (PL e PLP), propostas de emenda à Constituição (PEC), projetos de decreto legislativo
       (PDL) e de resolução (PRC) apresentados desde 01/02/2023 como proponente; requerimentos e indicações contados à parte. <a
-        href="/metodologia/#proposicoes">Como estes números são calculados</a
+        href={withBase("/metodologia/#proposicoes")}>Como estes números são calculados</a
       >
     </p>
     {
@@ -157,7 +158,7 @@ const c = deputy.candidacy2026;
               <li data-roll-call={rollCall.id}>
                 <time datetime={rollCall.date}>{formatDate(rollCall.date)}</time>
                 <span class="organ">{organLabel(rollCall.organ)}</span>
-                <a href={`/votacoes/${rollCall.id}/`}>{rollCall.proposition?.title ?? rollCall.description}</a>
+                <a href={withBase(`/votacoes/${rollCall.id}/`)}>{rollCall.proposition?.title ?? rollCall.description}</a>
                 <span class="vote">{voteLabel(vote.vote, rollCall.secret)}</span>
               </li>
             ))}
@@ -167,5 +168,5 @@ const c = deputy.candidacy2026;
     }
   </section>
 
-  <p class="report"><a href={`/reportar-erro/?p=/deputados/${deputy.id}/`}>Reportar erro nesta página</a></p>
+  <p class="report"><a href={withBase(`/reportar-erro/?p=/deputados/${deputy.id}/`)}>Reportar erro nesta página</a></p>
 </Base>

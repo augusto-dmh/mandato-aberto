@@ -19,9 +19,11 @@ function hostRedirects() {
   };
 }
 
-// SITE_URL stays a placeholder until the launch feature registers the .org domain.
+// SITE_URL is the origin and SITE_BASE the path under it (AD-012): GitHub Pages serves the site
+// under `/mandato-aberto/` until the domain exists. Tests and CI leave SITE_BASE unset.
 export default defineConfig({
-  site: process.env.SITE_URL || "https://mandatoaberto.org",
+  site: process.env.SITE_URL || "https://augusto-dmh.github.io",
+  base: process.env.SITE_BASE || "/",
   output: "static",
   trailingSlash: "always",
   integrations: [vue(), hostRedirects()],

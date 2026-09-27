@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import { CORRECTIONS_EMAIL, MAINTAINERS, REPO_URL } from "../lib/site";
+import { withBase } from "../lib/urls";
 ---
 
 <Base
@@ -22,6 +23,6 @@ import { CORRECTIONS_EMAIL, MAINTAINERS, REPO_URL } from "../lib/site";
 
     <h2>Código e dados</h2>
     <p>O código do site é público: <a href={REPO_URL}>{REPO_URL.replace("https://", "")}</a>.</p>
-    <p>O site é reconstruído todos os dias a partir das fontes listadas em <a href="/metodologia/#fontes">Metodologia e fontes</a>.</p>
+    <p>O site é reconstruído todos os dias a partir das fontes listadas em <a href={withBase("/metodologia/#fontes")}>Metodologia e fontes</a>.</p>
   </div>
 </Base>
