@@ -17,9 +17,10 @@
 ## Handoff
 
 **Feature**: site
-**Where**: `plan.md` approved by the maintainer on 2026-09-27 with the eight assumptions confirmed; `checks.md` not yet written. etl-camara is in PR #5
+**Where**: built and verified - `verification.md` round 1 PASS (profile `light`, 41/41 checks, gate exit 0); commits `ed67062`..`8c5211e` plus the verification commit; nothing pushed
 **In progress**: none
-**Next step**: derive `.specs/features/site/checks.md` (profile `light`), run `validate_checks.py`, write `## Handoff` arithmetic, then build
+**Next step**: maintainer reviews the pages in a browser (desktop and mobile) and decides the open items below; then PR `feat(site): ...` when asked; then plan `launch` (grilling decisions 6-8, legal checklist section 5) and stop for review
 **Blockers**: go-live needs the `.org` domain (`SITE_URL` stays a placeholder); open maintainer questions on the TSE CSV holding CPF and the other personal columns in the raw cache
+**Open for the maintainer**: (1) the `Photo delivery` door says "always captioned"; the home credits its thumbnails once with "Fotos: Câmara dos Deputados." - confirm or amend the door (verification F1); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator
 **Uncommitted**: none
 **Branch**: `feat/site`, stacked on `feat/etl-camara` (PR #5); retarget to `main` once #5 merges

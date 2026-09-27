@@ -44,6 +44,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification round 2 gap 5, etl/tests/test_cli.py:48 (etl)
 - last seen: 2026-09-27T04:02:02Z
 
+### L-006 - Give a sort test names whose accent-stripped order differs from their code-point order, or it cannot tell the two apart
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `site` · harmful: 0
+- features: site
+- evidence: verification round 1 G1, site/tests/format.test.ts:45 (site)
+- last seen: 2026-09-27T05:01:16Z
+
+### L-007 - Prove rendered output at the artifact a reader sees, not only at the intermediate tree that feeds the renderer
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `site` · harmful: 0
+- features: site
+- evidence: verification round 1 G4, site/tests/cards.test.ts:49 (site)
+- last seen: 2026-09-27T05:01:16Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
