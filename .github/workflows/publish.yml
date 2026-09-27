@@ -1,6 +1,6 @@
 name: Publish
 
-# Rebuilds the site from the official sources and deploys it to Cloudflare Pages (AD-010).
+# Rebuilds the site from the official sources and deploys it to GitHub Pages under /mandato-aberto/ (AD-012).
 # Any failed step stops the run before the deploy, so the previous deployment stays live.
 on:
   schedule: [{cron: "0 9 * * *"}]
@@ -15,8 +15,11 @@ jobs:
   publish:
     name: build and deploy
     runs-on: ubuntu-latest
+    permissions: {contents: read, pages: write, id-token: write}
+    environment: {name: github-pages}
     env:
-      SITE_URL: ${{ vars.SITE_URL }}
+      SITE_URL: https://augusto-dmh.github.io
+      SITE_BASE: /mandato-aberto
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -45,15 +48,13 @@ jobs:
         run: npm ci
       - name: Build the site
         working-directory: site
-        env:
-          CF_ANALYTICS_TOKEN: ${{ vars.CF_ANALYTICS_TOKEN }}
         run: npm run build
       - uses: actions/cache/save@v4
         with:
           path: site/.cache/photos
           key: photos-${{ github.run_id }}
-      - uses: cloudflare/wrangler-action@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy site/dist --project-name=mandato-aberto
+          path: site/dist
+      - uses: actions/deploy-pages@v4
