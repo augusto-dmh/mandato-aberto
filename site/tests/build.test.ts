@@ -805,3 +805,20 @@ describe("launch S1 legal footer and 404", () => {
     for (const file of indexes) expect(readFileSync(file, "utf8"), file).not.toContain("Página não encontrada");
   });
 });
+
+describe("launch S6 host files", () => {
+  it("host config files", () => {
+    expect(readFileSync(join(dist, "_redirects"), "utf8")).toBe(
+      "https://www.preview.example.org/* https://preview.example.org/:splat 301\n",
+    );
+    expect(readFileSync(join(dist, "_headers"), "utf8")).toBe(
+      [
+        "/*",
+        "  X-Content-Type-Options: nosniff",
+        "  Referrer-Policy: strict-origin-when-cross-origin",
+        "  X-Frame-Options: SAMEORIGIN",
+        "",
+      ].join("\n"),
+    );
+  });
+});
