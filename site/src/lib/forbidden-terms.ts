@@ -34,7 +34,7 @@ const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 export const termPattern = (term: string) =>
   new RegExp(`(?<![\\p{L}\\p{N}])${term.split(" ").map(escape).join("\\s+")}(?![\\p{L}\\p{N}])`, "iu");
 
-const SCANNED = new Set([".astro", ".vue", ".ts"]);
+const SCANNED = new Set([".astro", ".vue", ".ts", ".md"]);
 
 export function findForbidden(dir: string, options: { exclude?: string[] } = {}) {
   const hits: { file: string; term: string }[] = [];

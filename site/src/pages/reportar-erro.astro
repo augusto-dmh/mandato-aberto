@@ -1,0 +1,52 @@
+---
+import Base from "../layouts/Base.astro";
+import { CORRECTIONS_EMAIL } from "../lib/site";
+---
+
+<Base
+  title="Reportar erro"
+  description="Como avisar o Mandato Aberto de um erro em um dado publicado: o formulário abre o seu programa de e-mail com a mensagem pronta."
+  path="/reportar-erro/"
+  image="/cards/site.png"
+>
+  <h1>Reportar erro</h1>
+  <p class="lede">
+    Viu um dado errado? Preencha os campos abaixo: o botão abre o seu programa de e-mail com a mensagem pronta, e nada é
+    enviado até você mandar.
+  </p>
+  <noscript>
+    <p><a href={`mailto:${CORRECTIONS_EMAIL}`}>{CORRECTIONS_EMAIL}</a></p>
+    <p>Sem JavaScript, escreva para o endereço acima com os quatro itens do formulário.</p>
+  </noscript>
+
+  <form id="report" class="report-form">
+    <label for="report-page">Página com o erro</label>
+    <input id="report-page" name="page" type="text" required />
+    <label for="report-problem">O que está errado</label>
+    <textarea id="report-problem" name="problem" rows="5" required></textarea>
+    <label for="report-source">Onde está o dado correto (link para a fonte oficial, se tiver)</label>
+    <input id="report-source" name="source" type="text" />
+    <label for="report-email">Seu e-mail, se quiser resposta</label>
+    <input id="report-email" name="email" type="email" />
+    <button type="submit">Enviar por e-mail</button>
+  </form>
+
+  <p>Toda mensagem recebe triagem em até 48 horas. A correção, ou a resposta do parlamentar, é publicada em até 7 dias na página <a href="/correcoes/">Correções</a>.</p>
+</Base>
+
+<script>
+  import { pagePathFromQuery, reportMailto } from "../lib/report";
+
+  const form = document.getElementById("report") as HTMLFormElement;
+  const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
+  field("page").value = pagePathFromQuery(location.search);
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    location.href = reportMailto({
+      page: field("page").value.trim(),
+      problem: field("problem").value.trim(),
+      source: field("source").value.trim(),
+      email: field("email").value.trim(),
+    });
+  });
+</script>

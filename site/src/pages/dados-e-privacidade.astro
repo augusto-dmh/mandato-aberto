@@ -1,0 +1,47 @@
+---
+import Base from "../layouts/Base.astro";
+import { CORRECTIONS_EMAIL, REPO_URL } from "../lib/site";
+
+const FIELDS = [
+  "nome parlamentar",
+  "partido",
+  "UF",
+  "foto oficial",
+  "períodos em exercício",
+  "votos em votações nominais",
+  "proposições de autoria",
+  "para quem é candidato em 2026: cargo, partido, número e situação no TSE",
+];
+---
+
+<Base
+  title="Dados e privacidade"
+  description="Que dados o Mandato Aberto trata, para quê, com que base legal, e como exercer os direitos da LGPD."
+  path="/dados-e-privacidade/"
+  image="/cards/site.png"
+>
+  <div class="prose">
+    <h1>Dados e privacidade</h1>
+    <p>Finalidade: dar acesso público aos atos do mandato de cada deputado federal.</p>
+    <p>Base legal: art. 7º, IX e §3º da Lei 13.709/2018 (LGPD), combinado com o art. 8º da Lei 12.527/2011 (LAI).</p>
+    <p>Controladores: as pessoas físicas identificadas em <a href="/quem-somos/">Quem somos</a>.</p>
+
+    <h2>O que é tratado</h2>
+    <p>Para cada deputado federal, a partir dos dados abertos da Câmara dos Deputados e do TSE:</p>
+    <ul>
+      {FIELDS.map((field) => <li>{field}</li>)}
+    </ul>
+    <p>O nome civil e a data de nascimento publicados pela Câmara são lidos só para cruzar com o registro do TSE e nunca são exibidos.</p>
+    <p>Nenhum CPF, telefone, endereço, e-mail, cor, raça, religião ou qualquer outro campo das fontes é tratado.</p>
+
+    <h2>Visitantes</h2>
+    <p>O formulário de erro não envia nada ao site: a mensagem só sai do seu programa de e-mail, quando você a envia.</p>
+    <p>O site não grava cookie nem guarda nada no seu navegador.</p>
+    <p>A contagem de visitas vem do Cloudflare Web Analytics, sem cookie e sem identificador individual.</p>
+    <p>A hospedagem (Cloudflare) processa as requisições sob a <a href="https://www.cloudflare.com/privacypolicy/">política de privacidade dela</a>.</p>
+
+    <h2>Direitos</h2>
+    <p>Para exercer os direitos do art. 18 da LGPD, escreva para <a href={`mailto:${CORRECTIONS_EMAIL}`}>{CORRECTIONS_EMAIL}</a>.</p>
+    <p>A análise que sustenta a base legal está no <a href={`${REPO_URL}/blob/main/research/03-teste-de-balanceamento-lgpd.md`}>teste de balanceamento</a>, publicado no repositório do site.</p>
+  </div>
+</Base>

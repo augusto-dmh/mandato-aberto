@@ -1,0 +1,59 @@
+name: Publish
+
+# Rebuilds the site from the official sources and deploys it to Cloudflare Pages (AD-010).
+# Any failed step stops the run before the deploy, so the previous deployment stays live.
+on:
+  schedule: [{cron: "0 9 * * *"}]
+  push: {branches: [main]}
+  workflow_dispatch:
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: build and deploy
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: ${{ vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Install the ETL
+        working-directory: etl
+        run: uv sync --locked
+      - name: Build the data from an empty data/raw
+        working-directory: etl
+        run: if [ -f ../etl/inputs/candidacy-2026.json ]; then uv run mandato-etl build --candidacy-json ../etl/inputs/candidacy-2026.json; else uv run mandato-etl build; fi
+      - name: Check the candidacy match
+        run: scripts/check-candidacy.sh data/out/meta.json etl/inputs/candidacy-2026.json
+      - name: Check SITE_URL
+        run: if [ -z "$SITE_URL" ]; then echo "SITE_URL is not set" >&2; exit 1; fi
+      - uses: actions/cache/restore@v4
+        with:
+          path: site/.cache/photos
+          key: photos-${{ github.run_id }}
+          restore-keys: photos-
+      - name: Install the site
+        working-directory: site
+        run: npm ci
+      - name: Build the site
+        working-directory: site
+        env:
+          CF_ANALYTICS_TOKEN: ${{ vars.CF_ANALYTICS_TOKEN }}
+        run: npm run build
+      - uses: actions/cache/save@v4
+        with:
+          path: site/.cache/photos
+          key: photos-${{ github.run_id }}
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy site/dist --project-name=mandato-aberto

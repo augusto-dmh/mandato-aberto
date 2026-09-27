@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 12,
+  "next_id": 17,
   "lessons": [
     {
       "id": "L-001",
@@ -202,6 +202,96 @@
       ],
       "created": "2026-09-27T18:47:48Z",
       "last_seen": "2026-09-27T18:47:48Z"
+    },
+    {
+      "id": "L-012",
+      "key": "spec_precision_gap::prove an order claim by comparing the first line number of each marker in the claimed order never by sorting grep output that is already in file order",
+      "text": "Prove an order claim by comparing the first line number of each marker in the claimed order, never by sorting grep output that is already in file order",
+      "signal": "spec_precision_gap",
+      "scope": "ci",
+      "status": "candidate",
+      "features": [
+        "launch"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "checks.md C40 (verification.md F1) (ci)"
+      ],
+      "created": "2026-09-27T20:26:13Z",
+      "last_seen": "2026-09-27T20:26:13Z"
+    },
+    {
+      "id": "L-013",
+      "key": "spec_precision_gap::prove that several terms are present by checking each term on its own since grep c with many patterns counts matching lines",
+      "text": "Prove that several terms are present by checking each term on its own, since grep -c with many patterns counts matching lines",
+      "signal": "spec_precision_gap",
+      "scope": "docs",
+      "status": "candidate",
+      "features": [
+        "launch"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "checks.md C61 (verification.md F2) (docs)"
+      ],
+      "created": "2026-09-27T20:26:13Z",
+      "last_seen": "2026-09-27T20:26:13Z"
+    },
+    {
+      "id": "L-014",
+      "key": "spec_precision_gap::extend a placeholder guard to every published artifact that carries the placeholder not only the rendered pages",
+      "text": "Extend a placeholder guard to every published artifact that carries the placeholder, not only the rendered pages",
+      "signal": "spec_precision_gap",
+      "scope": "research",
+      "status": "candidate",
+      "features": [
+        "launch"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "checks.md C58, research/03-teste-de-balanceamento-lgpd.md:4 (verification.md F4) (research)"
+      ],
+      "created": "2026-09-27T20:26:13Z",
+      "last_seen": "2026-09-27T20:26:13Z"
+    },
+    {
+      "id": "L-015",
+      "key": "spec_deviation::derive a pattern s boundary cases by evaluating the exact pattern the plan fixes not by reading it",
+      "text": "Derive a pattern's boundary cases by evaluating the exact pattern the plan fixes, not by reading it",
+      "signal": "spec_deviation",
+      "scope": "site",
+      "status": "candidate",
+      "features": [
+        "launch"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "checks.md C10 vs plan AC 10 (renegotiated 2026-09-27) (site)"
+      ],
+      "created": "2026-09-27T20:26:13Z",
+      "last_seen": "2026-09-27T20:26:13Z"
+    },
+    {
+      "id": "L-016",
+      "key": "spec_deviation::resolve every path in a workflow step against that step s working directory",
+      "text": "Resolve every path in a workflow step against that step's working-directory",
+      "signal": "spec_deviation",
+      "scope": "ci",
+      "status": "candidate",
+      "features": [
+        "launch"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "checks.md C41 vs publish.yml working-directory (renegotiated 2026-09-27) (ci)"
+      ],
+      "created": "2026-09-27T20:26:14Z",
+      "last_seen": "2026-09-27T20:26:14Z"
     }
   ]
 }

@@ -6,14 +6,17 @@
  */
 import { spawnSync } from "node:child_process";
 import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { extname } from "node:path";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { FORBIDDEN_TERMS, termPattern } from "../src/lib/forbidden-terms";
+import { CORRECTIONS_EMAIL, MAINTAINERS } from "../src/lib/site";
 
 const SITE = resolve(__dirname, "..");
 const FIXTURE = join(__dirname, "fixtures", "out");
 const PHOTO = join(__dirname, "fixtures", "photos", "101.jpg");
+const CORRECTIONS = join(__dirname, "fixtures", "corrections");
 const ORIGIN = "https://preview.example.org";
 const COLLECTED = "Dados coletados em 27/09/2026 às 09:00 (horário de Brasília)";
 const ROLL_CALLS = ["100-1", "100-2", "100-3", "100-4", "100-6", "200-1", "200-2", "200-3"];
@@ -22,7 +25,7 @@ let work: string;
 let dist: string;
 let cache: string;
 
-function astroBuild(dataDir: string, outDir: string) {
+function astroBuild(dataDir: string, outDir: string, env: Record<string, string> = {}) {
   return spawnSync(process.execPath, [join(SITE, "node_modules", "astro", "bin", "astro.mjs"), "build", "--outDir", outDir], {
     cwd: SITE,
     encoding: "utf8",
@@ -33,6 +36,9 @@ function astroBuild(dataDir: string, outDir: string) {
       MANDATO_PHOTO_CACHE: cache,
       SITE_URL: ORIGIN,
       ASTRO_TELEMETRY_DISABLED: "1",
+      MANDATO_CORRECTIONS_DIR: CORRECTIONS,
+      CF_ANALYTICS_TOKEN: "",
+      ...env,
     },
   });
 }
@@ -55,6 +61,9 @@ const home = () => page("");
 const profile = (id: number) => page(`deputados/${id}`);
 const rollCall = (id: string) => page(`votacoes/${id}`);
 const allPages = () => [home(), ...[101, 102, 103].map(profile), ...ROLL_CALLS.map(rollCall)];
+const notFound = () => readFileSync(join(dist, "404.html"), "utf8");
+/** The pages the launch adds: the five legal and channel pages and `404.html`. */
+const launchPages = () => [...["metodologia", "quem-somos", "dados-e-privacidade", "correcoes", "reportar-erro"].map(page), notFound()];
 
 const decode = (text: string) =>
   text
@@ -413,10 +422,453 @@ describe("S5 share cards", () => {
 
 describe("S6 language", () => {
   it("built pages use no forbidden term and no percentage", () => {
-    for (const html of allPages()) {
+    for (const html of [...allPages(), ...launchPages()]) {
       const text = visible(html);
       expect(text).not.toContain("%");
       for (const term of FORBIDDEN_TERMS) expect(text).not.toMatch(termPattern(term));
+    }
+  });
+});
+
+// Launch: the legal pages, the correction channel and the host files.
+
+const reportPage = () => page("reportar-erro");
+/** Every `<script src>` of a page that points into this site's `/_astro/`, read from `dist/`. */
+const localScripts = (html: string) =>
+  [...html.matchAll(/<script\b[^>]*\bsrc="(\/_astro\/[^"]+)"/g)].map((m) => readFileSync(join(dist, m[1]), "utf8"));
+
+describe("launch S2 report an error", () => {
+  it("report link on profile and roll call", () => {
+    for (const id of [101, 103]) {
+      expect(profile(id)).toContain(`<a href="/reportar-erro/?p=/deputados/${id}/">Reportar erro nesta página</a>`);
+    }
+    for (const id of ["100-1", "100-6"]) {
+      expect(rollCall(id)).toContain(`<a href="/reportar-erro/?p=/votacoes/${id}/">Reportar erro nesta página</a>`);
+    }
+  });
+
+  it("report form fields and no submission target", () => {
+    const html = reportPage();
+    const forms = [...html.matchAll(/<form\b[^>]*>/g)].map((m) => m[0]);
+    expect(forms).toHaveLength(1);
+    expect(forms[0]).not.toMatch(/\baction=/);
+    expect(forms[0]).not.toMatch(/\bmethod=/);
+    const form = element(html, "form", "");
+    const fields: [string, string, string][] = [
+      ["Página com o erro", "input", "page"],
+      ["O que está errado", "textarea", "problem"],
+      ["Onde está o dado correto (link para a fonte oficial, se tiver)", "input", "source"],
+      ["Seu e-mail, se quiser resposta", "input", "email"],
+    ];
+    for (const [label, tag, name] of fields) {
+      const labelTag = new RegExp(`<label\\b[^>]*\\bfor="([^"]+)"[^>]*>${label.replace(/[()]/g, "\\$&")}</label>`).exec(form);
+      expect(labelTag, label).not.toBeNull();
+      const controls = [...form.matchAll(new RegExp(`<${tag}\\b[^>]*\\bname="${name}"[^>]*>`, "g"))].map((m) => m[0]);
+      expect(controls, name).toHaveLength(1);
+      expect(controls[0]).toContain(`id="${labelTag![1]}"`);
+    }
+    expect(form).toContain('<button type="submit">Enviar por e-mail</button>');
+    for (const text of [html, ...localScripts(html)]) {
+      expect(text).not.toContain("fetch(");
+      expect(text).not.toContain("XMLHttpRequest");
+    }
+  });
+
+  it("report page script prefills from the query", () => {
+    const html = reportPage();
+    const scripts = localScripts(html);
+    expect(scripts).toHaveLength(1);
+    expect(scripts[0]).toContain("^/[A-Za-z0-9/_-]{1,200}$");
+    expect(scripts[0]).toContain("mailto:");
+  });
+
+  it("report page without javascript", () => {
+    const noscript = element(reportPage(), "noscript", "");
+    expect(noscript).toContain(`<a href="mailto:${CORRECTIONS_EMAIL}">${CORRECTIONS_EMAIL}</a>`);
+    expect(noscript).toContain("Sem JavaScript, escreva para o endereço acima com os quatro itens do formulário.");
+  });
+
+  it("report page deadlines", () => {
+    expect(reportPage()).toContain(
+      'Toda mensagem recebe triagem em até 48 horas. A correção, ou a resposta do parlamentar, é publicada em até 7 dias na página <a href="/correcoes/">Correções</a>.',
+    );
+  });
+});
+
+const methodology = () => page("metodologia");
+const SECTIONS = ["participacao", "alinhamento-governo", "alinhamento-partido", "proposicoes", "candidatura-2026", "fontes"];
+/** A methodology section: from its `<h2 id>` to the next `<h2` or the end of `<main>`. */
+function methodSection(id: string): string {
+  const html = methodology();
+  const start = html.indexOf(`<h2 id="${id}">`);
+  if (start < 0) throw new Error(`no <h2 id="${id}">`);
+  const next = html.indexOf("<h2", start + 1);
+  return html.slice(start, next < 0 ? html.indexOf("</main>") : next);
+}
+const expectSentences = (html: string, sentences: string[]) => {
+  const text = visible(html);
+  for (const sentence of sentences) expect(text).toContain(sentence);
+};
+
+describe("launch S3 methodology", () => {
+  it("methodology sections in order", () => {
+    const html = methodology();
+    const h2s = [...html.matchAll(/<h2\b([^>]*)>/g)].map((m) => /id="([^"]*)"/.exec(m[1])?.[1]);
+    expect(h2s.slice(0, SECTIONS.length)).toEqual(SECTIONS);
+  });
+
+  it("methodology participation", () => {
+    expectSentences(methodSection("participacao"), [
+      "Conta: votações nominais do plenário em que o deputado tem registro com qualquer valor: Sim, Não, Abstenção, Obstrução, Art. 17 ou registro em votação secreta.",
+      "Base: votações nominais do plenário realizadas enquanto o deputado estava em exercício, segundo o histórico de situações publicado pela Câmara. Só os períodos com situação Exercício entram; licença e qualquer outra situação ficam de fora.",
+      "Votações em comissões não entram neste número.",
+      "Os dados abertos não informam por que um deputado não tem registro em uma votação. Por isso o site não atribui motivo a nenhum registro que não existe.",
+    ]);
+  });
+
+  it("methodology government alignment", () => {
+    expectSentences(methodSection("alinhamento-governo"), [
+      "Conta: votos Sim, Não, Abstenção ou Obstrução iguais à orientação da bancada GOVERNO na mesma votação.",
+      "Base: votos Sim, Não, Abstenção ou Obstrução em votações em que a orientação GOVERNO foi um desses quatro valores.",
+      "Orientação Liberado, votação sem orientação registrada, registro Art. 17 e votação secreta ficam fora da conta e da base.",
+    ]);
+  });
+
+  it("methodology party alignment", () => {
+    expectSentences(methodSection("alinhamento-partido"), [
+      "O partido é o registrado no voto, não o atual.",
+      "A maioria é calculada entre os outros deputados do mesmo partido na mesma votação, sobre os mesmos quatro valores, sem o voto do próprio deputado.",
+      "Empate, ou nenhum outro deputado do partido na votação, deixa a votação fora da conta e da base.",
+    ]);
+  });
+
+  it("methodology propositions", () => {
+    expectSentences(methodSection("proposicoes"), [
+      "Conta PL, PLP, PEC, PDL e PRC apresentados a partir de 01/02/2023 em que o deputado consta como proponente.",
+      "Primeiro signatário: o deputado é o primeiro na ordem de assinatura.",
+      "REQ, RIC e INC são contados à parte, como requerimentos.",
+    ]);
+  });
+
+  it("methodology candidacy", () => {
+    const html = methodSection("candidatura-2026");
+    expect(html).toContain('<a href="https://dadosabertos.tse.jus.br/dataset/candidatos-2026">');
+    expectSentences(html, [
+      "O cruzamento usa nome civil, data de nascimento e UF. O CPF não é lido.",
+      "Um deputado que corresponde a mais de uma candidatura não recebe selo.",
+      "A situação exibida é a que consta no arquivo do TSE na data da última atualização manual, registrada no histórico do repositório.",
+    ]);
+  });
+
+  it("methodology sources", () => {
+    const html = methodSection("fontes");
+    const kinds = ["votacoes", "votacoesVotos", "votacoesOrientacoes", "votacoesProposicoes", "proposicoes", "proposicoesAutores"];
+    for (const kind of kinds) {
+      expect(html).toContain(`href="https://dadosabertos.camara.leg.br/arquivos/${kind}/csv/${kind}-2023.csv"`);
+    }
+    expect(html).toContain('href="https://dadosabertos.camara.leg.br/arquivos/deputados/csv/deputados.csv"');
+    const items = [...html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+    const apiItem = items.find((item) => item.includes('href="https://dadosabertos.camara.leg.br/api/v2/deputados"'));
+    expect(apiItem).toBeDefined();
+    expect(visible(apiItem!)).toContain("/deputados/{id}/historico");
+    expect(html).toContain('href="https://dadosabertos.tse.jus.br/dataset/candidatos-2026"');
+    expectSentences(html, [
+      "Os arquivos dos anos seguintes têm o mesmo nome, com o ano trocado.",
+      "A 57ª legislatura começou em 01/02/2023.",
+      "Os dados são reconstruídos todos os dias; cada página mostra a data da coleta.",
+    ]);
+  });
+
+  it("methodology secret ballots", () => {
+    expectSentences(methodology(), [
+      "Em uma votação secreta, a Câmara registra quem votou, não o voto de cada deputado. Os totais exibidos são os oficiais da Câmara.",
+    ]);
+  });
+
+  it("methodology deputy set", () => {
+    expectSentences(methodology(), [
+      "O site lista todo deputado com pelo menos um registro de voto na 57ª legislatura, inclusive suplentes e deputados fora de exercício.",
+      "Em exercício significa que o deputado consta na lista atual de deputados da Câmara.",
+    ]);
+  });
+
+  it("methodology photos", () => {
+    expectSentences(methodology(), [
+      "As fotos são as oficiais da Câmara dos Deputados, exibidas sem recorte ou filtro, com o crédito Foto: Câmara dos Deputados.",
+    ]);
+  });
+
+  it("profile methodology links resolve", () => {
+    const anchors = [...profile(101).matchAll(/href="\/metodologia\/#([^"]+)"/g)].map((m) => m[1]);
+    expect(new Set(anchors)).toEqual(new Set(["participacao", "alinhamento-governo", "alinhamento-partido", "proposicoes"]));
+    const ids = new Set([...methodology().matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]));
+    for (const anchor of anchors) expect(ids.has(anchor), anchor).toBe(true);
+  });
+});
+
+const REPO = "https://github.com/augusto-dmh/mandato-aberto";
+const mailtoLink = `<a href="mailto:${CORRECTIONS_EMAIL}">${CORRECTIONS_EMAIL}</a>`;
+const about = () => page("quem-somos");
+const privacy = () => page("dados-e-privacidade");
+const expectHtml = (html: string, fragments: string[]) => {
+  for (const fragment of fragments) expect(html).toContain(fragment);
+};
+
+describe("launch S4 who we are and privacy", () => {
+  it("quem somos", () => {
+    const html = about();
+    const text = visible(html);
+    expect(MAINTAINERS.length).toBeGreaterThan(0);
+    for (const { name, city } of MAINTAINERS) {
+      expect(text).toContain(name);
+      expect(text).toContain(city);
+    }
+    expect(html).toContain(`<a href="mailto:${CORRECTIONS_EMAIL}">`);
+    expectHtml(html, [
+      "O Mandato Aberto é mantido por pessoas físicas, sem vínculo com partidos, candidatos, federações ou campanhas.",
+      "Não recebe dinheiro nem qualquer vantagem de partidos, candidatos, campanhas ou empresas, e não paga impulsionamento de conteúdo.",
+    ]);
+  });
+
+  it("quem somos code and rebuild", () => {
+    expectHtml(about(), [
+      `<a href="${REPO}">`,
+      'O site é reconstruído todos os dias a partir das fontes listadas em <a href="/metodologia/#fontes">Metodologia e fontes</a>.',
+    ]);
+  });
+
+  it("privacy fields", () => {
+    const html = privacy();
+    const items = [...html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) => visible(m[1]));
+    for (const item of [
+      "nome parlamentar",
+      "partido",
+      "UF",
+      "foto oficial",
+      "períodos em exercício",
+      "votos em votações nominais",
+      "proposições de autoria",
+      "para quem é candidato em 2026: cargo, partido, número e situação no TSE",
+    ]) {
+      expect(items, item).toContain(item);
+    }
+    expectHtml(html, [
+      "O nome civil e a data de nascimento publicados pela Câmara são lidos só para cruzar com o registro do TSE e nunca são exibidos.",
+    ]);
+  });
+
+  it("privacy purpose basis and controllers", () => {
+    expectHtml(privacy(), [
+      "Finalidade: dar acesso público aos atos do mandato de cada deputado federal.",
+      "Base legal: art. 7º, IX e §3º da Lei 13.709/2018 (LGPD), combinado com o art. 8º da Lei 12.527/2011 (LAI).",
+      'Controladores: as pessoas físicas identificadas em <a href="/quem-somos/">Quem somos</a>.',
+      `Para exercer os direitos do art. 18 da LGPD, escreva para ${mailtoLink}.`,
+    ]);
+  });
+
+  it("privacy no other field and form", () => {
+    expectHtml(privacy(), [
+      "Nenhum CPF, telefone, endereço, e-mail, cor, raça, religião ou qualquer outro campo das fontes é tratado.",
+      "O formulário de erro não envia nada ao site: a mensagem só sai do seu programa de e-mail, quando você a envia.",
+    ]);
+  });
+
+  it("privacy cookies analytics and host", () => {
+    expectHtml(privacy(), [
+      "O site não grava cookie nem guarda nada no seu navegador.",
+      "A contagem de visitas vem do Cloudflare Web Analytics, sem cookie e sem identificador individual.",
+      'A hospedagem (Cloudflare) processa as requisições sob a <a href="https://www.cloudflare.com/privacypolicy/">política de privacidade dela</a>.',
+    ]);
+  });
+
+  it("privacy balancing test link", () => {
+    expect(privacy()).toContain(`<a href="${REPO}/blob/main/research/03-teste-de-balanceamento-lgpd.md">teste de balanceamento</a>`);
+  });
+});
+
+const correctionsPage = () => page("correcoes");
+const entries = (html: string) => [...html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map((m) => m[1]);
+
+describe("launch S5 corrections", () => {
+  it("corrections page lists records", () => {
+    const [first, second, ...rest] = entries(correctionsPage());
+    expect(rest).toEqual([]);
+    expect(visible(first)).toContain("25/09/2026");
+    expect(first).toContain('<a href="/votacoes/100-1/">/votacoes/100-1/</a>');
+    expect(first).toContain('<a href="/deputados/102/">/deputados/102/</a>');
+    expect(visible(first)).toContain("Resposta publicada");
+    expect(visible(first)).toContain(
+      "Relato de que o voto de Bruno Lima na votação 100-1 não corresponde à posição do deputado sobre a proposta.",
+    );
+    const text = visible(second);
+    for (const value of ["20/09/2026", "Corrigido", "Resolvido em 22/09/2026", "Base de cálculo da participação corrigida (PR #9)"]) {
+      expect(text).toContain(value);
+    }
+    expect(second).toContain('<a href="/deputados/101/">/deputados/101/</a>');
+  });
+
+  it("corrections page renders a reply", () => {
+    const [first, second] = entries(correctionsPage());
+    const reply = "Votei Sim na votação 100-1 porque o texto final incluiu a emenda que apresentei. Peço que esta resposta acompanhe o registro.";
+    expect(visible(first)).toContain(reply);
+    const heading = first.indexOf("<h3>Resposta do parlamentar</h3>");
+    expect(heading).toBeGreaterThanOrEqual(0);
+    expect(first.indexOf(reply)).toBeGreaterThan(heading);
+    expect(second).not.toContain("Resposta do parlamentar");
+  });
+
+  it("corrections page empty state", () => {
+    const empty = join(work, "corrections-empty");
+    mkdirSync(empty);
+    const out = join(work, "dist-corrections-empty");
+    const result = astroBuild(FIXTURE, out, { MANDATO_CORRECTIONS_DIR: empty });
+    expect(result.status, result.stderr).toBe(0);
+    const html = readFileSync(join(out, "correcoes", "index.html"), "utf8");
+    expect(visible(html)).toContain("Nenhuma correção registrada até 27/09/2026.");
+    expect(html).not.toContain("<article");
+  });
+
+  it("build fails on a malformed correction", () => {
+    const bad = join(work, "corrections-bad");
+    mkdirSync(bad);
+    writeFileSync(join(bad, "2026-09-04-d.md"), "---\nreceivedAt: 2026-09-04\npages: [/deputados/101/]\nstatus: fixed\n---\n\nRelato.\n");
+    const result = astroBuild(FIXTURE, join(work, "dist-corrections-bad"), { MANDATO_CORRECTIONS_DIR: bad });
+    expect(result.status).not.toBe(0);
+    expect(result.stdout + result.stderr).toContain("2026-09-04-d.md");
+  });
+
+  it("corrections page policy", () => {
+    expectHtml(correctionsPage(), [
+      `Qualquer pessoa pode reportar um erro pelo <a href="/reportar-erro/">formulário</a> ou pelo e-mail ${mailtoLink}.`,
+      "Toda mensagem recebe triagem em até 48 horas.",
+      "Um erro confirmado é corrigido, e a resposta de um parlamentar é publicada nesta página com o mesmo destaque do dado contestado, em até 7 dias.",
+    ]);
+  });
+});
+
+/** The nine kinds of page that carry the legal footer. */
+const footerPages = (): [string, string][] => [
+  ["home", home()],
+  ["profile 101", profile(101)],
+  ["roll call 100-1", rollCall("100-1")],
+  ["404", notFound()],
+  ...["metodologia", "quem-somos", "dados-e-privacidade", "correcoes", "reportar-erro"].map((p): [string, string] => [p, page(p)]),
+];
+const footer = (html: string) => element(html, "footer", "");
+
+describe("launch S1 legal footer and 404", () => {
+  it("footer legal sentence on every page", () => {
+    const pages = footerPages();
+    expect(pages).toHaveLength(9);
+    for (const [name, html] of pages) {
+      expect(footer(html), name).toContain(
+        "Este site não apoia nem se opõe a candidaturas, partidos ou federações. Todos os dados provêm de fontes oficiais indicadas em cada página. Não recebe recursos de partidos, candidatos ou campanhas.",
+      );
+    }
+  });
+
+  it("footer credits", () => {
+    for (const [name, html] of footerPages()) {
+      expect(footer(html), name).toContain(
+        'Dados: <a href="https://dadosabertos.camara.leg.br/">Câmara dos Deputados</a> e <a href="https://dadosabertos.tse.jus.br/">TSE</a> (dados abertos). Fotos: Câmara dos Deputados.',
+      );
+    }
+  });
+
+  it("footer links", () => {
+    const links = [
+      '<a href="/metodologia/">Metodologia e fontes</a>',
+      '<a href="/quem-somos/">Quem somos</a>',
+      '<a href="/dados-e-privacidade/">Dados e privacidade</a>',
+      '<a href="/correcoes/">Correções</a>',
+      '<a href="/reportar-erro/">Reportar erro</a>',
+      '<a href="https://github.com/augusto-dmh/mandato-aberto">Código-fonte</a> ',
+    ];
+    for (const [name, html] of footerPages()) for (const link of links) expect(footer(html), name).toContain(link);
+  });
+
+  it("404 page", () => {
+    expect(existsSync(join(dist, "404.html"))).toBe(true);
+    const html = notFound();
+    expect(/<title>([^<]*)<\/title>/.exec(html)?.[1]).toBe("Página não encontrada - Mandato Aberto");
+    expect(/<h1\b[^>]*>([^<]*)<\/h1>/.exec(html)?.[1]).toBe("Página não encontrada");
+    expect(html).toContain("O endereço pode ter sido digitado errado ou a página pode ter deixado de existir.");
+    expect(html).toContain('<a href="/">Voltar à busca de deputados</a>');
+    const indexes: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) walk(join(dir, entry.name));
+        else if (entry.name === "index.html") indexes.push(join(dir, entry.name));
+      }
+    };
+    walk(dist);
+    expect(indexes.length).toBeGreaterThan(12);
+    for (const file of indexes) expect(readFileSync(file, "utf8"), file).not.toContain("Página não encontrada");
+  });
+});
+
+describe("launch S6 host files", () => {
+  it("host config files", () => {
+    expect(readFileSync(join(dist, "_redirects"), "utf8")).toBe(
+      "https://www.preview.example.org/* https://preview.example.org/:splat 301\n",
+    );
+    expect(readFileSync(join(dist, "_headers"), "utf8")).toBe(
+      [
+        "/*",
+        "  X-Content-Type-Options: nosniff",
+        "  Referrer-Policy: strict-origin-when-cross-origin",
+        "  X-Frame-Options: SAMEORIGIN",
+        "",
+      ].join("\n"),
+    );
+  });
+});
+
+const BEACON = (token: string) =>
+  `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${token}"}'></script>`;
+/** Every file under `dir` with the extension `ext`, recursively. */
+function filesWith(dir: string, ext: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return filesWith(path, ext);
+    return extname(entry.name) === ext ? [path] : [];
+  });
+}
+const count = (text: string, fragment: string) => text.split(fragment).length - 1;
+
+describe("launch S7 analytics without cookies", () => {
+  it("analytics beacon with token", () => {
+    const out = join(work, "dist-analytics");
+    const result = astroBuild(FIXTURE, out, { CF_ANALYTICS_TOKEN: "test-token" });
+    expect(result.status, result.stderr).toBe(0);
+    const pages = ["index.html", "deputados/101/index.html", "404.html", "metodologia/index.html"];
+    for (const file of pages) {
+      const html = readFileSync(join(out, file), "utf8");
+      expect(count(html, BEACON("test-token")), file).toBe(1);
+      expect(html, file).not.toContain('<script src="http');
+      expect([...html.matchAll(/<script\b[^>]*\bsrc="https?:/g)], file).toHaveLength(1);
+    }
+  });
+
+  it("no external script without token", () => {
+    const pages = filesWith(dist, ".html");
+    expect(pages.length).toBeGreaterThanOrEqual(18);
+    for (const file of pages) {
+      const html = readFileSync(file, "utf8");
+      expect(html, file).not.toContain('<script src="http');
+      expect(html, file).not.toMatch(/<script\b[^>]*\bsrc="https?:/);
+      expect(html, file).not.toContain("cloudflareinsights");
+    }
+  });
+
+  it("no storage access in site scripts", () => {
+    const scripts = filesWith(join(dist, "_astro"), ".js").map((file) => readFileSync(file, "utf8"));
+    expect(scripts.length).toBeGreaterThan(0);
+    const inline = filesWith(dist, ".html").flatMap((file) =>
+      [...readFileSync(file, "utf8").matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]),
+    );
+    for (const text of [...scripts, ...inline]) {
+      for (const api of ["document.cookie", "localStorage", "sessionStorage"]) expect(text).not.toContain(api);
     }
   });
 });

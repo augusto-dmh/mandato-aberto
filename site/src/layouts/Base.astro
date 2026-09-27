@@ -5,6 +5,7 @@ import "../styles/global.css";
 
 import { contract } from "../lib/data";
 import { collectedAt } from "../lib/format";
+import { REPO_URL } from "../lib/site";
 
 interface Props {
   /** Page title as shared: also `og:title`. */
@@ -21,6 +22,15 @@ const url = new URL(path, Astro.site).href;
 const imageUrl = new URL(image, Astro.site).href;
 const { meta } = contract();
 const documentTitle = path === "/" ? title : `${title} - Mandato Aberto`;
+
+// Cloudflare Web Analytics, only when the build is given a token (plan door 5): no cookie, no identifier.
+const analyticsToken = process.env.CF_ANALYTICS_TOKEN;
+if (analyticsToken && !/^[A-Za-z0-9_-]+$/.test(analyticsToken)) {
+  throw new Error("CF_ANALYTICS_TOKEN must hold only letters, digits, '-' and '_'");
+}
+const beacon = analyticsToken
+  ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${analyticsToken}"}'></script>`
+  : "";
 ---
 
 <!doctype html>
@@ -54,12 +64,13 @@ const documentTitle = path === "/" ? title : `${title} - Mandato Aberto`;
     </main>
     <footer class="site-footer">
       <div class="wrap">
-        <p>
-          Fonte: <a href="https://dadosabertos.camara.leg.br/">dados abertos da Câmara dos Deputados</a>, 57ª legislatura
-          (desde 01/02/2023).
-        </p>
-        <p>Cada número mostra a sua base de cálculo e leva ao registro oficial.</p>
+        <p>Este site não apoia nem se opõe a candidaturas, partidos ou federações. Todos os dados provêm de fontes oficiais indicadas em cada página. Não recebe recursos de partidos, candidatos ou campanhas.</p>
+        <p>Dados: <a href="https://dadosabertos.camara.leg.br/">Câmara dos Deputados</a> e <a href="https://dadosabertos.tse.jus.br/">TSE</a> (dados abertos). Fotos: Câmara dos Deputados.</p>
+        <nav class="footer-links" aria-label="Sobre o site">
+          <a href="/metodologia/">Metodologia e fontes</a> <a href="/quem-somos/">Quem somos</a> <a href="/dados-e-privacidade/">Dados e privacidade</a> <a href="/correcoes/">Correções</a> <a href="/reportar-erro/">Reportar erro</a> <a href={REPO_URL}>Código-fonte</a>{" "}
+        </nav>
       </div>
     </footer>
+    {beacon && <Fragment set:html={beacon} />}
   </body>
 </html>

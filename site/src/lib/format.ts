@@ -29,6 +29,9 @@ export function collectedAt(generatedAt: string): string {
   return `Dados coletados em ${date} às ${time} (horário de Brasília)`;
 }
 
+/** The date of `generatedAt` (UTC) in Brasília, as `DD/MM/AAAA`. */
+export const collectedDate = (generatedAt: string) => brasiliaParts(generatedAt).date;
+
 /** `YYYY-MM-DD` (or a local timestamp starting with it) as `DD/MM/AAAA`. */
 export function formatDate(value: string): string {
   const [year, month, day] = value.slice(0, 10).split("-");
