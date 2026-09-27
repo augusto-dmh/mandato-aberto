@@ -1,6 +1,8 @@
 # ETL caches and outputs (hundreds of MB; provenance lives in data/raw/manifest.json)
 data/
-etl/inputs/
+# Local inputs, among them the TSE CSV (carries CPF, AD-003); only the CPF-free candidacy export is versioned (AD-011)
+etl/inputs/*
+!etl/inputs/candidacy-2026.json
 # Python
 __pycache__/
 .venv/

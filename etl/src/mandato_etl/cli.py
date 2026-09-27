@@ -39,6 +39,14 @@ def _parser(current_year: int) -> tuple[_Parser, _Parser]:
     )
     build.add_argument("--refresh", action="store_true", help="download files already in the cache again")
     build.add_argument("--tse-csv", type=Path, help="TSE consulta_cand CSV for the 2026 candidacy badge")
+    build.add_argument(
+        "--export-candidacy", type=Path, metavar="JSON",
+        help="with --tse-csv: also write the CPF-free candidacy file that --candidacy-json reads",
+    )
+    build.add_argument(
+        "--candidacy-json", type=Path, metavar="JSON",
+        help="candidacy file written by --export-candidacy, read in place of --tse-csv",
+    )
     build.add_argument("--out", type=Path, default=OUT_DIR, help="output directory (default: data/out)")
     build.add_argument("--quiet", action="store_true", help="print errors only")
     validate = commands.add_parser("validate", help="validate a directory against etl/schema")
@@ -66,9 +74,27 @@ def main(argv: list[str] | None = None) -> int:
         build_parser.print_usage(sys.stderr)
         print(f"{build_parser.prog}: error: --years must be within {FIRST_YEAR}-{started.year}", file=sys.stderr)
         return 1
+    if args.tse_csv is not None and args.candidacy_json is not None:
+        build_parser.print_usage(sys.stderr)
+        print(f"{build_parser.prog}: error: --tse-csv and --candidacy-json are mutually exclusive", file=sys.stderr)
+        return 1
+    if args.export_candidacy is not None and args.tse_csv is None:
+        build_parser.print_usage(sys.stderr)
+        print(f"{build_parser.prog}: error: --export-candidacy needs --tse-csv", file=sys.stderr)
+        return 1
+    if args.export_candidacy is not None and not args.tse_csv.is_file():
+        print(f"error: --export-candidacy needs the TSE file, and {args.tse_csv} does not exist", file=sys.stderr)
+        return 1
+    candidacy = None
+    if args.candidacy_json is not None:
+        try:
+            candidacy = (args.candidacy_json.name, *tse.read_export(args.candidacy_json))
+        except tse.CandidacyFileError as e:
+            print(f"error: invalid candidacy file {e}", file=sys.stderr)
+            return 1
     log = (lambda msg: None) if args.quiet else (lambda msg: print(msg, file=sys.stderr))
     try:
-        build(sorted(set(years)), args.refresh, args.tse_csv, args.out, started, log)
+        build(sorted(set(years)), args.refresh, args.tse_csv, args.out, started, log, candidacy, args.export_candidacy)
     except camara.DownloadError as e:
         print(f"error: could not download {e.url} ({e.args[0].split(': ', 1)[-1]})", file=sys.stderr)
         return 2
@@ -78,7 +104,11 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-def build(years: list[int], refresh: bool, tse_csv: Path | None, out: Path, started: datetime, log) -> None:
+def build(
+    years: list[int], refresh: bool, tse_csv: Path | None, out: Path, started: datetime, log,
+    candidacy: tuple[str, dict[str, dict], list[int]] | None = None, export: Path | None = None,
+) -> None:
+    """`candidacy` is `(file name, matched, ambiguous)` from `--candidacy-json`, used in place of `tse_csv`."""
     log(f"sources: {years[0]}-{years[-1]}")
     sources = camara.sync(RAW_DIR, years, refresh, started, log)
 
@@ -94,7 +124,12 @@ def build(years: list[int], refresh: bool, tse_csv: Path | None, out: Path, star
 
     candidacies, ambiguous = {}, []
     tse_file = tse_csv if tse_csv is not None and tse_csv.is_file() else None
-    if tse_file:
+    candidacy_file = tse_file.name if tse_file else None
+    if candidacy is not None:
+        candidacy_file, matched, ambiguous = candidacy
+        candidacies = {dep: found for dep, found in matched.items() if dep in data.profiles}
+        log(f"candidacy 2026 from {candidacy_file}: {len(candidacies)} matched, {len(ambiguous)} ambiguous")
+    elif tse_file:
         civil = {
             r["uri"].rstrip("/").rsplit("/", 1)[-1]: (r["nomeCivil"], r["dataNascimento"])
             for r in readers.read("deputados", RAW_DIR / "deputados.csv")
@@ -118,7 +153,7 @@ def build(years: list[int], refresh: bool, tse_csv: Path | None, out: Path, star
         },
         "sources": sources,
         "candidacy": {
-            "file": tse_file.name if tse_file else None,
+            "file": candidacy_file,
             "matched": len(candidacies),
             "ambiguous": [int(dep) for dep in ambiguous],
         },
@@ -128,3 +163,6 @@ def build(years: list[int], refresh: bool, tse_csv: Path | None, out: Path, star
     files |= {f"roll-calls/{rc}.json": doc for rc, doc in records["roll_call_docs"].items()}
     log(f"writing {len(files)} files to {out}")
     publish.write(out, files)
+    if export is not None:
+        tse.export(export, tse_file, candidacies, ambiguous)
+        log(f"wrote the candidacy file {export}")
