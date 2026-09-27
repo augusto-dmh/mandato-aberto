@@ -19,9 +19,9 @@
 ## Handoff
 
 **Feature**: launch
-**Where**: build of C1 to C61 done on `feat/launch` (`f07c179`..`f984462`); C10 and C41 corrected by the checks author against the plan (`a916112`), C10's table test committed (`f984462`); site 110 and etl 114 tests green, shell proofs green with GNU grep; Verifier round 1 over C1 to C61, profile light: PASS (`verification.md`, gate 0 errors); lessons L-012 to L-016 recorded
-**In progress**: none
-**Next step**: PR against `main` when the maintainer asks (title and body per `research/HANDOFF-launch-build.md`); then the inputs of plan questions 1 to 4 (domain, names and e-mail, TSE file, Cloudflare secrets) and verification round 2 (C62 to C69) after the first green `publish.yml`
+**Where**: built and verified (round 1 PASS at `f984462`, profile light); PR #8 open against `main` (https://github.com/augusto-dmh/mandato-aberto/pull/8)
+**In progress**: none - PR #8 under maintainer review
+**Next step**: maintainer reviews PR #8 (copy sentence by sentence, the Verifier's F1-F4 notes); after merge, fill `site/src/lib/site.ts`, the balancing test's controllers and the `SITE_URL` default, export the candidacy JSON from the TSE CSV, set the Cloudflare secrets and `SITE_URL`, run `publish.yml`, then verification round 2 (C62 to C69) against the domain. Still pending from `secret-ballots`: check `/votacoes/2645346-18/` and `/votacoes/2576389-4/` in a browser on desktop and phone
 **Blockers**: plan open questions 1 to 4 block go-live and S10, not the PR; pages and the balancing test render `[a definir]` until then
 **Open for the maintainer**: Verifier findings that change no result - C40's order proof (`grep -n | sort -c`) cannot fail and does not name `node-version: 24`; C61's proof counts lines, not terms; C41 and C43 greps are partial (all three confirmed by reading `publish.yml`); C58 passes while `research/03-teste-de-balanceamento-lgpd.md` still reads `**Controladores:** [a definir]`, and C68 does not cover that file; `correctionsDir()` resolves from `process.cwd()`, correct only from `site/` (true in vitest and `publish.yml`); plan question 5 - confirm in a browser that Cloudflare Web Analytics sets no cookie before setting `CF_ANALYTICS_TOKEN`
 **Merged**: PR #6 (`site`) and PR #7 (`secret-ballots`) into `main` on 2026-09-27
