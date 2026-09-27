@@ -20,6 +20,12 @@ Interpretations settled while deriving:
 - AC 31 renders `pages` as links with the path as the text.
 - `corrections/` holds a `.gitkeep` so the directory exists in a fresh clone; the reader takes only `*.md` files as records.
 
+Renegotiated during build (2026-09-27, checks author against the approved plan):
+
+- C10: the table follows AC 10's regular expression `^/[A-Za-z0-9/_-]{1,200}$`, which C11 pins literally: `?p=/` has no character after the slash and leaves the field empty, and the case over the limit is `/` + 201 `a` (202 characters), since `/` + 200 `a` matches. The coverage member `root C10` stays, now proving the empty result.
+- C41: the step runs in `working-directory: etl`, so its existence test reads `../etl/inputs/candidacy-2026.json`; the claim now names that path and the proof is unchanged.
+- Site C36's test `scan catches a forbidden term in a template` writes its unscanned control file as `notes.txt` instead of `notes.md`, a consequence of AC 6 extending the scan to `.md`; confirmed.
+
 ## Checks
 
 ### S1 - Legal footer, 404 page and copy scan · 5 files · 14 KB · ~4k
@@ -54,7 +60,7 @@ Proof: `T tests/build.test.ts -t "report form fields and no submission target"`
 **C9** - `reportMailto({page: "/deputados/101/", problem: "Voto errado", source: "https://x.gov.br/1", email: "a@b.c"})` returns `mailto:<CORRECTIONS_EMAIL>?subject=` + `encodeURIComponent("Erro em /deputados/101/")` + `&body=` + `encodeURIComponent` of the four lines `Página com o erro: /deputados/101/`, `O que está errado: Voto errado`, `Onde está o dado correto: https://x.gov.br/1`, `Seu e-mail: a@b.c` joined by `\n`; with `source` and `email` empty the last two lines read `Onde está o dado correto: (não informado)` and `Seu e-mail: (não informado)` (AC 9)
 Proof: `T tests/report.test.ts -t "composes the mailto"`
 
-**C10** - `pagePathFromQuery(search)` is table-driven over 7 cases: `?p=/deputados/101/` -> `/deputados/101/`; `?p=/votacoes/2645346-18/` -> `/votacoes/2645346-18/`; `?p=/` -> `/`; `` (absent) -> ``; `?p=https://x/` -> ``; `?p=/a%20b/` -> ``; `?p=/` + 200 `a` (201 characters) -> `` (AC 10, AC 11)
+**C10** - `pagePathFromQuery(search)` is table-driven over 7 cases: `?p=/deputados/101/` -> `/deputados/101/`; `?p=/votacoes/2645346-18/` -> `/votacoes/2645346-18/`; `?p=/` -> ``; `` (absent) -> ``; `?p=https://x/` -> ``; `?p=/a%20b/` -> ``; `?p=/` + 201 `a` (202 characters) -> `` (AC 10, AC 11)
 Proof: `T tests/report.test.ts -t "prefill accepts only site paths"`
 
 **C11** - The built `/reportar-erro/` references exactly one script asset under `dist/_astro/` and that asset's text contains the regular expression literal `^/[A-Za-z0-9/_-]{1,200}$` and the string `mailto:` (AC 9, AC 10)
@@ -158,7 +164,7 @@ Proof: `grep -A3 '^on:' .github/workflows/publish.yml | grep -c -e 'schedule' -e
 Proof: `grep -qF 'cron: "0 9 * * *"' .github/workflows/publish.yml && grep -qF 'branches: [main]' .github/workflows/publish.yml`
 Proof: `grep -n -e 'actions/checkout' -e 'astral-sh/setup-uv' -e 'actions/setup-node' -e 'uv sync --locked' -e 'mandato-etl build' -e 'check-candidacy.sh' -e 'SITE_URL is not set' -e 'actions/cache/restore' -e 'npm ci' -e 'npm run build' -e 'actions/cache/save' -e 'cloudflare/wrangler-action@v4' -e 'pages deploy site/dist --project-name=mandato-aberto' .github/workflows/publish.yml | cut -d: -f1 | sort -c`
 
-**C41** - The ETL step reads `if [ -f etl/inputs/candidacy-2026.json ]; then uv run mandato-etl build --candidacy-json ../etl/inputs/candidacy-2026.json; else uv run mandato-etl build; fi` from `working-directory: etl`, and `scripts/check-candidacy.sh <meta.json> <candidacy.json>` exits `1` printing `candidacy file present but 0 deputies matched` when the candidacy file exists and `meta.candidacy.matched` is `0`, exits `0` when it is `2`, and exits `0` when the candidacy file does not exist (AC 37, AC 38)
+**C41** - The ETL step reads `if [ -f ../etl/inputs/candidacy-2026.json ]; then uv run mandato-etl build --candidacy-json ../etl/inputs/candidacy-2026.json; else uv run mandato-etl build; fi` from `working-directory: etl`, and `scripts/check-candidacy.sh <meta.json> <candidacy.json>` exits `1` printing `candidacy file present but 0 deputies matched` when the candidacy file exists and `meta.candidacy.matched` is `0`, exits `0` when it is `2`, and exits `0` when the candidacy file does not exist (AC 37, AC 38)
 Proof: `grep -qF 'uv run mandato-etl build --candidacy-json ../etl/inputs/candidacy-2026.json' .github/workflows/publish.yml`
 Proof: `E tests/test_candidacy_guard.py -k "guard"`
 
