@@ -4,6 +4,7 @@ import { correctionsDir, paragraphs, readCorrections, statusLabel } from "../lib
 import { contract } from "../lib/data";
 import { collectedDate, formatDate } from "../lib/format";
 import { CORRECTIONS_EMAIL } from "../lib/site";
+import { withBase } from "../lib/urls";
 
 const records = readCorrections(correctionsDir());
 const { meta } = contract();
@@ -17,7 +18,7 @@ const { meta } = contract();
 >
   <div class="prose">
     <h1>Correções</h1>
-    <p>Qualquer pessoa pode reportar um erro pelo <a href="/reportar-erro/">formulário</a> ou pelo e-mail <a href={`mailto:${CORRECTIONS_EMAIL}`}>{CORRECTIONS_EMAIL}</a>.</p>
+    <p>Qualquer pessoa pode reportar um erro pelo <a href={withBase("/reportar-erro/")}>formulário</a> ou pelo e-mail <a href={`mailto:${CORRECTIONS_EMAIL}`}>{CORRECTIONS_EMAIL}</a>.</p>
     <p>Toda mensagem recebe triagem em até 48 horas.</p>
     <p>Um erro confirmado é corrigido, e a resposta de um parlamentar é publicada nesta página com o mesmo destaque do dado contestado, em até 7 dias.</p>
   </div>
@@ -37,7 +38,7 @@ const { meta } = contract();
               {r.pages.map((path, i) => (
                 <>
                   {i > 0 && ", "}
-                  <a href={path}>{path}</a>
+                  <a href={withBase(path)}>{path}</a>
                 </>
               ))}
             </p>

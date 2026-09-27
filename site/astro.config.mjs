@@ -19,9 +19,11 @@ function hostRedirects() {
   };
 }
 
-// SITE_URL stays a placeholder until the launch feature registers the .org domain.
+// SITE_URL is the origin and SITE_BASE the path under it (AD-012): `publish.yml` sets both for
+// GitHub Pages. The origin default stays the placeholder site C33 pins; tests and CI leave SITE_BASE unset.
 export default defineConfig({
   site: process.env.SITE_URL || "https://mandatoaberto.org",
+  base: process.env.SITE_BASE || "/",
   output: "static",
   trailingSlash: "always",
   integrations: [vue(), hostRedirects()],

@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, renameSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { contract } from "./data";
+import { withBase } from "./urls";
 
 export interface PhotoOptions {
   cacheDir: string;
@@ -70,5 +71,5 @@ export function photos(): Promise<Map<number, string | null>> {
 
 /** Public path of a deputy's photo, or `null` when there is none. */
 export async function photoPath(id: number): Promise<string | null> {
-  return (await photos()).get(id) ? `/fotos/${id}.jpg` : null;
+  return (await photos()).get(id) ? withBase(`/fotos/${id}.jpg`) : null;
 }
