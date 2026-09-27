@@ -10,6 +10,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { FORBIDDEN_TERMS, termPattern } from "../src/lib/forbidden-terms";
+import { CORRECTIONS_EMAIL } from "../src/lib/site";
 
 const SITE = resolve(__dirname, "..");
 const FIXTURE = join(__dirname, "fixtures", "out");
@@ -418,5 +419,70 @@ describe("S6 language", () => {
       expect(text).not.toContain("%");
       for (const term of FORBIDDEN_TERMS) expect(text).not.toMatch(termPattern(term));
     }
+  });
+});
+
+// Launch: the legal pages, the correction channel and the host files.
+
+const reportPage = () => page("reportar-erro");
+/** Every `<script src>` of a page that points into this site's `/_astro/`, read from `dist/`. */
+const localScripts = (html: string) =>
+  [...html.matchAll(/<script\b[^>]*\bsrc="(\/_astro\/[^"]+)"/g)].map((m) => readFileSync(join(dist, m[1]), "utf8"));
+
+describe("launch S2 report an error", () => {
+  it("report link on profile and roll call", () => {
+    for (const id of [101, 103]) {
+      expect(profile(id)).toContain(`<a href="/reportar-erro/?p=/deputados/${id}/">Reportar erro nesta página</a>`);
+    }
+    for (const id of ["100-1", "100-6"]) {
+      expect(rollCall(id)).toContain(`<a href="/reportar-erro/?p=/votacoes/${id}/">Reportar erro nesta página</a>`);
+    }
+  });
+
+  it("report form fields and no submission target", () => {
+    const html = reportPage();
+    const forms = [...html.matchAll(/<form\b[^>]*>/g)].map((m) => m[0]);
+    expect(forms).toHaveLength(1);
+    expect(forms[0]).not.toMatch(/\baction=/);
+    expect(forms[0]).not.toMatch(/\bmethod=/);
+    const form = element(html, "form", "");
+    const fields: [string, string, string][] = [
+      ["Página com o erro", "input", "page"],
+      ["O que está errado", "textarea", "problem"],
+      ["Onde está o dado correto (link para a fonte oficial, se tiver)", "input", "source"],
+      ["Seu e-mail, se quiser resposta", "input", "email"],
+    ];
+    for (const [label, tag, name] of fields) {
+      const labelTag = new RegExp(`<label\\b[^>]*\\bfor="([^"]+)"[^>]*>${label.replace(/[()]/g, "\\$&")}</label>`).exec(form);
+      expect(labelTag, label).not.toBeNull();
+      const controls = [...form.matchAll(new RegExp(`<${tag}\\b[^>]*\\bname="${name}"[^>]*>`, "g"))].map((m) => m[0]);
+      expect(controls, name).toHaveLength(1);
+      expect(controls[0]).toContain(`id="${labelTag![1]}"`);
+    }
+    expect(form).toContain('<button type="submit">Enviar por e-mail</button>');
+    for (const text of [html, ...localScripts(html)]) {
+      expect(text).not.toContain("fetch(");
+      expect(text).not.toContain("XMLHttpRequest");
+    }
+  });
+
+  it("report page script prefills from the query", () => {
+    const html = reportPage();
+    const scripts = localScripts(html);
+    expect(scripts).toHaveLength(1);
+    expect(scripts[0]).toContain("^/[A-Za-z0-9/_-]{1,200}$");
+    expect(scripts[0]).toContain("mailto:");
+  });
+
+  it("report page without javascript", () => {
+    const noscript = element(reportPage(), "noscript", "");
+    expect(noscript).toContain(`<a href="mailto:${CORRECTIONS_EMAIL}">${CORRECTIONS_EMAIL}</a>`);
+    expect(noscript).toContain("Sem JavaScript, escreva para o endereço acima com os quatro itens do formulário.");
+  });
+
+  it("report page deadlines", () => {
+    expect(reportPage()).toContain(
+      'Toda mensagem recebe triagem em até 48 horas. A correção, ou a resposta do parlamentar, é publicada em até 7 dias na página <a href="/correcoes/">Correções</a>.',
+    );
   });
 });

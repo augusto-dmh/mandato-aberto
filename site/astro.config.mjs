@@ -7,4 +7,8 @@ export default defineConfig({
   output: "static",
   trailingSlash: "always",
   integrations: [vue()],
+  vite: {
+    // Scripts ship as files under `/_astro/`, never inlined, so a build test can read every script a page runs.
+    build: { assetsInlineLimit: (file) => (file.endsWith(".js") ? false : undefined) },
+  },
 });
