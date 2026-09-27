@@ -254,9 +254,9 @@ Defaults that are not already a numbered criterion.
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Static host | Cloudflare Pages (door 1) | the grilling premise "Hospedagem" and the limits read on 2026-09-27 | n |
+| Static host | Cloudflare Pages (door 1) | the grilling premise "Hospedagem" and the limits read on 2026-09-27 | y (2026-09-27) |
 | Daily build time | `0 9 * * *` UTC (06:00 in Brasília) | the Câmara regenerates the bulk files overnight (prototype practice); a failure shows up at the start of the maintainer's day | n |
-| Candidacy in CI | the export of door 7 | AD-003; nothing but what the site shows enters git | n |
+| Candidacy in CI | the export of door 7 | AD-003; nothing but what the site shows enters git | y (2026-09-27) |
 | The full TSE CSV on the maintainer's disk | kept only in `etl/inputs/tse/` (ignored) while the export is produced, then deleted; `source.sha256` in the export proves which file it came from | the raw-cache redaction door treats a local cache holding CPF as persisting it; the same rule applies here | n |
 | E-mail addresses | one dedicated address, `<CORRECTIONS_EMAIL>`, serves contact and corrections unless the maintainer supplies two | grilling decision 7 names one dedicated e-mail; two addresses double the triage | n |
 | Site identity values | maintainers' names and city, the e-mail and the repository URL live in one module under `site/src/lib/`, filled in the launch PR; until then they read `[a definir]` and the go-live checks cannot pass | one place to change | n |
