@@ -74,7 +74,7 @@ Reuses the ETL's roll-call assembly and the site's single data layer; no new mod
 8. The participation base-of-calculation line SHALL read `... inclusive Art. 17 e votações secretas.`
 9. IF `meta.json` carries a `schema_version` other than `2` THEN the build SHALL exit non-zero with `Unsupported data contract: meta.json has schema_version <n>; this site reads 2`
 
-**Independent test:** build the site fixture and open the secret roll call: the notice, `Sim 9`, `Não 9`, `Outros 9` from the fixture's official totals, and three deputies under `Deputados que votaram (3)`.
+**Independent test:** build the site fixture and open the secret roll call: the notice, `Sim 12`, `Não 5`, `Outros 2` from the fixture's official totals, and three deputies under `Deputados que votaram (3)`.
 
 ## Out of scope
 
@@ -88,9 +88,9 @@ Reuses the ETL's roll-call assembly and the site's single data layer; no new mod
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Test legislature | etl-camara's approved tests keep `legislature()`; a variant `legislature(secret=True)` adds roll call `100-6`, PLEN, 2025-08-01, empty votes by 101, 102 and 103; the new ETL tests and the site fixture use the variant | the approved etl checks keep their hand-computed numbers; the site fixture shows a secret ballot | n |
-| Site fixture values that change | roll calls 7 -> 8 (C1, C29 lists gain `100-6`; C5, C37 count 12 pages; C13 `8 votações nominais`); 101 participation `3 de 4` -> `4 de 5`, `--share 0.8` (C16, C31); 102 participation `2 de 2` -> `3 de 3` (C16, C31); 103 is out of exercise, unchanged | the variant adds one PLEN roll call inside 101's and 102's exercise | n |
-| Verification profile | `standard`, as etl-camara: the change moves an indicator | AGENTS.md | n |
+| Test legislature | etl-camara's approved tests keep `legislature()`; a variant `legislature(secret=True)` adds roll call `100-6`, PLEN, 2025-08-01, empty votes by 101, 102 and 103, official totals `votosSim 12`, `votosNao 5`, `votosOutros 2` (distinct, unlike the shared `9/9/9`); the new ETL tests and the site fixture use the variant | the approved etl checks keep their hand-computed numbers; the site fixture shows a secret ballot | y |
+| Site fixture values that change | roll calls 7 -> 8 (C1, C29 lists gain `100-6`; C5, C37 count 12 pages; C13 `8 votações nominais`); 101 participation `3 de 4` -> `4 de 5`, `--share 0.8` (C16, C31); 102 participation `2 de 2` -> `3 de 3` (C16, C31); 103 is out of exercise, unchanged | the variant adds one PLEN roll call inside 101's and 102's exercise | y |
+| Verification profile | `standard`, as etl-camara: the change moves an indicator | AGENTS.md | y |
 
 **Open questions:** none - all resolved or logged above.
 

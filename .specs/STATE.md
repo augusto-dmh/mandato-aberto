@@ -16,11 +16,12 @@
 
 ## Handoff
 
-**Feature**: site
-**Where**: built and verified - `verification.md` round 1 PASS (profile `light`, 41/41 checks, gate exit 0); commits `ed67062`..`8c5211e` plus the verification commit; nothing pushed
+**Feature**: secret-ballots
+**Where**: `plan.md` approved by the maintainer on 2026-09-27 (option 1: a secret ballot counts as participation, contract version 2); `checks.md` written (18 checks, profile `standard`), `validate_checks.py` exit 0 with 3 warnings on command proofs; no code yet
 **In progress**: none
-**Next step**: maintainer reviews the pages in a browser (desktop and mobile) and decides the open items below; then PR `feat(site): ...` when asked; then plan `launch` (grilling decisions 6-8, legal checklist section 5) and stop for review
+**Next step**: build in a new Claude session from `research/HANDOFF-secret-ballots.md`, then the independent Verifier over `9921e6c..HEAD`
 **Blockers**: go-live needs the `.org` domain (`SITE_URL` stays a placeholder); open maintainer questions on the TSE CSV holding CPF and the other personal columns in the raw cache
-**Open for the maintainer**: (1) resolved 2026-09-27 - the maintainer confirmed the single photo credit on the home list (new `Landing` row); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator; (4) secret ballots: roll calls `2645346-18` and `2576389-4` (PLEN, choice of TCU ministers) carry one record per deputy with an empty vote in `votacoesVotos`, so the site shows tallies 0/0/0 and "Registro sem voto" against official totals in the description, and `participation` leaves them out of the numerator while keeping them in the denominator - needs a maintainer decision (etl-camara AC 17 plus site copy)
+**Open for the maintainer**: (1) resolved 2026-09-27 - single photo credit on the home list (site `Landing` row); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator; (4) secret ballots - decided 2026-09-27 (option 1), being built as `secret-ballots`; (5) the profile vote list shows two roll calls on the same proposition with the same title - after launch
+**Site feature**: PR #6 open against `main`, CI green at `2bf08c4`; verified round 1 PASS (profile `light`) plus the browser check fixes in `2bf08c4`
 **Uncommitted**: none
-**Branch**: `feat/site`, PR #6 against `main` (PR #5 merged)
+**Branch**: `fix/secret-ballots`, stacked on `feat/site` (PR #6); rebase on `main` once #6 merges
