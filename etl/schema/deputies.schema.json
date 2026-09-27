@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "deputies.schema.json",
+  "title": "deputies.json",
+  "description": "Every deputy with a vote in the 57th legislature, ordered by accent-stripped name then id",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/deputy"
+  },
+  "$defs": {
+    "indicator": {
+      "description": "A count over its base; never a percentage (AD-004). Method published on the site's Metodologia page.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "total"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "candidacy": {
+      "description": "2026 candidacy from the TSE registry, matched on civil name + birth date + UF; null when absent or ambiguous.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "office",
+        "party",
+        "ballotNumber",
+        "situation"
+      ],
+      "properties": {
+        "office": {
+          "type": "string"
+        },
+        "party": {
+          "type": "string"
+        },
+        "ballotNumber": {
+          "type": "string"
+        },
+        "situation": {
+          "type": "string"
+        }
+      }
+    },
+    "deputy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "party",
+        "uf",
+        "photoUrl",
+        "inExercise",
+        "sourceUrl",
+        "participation",
+        "governmentAlignment",
+        "partyAlignment",
+        "authoredCount",
+        "firstSignerCount",
+        "requirementsCount",
+        "candidacy2026"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string",
+          "description": "Parliamentary name from the latest vote record"
+        },
+        "party": {
+          "type": "string"
+        },
+        "uf": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$"
+        },
+        "photoUrl": {
+          "type": "string",
+          "pattern": "^https://",
+          "description": "Official Câmara photo URL; credit 'Foto: Câmara dos Deputados'"
+        },
+        "inExercise": {
+          "type": "boolean",
+          "description": "Listed by the Câmara API as in exercise at build time"
+        },
+        "sourceUrl": {
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "participation": {
+          "$ref": "#/$defs/indicator"
+        },
+        "governmentAlignment": {
+          "$ref": "#/$defs/indicator"
+        },
+        "partyAlignment": {
+          "$ref": "#/$defs/indicator"
+        },
+        "authoredCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "firstSignerCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "requirementsCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "candidacy2026": {
+          "$ref": "#/$defs/candidacy"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "roll-calls.schema.json",
+  "title": "roll-calls.json",
+  "description": "Every nominal roll call of the legislature, date descending then id",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/rollCall"
+  },
+  "$defs": {
+    "proposition": {
+      "description": "The proposition the roll call decided on, or null",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "title",
+        "summary"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "tallies": {
+      "description": "Counted from the vote records: Sim, Não, and every other non-empty value",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "yes",
+        "no",
+        "others"
+      ],
+      "properties": {
+        "yes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "no": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "others": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "rollCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "date",
+        "organ",
+        "description",
+        "proposition",
+        "approved",
+        "tallies",
+        "governmentOrientation",
+        "sourceUrl"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "organ": {
+          "type": "string",
+          "description": "Sigla of the organ; PLEN is the plenary"
+        },
+        "description": {
+          "type": "string"
+        },
+        "proposition": {
+          "$ref": "#/$defs/proposition"
+        },
+        "approved": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "tallies": {
+          "$ref": "#/$defs/tallies"
+        },
+        "governmentOrientation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Orientation of the GOVERNO bench, or null"
+        },
+        "sourceUrl": {
+          "type": "string",
+          "pattern": "^https://"
+        }
+      }
+    }
+  }
+}
