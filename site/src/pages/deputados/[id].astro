@@ -1,0 +1,169 @@
+---
+import Base from "../../layouts/Base.astro";
+import { contract, type Indicator } from "../../lib/data";
+import { formatCount, formatDate, formatNumber, NO_BASE, organLabel, periodLabel, voteLabel } from "../../lib/format";
+import { INDICATORS } from "../../lib/indicators";
+import { photoPath } from "../../lib/photos";
+
+export function getStaticPaths() {
+  return contract().deputies.map((d) => ({ params: { id: String(d.id) } }));
+}
+
+const TSE_SOURCE = "https://dadosabertos.tse.jus.br/dataset/candidatos-2026";
+
+const { meta, rollCalls } = contract();
+const deputy = contract().deputy(Number(Astro.params.id));
+const photo = await photoPath(deputy.id);
+const rollCallsById = new Map(rollCalls.map((r) => [r.id, r]));
+
+// The contract lists votes newest first; group them by year keeping that order.
+const years = new Map<string, { vote: (typeof deputy.votes)[number]; rollCall: (typeof rollCalls)[number] }[]>();
+for (const vote of deputy.votes) {
+  const rollCall = rollCallsById.get(vote.rollCallId)!;
+  const year = rollCall.date.slice(0, 4);
+  if (!years.has(year)) years.set(year, []);
+  years.get(year)!.push({ vote, rollCall });
+}
+
+const share = (i: Indicator) => Number((i.count / i.total).toFixed(4));
+const where = `${deputy.party}-${deputy.uf}`;
+const c = deputy.candidacy2026;
+---
+
+<Base
+  title={`${deputy.name} (${where}) na 57ª legislatura`}
+  description={`Votos, participação em votações nominais e proposições de ${deputy.name} (${where}) na Câmara dos Deputados, com dados oficiais e a base de cada número.`}
+  path={`/deputados/${deputy.id}/`}
+  image={`/cards/deputados/${deputy.id}.png`}
+>
+  <div class:list={["profile-head", { "profile-head--no-photo": !photo }]}>
+    {
+      photo && (
+        <figure class="portrait">
+          <img src={photo} alt={`Foto oficial de ${deputy.name}`} />
+          <figcaption>Foto: Câmara dos Deputados</figcaption>
+        </figure>
+      )
+    }
+    <div>
+      <p class="kicker">Deputado federal · 57ª legislatura</p>
+      <h1>{deputy.name}</h1>
+      <p class="party">{deputy.party} · {deputy.uf}</p>
+      <p class="status">{deputy.inExercise ? "Em exercício" : "Fora de exercício"}</p>
+      <p><a href={deputy.sourceUrl}>Página na Câmara dos Deputados</a></p>
+      {
+        c && (
+          <p class="candidacy">
+            Candidatura em 2026: {c.office}, {c.party}, número {c.ballotNumber} (situação no TSE: {c.situation}).{" "}
+            <span class="note">
+              Fonte: <a href={TSE_SOURCE}>dados abertos do TSE</a>
+            </span>
+          </p>
+        )
+      }
+    </div>
+  </div>
+
+  <section class="section" aria-labelledby="numeros">
+    <h2 id="numeros">Votações nominais</h2>
+    <div class="indicators">
+      {
+        INDICATORS.map((i) => {
+          const value = deputy[i.field];
+          return (
+            <section id={i.anchor} class="indicator">
+              <h3>{i.label}</h3>
+              {value.total === 0 ? (
+                <p class="value value--none">{NO_BASE}</p>
+              ) : (
+                <>
+                  <p class="value">{formatCount(value.count, value.total)}</p>
+                  <div class="bar" aria-hidden="true">
+                    <span style={`--share: ${share(value)}`} />
+                  </div>
+                </>
+              )}
+              <p class="base">Base de cálculo: {i.base}</p>
+              <a class="method" href={`/metodologia/#${i.anchor}`}>
+                Como este número é calculado
+              </a>
+            </section>
+          );
+        })
+      }
+    </div>
+  </section>
+
+  <section id="proposicoes" class="section">
+    <h2>Proposições</h2>
+    <ul class="figures">
+      <li><strong>{formatNumber(deputy.authoredCount)}</strong> proposições de autoria</li>
+      <li><strong>{formatNumber(deputy.firstSignerCount)}</strong> como primeiro signatário</li>
+      <li><strong>{formatNumber(deputy.requirementsCount)}</strong> requerimentos</li>
+    </ul>
+    <p class="note">
+      Base de cálculo: projetos de lei (PL e PLP), propostas de emenda à Constituição (PEC), projetos de decreto legislativo
+      (PDL) e de resolução (PRC) apresentados desde 01/02/2023 como proponente; requerimentos e indicações contados à parte. <a
+        href="/metodologia/#proposicoes">Como estes números são calculados</a
+      >
+    </p>
+    {
+      deputy.authored.length > 0 && (
+        <ol class="authored">
+          {deputy.authored.map((a) => (
+            <li>
+              <a class="title" href={a.sourceUrl}>
+                {a.type} {a.number}/{a.year}
+              </a>
+              <p>{a.summary}</p>
+              <p class="note">
+                Apresentada em {formatDate(a.presentedAt)}
+                {a.firstSigner && " · primeiro signatário"}
+                {a.status && ` · situação: ${a.status}`}
+              </p>
+            </li>
+          ))}
+        </ol>
+      )
+    }
+  </section>
+
+  <section id="exercicio" class="section">
+    <h2>Períodos em exercício</h2>
+    {
+      deputy.exercisePeriods.length > 0 ? (
+        <ul class="periods">
+          {deputy.exercisePeriods.map((p) => (
+            <li>{periodLabel(p, meta.generatedAt)}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>Nenhum período em exercício registrado na 57ª legislatura.</p>
+      )
+    }
+  </section>
+
+  <section id="votos" class="section">
+    <h2>Votos em votações nominais</h2>
+    <p class="note">
+      {formatNumber(deputy.votes.length)} registros, do mais recente ao mais antigo, no plenário e nas comissões.
+    </p>
+    {
+      [...years].map(([year, rows]) => (
+        <>
+          <h3 class="year">{year}</h3>
+          <ol class="votes-year">
+            {rows.map(({ vote, rollCall }) => (
+              <li data-roll-call={rollCall.id}>
+                <time datetime={rollCall.date}>{formatDate(rollCall.date)}</time>
+                <span class="organ">{organLabel(rollCall.organ)}</span>
+                <a href={`/votacoes/${rollCall.id}/`}>{rollCall.proposition?.title ?? rollCall.description}</a>
+                <span class="vote">{voteLabel(vote.vote)}</span>
+              </li>
+            ))}
+          </ol>
+        </>
+      ))
+    }
+  </section>
+</Base>
