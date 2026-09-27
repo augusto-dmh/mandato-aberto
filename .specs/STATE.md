@@ -23,4 +23,4 @@
 **Blockers**: go-live needs the `.org` domain (`SITE_URL` stays a placeholder); open maintainer questions on the TSE CSV holding CPF and the other personal columns in the raw cache
 **Open for the maintainer**: (1) resolved 2026-09-27 - the maintainer confirmed the single photo credit on the home list (new `Landing` row); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator
 **Uncommitted**: none
-**Branch**: `feat/site`, stacked on `feat/etl-camara` (PR #5); retarget to `main` once #5 merges
+**Branch**: `feat/site`, PR #6 against `main` (PR #5 merged)
