@@ -1,0 +1,19 @@
+[project]
+name = "mandato-etl"
+version = "0.1.0"
+description = "Câmara dos Deputados open data into the Mandato Aberto JSON contract"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+mandato-etl = "mandato_etl.cli:main"
+
+[dependency-groups]
+dev = ["pytest>=8", "jsonschema>=4"]
+
+[build-system]
+requires = ["uv_build>=0.8,<0.12"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
