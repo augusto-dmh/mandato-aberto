@@ -167,14 +167,14 @@ The site cannot regress silently.
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Percent display | no percentage anywhere; `n de m` plus a proportion bar | AD-004 stores the base; a percentage beside 513 names invites the ranking the grilling ruled out | n |
-| Visual direction | off-white page, near-black text, one accent (deep red `#B3261E`) for numbers and links only, Source Serif 4 for headlines and numbers, Inter for text, a 12-column editorial grid collapsing to one column under 640 px | decision 10 "tipografia forte, uma cor de destaque, números grandes com fonte logo abaixo" | n |
-| Votes on the profile | every vote rendered in static HTML (about 1,100 rows for a full-term deputy, ~25 KB gzipped), grouped by year | no client-side fetch to keep working without JavaScript; size is acceptable | n |
-| `SITE_URL` before the domain exists | `https://mandatoaberto.org` placeholder read from env, replaced by `launch` | the `.org` name is still pending with the maintainer | n |
-| Methodology links | `/metodologia/#participacao`, `#alinhamento-governo`, `#alinhamento-partido`, `#proposicoes`; the page itself comes with `launch` | link shape fixed now so the profile does not change later | n |
-| Suplentes and deputies out of exercise | reachable by search with "Em exercício" unchecked, labelled "Fora de exercício" | grilling premise "Suplentes e afastados" | n |
-| Tests | `vitest` for `data.ts`, the search/filter logic and the formatters; one build-level test that runs `astro build` on the fixture and inspects `dist/` | AGENTS.md: new behaviour ships with a test | n |
-| Fixture contract | `site/tests/fixtures/out/` generated once by the ETL test fixture and committed, re-validated in CI | the site's tests must not depend on a 700 MB download | n |
+| Percent display | no percentage anywhere; `n de m` plus a proportion bar | AD-004 stores the base; a percentage beside 513 names invites the ranking the grilling ruled out | y |
+| Visual direction | off-white page, near-black text, one accent (deep red `#B3261E`) for numbers and links only, Source Serif 4 for headlines and numbers, Inter for text, a 12-column editorial grid collapsing to one column under 640 px | decision 10 "tipografia forte, uma cor de destaque, números grandes com fonte logo abaixo" | y |
+| Votes on the profile | every vote rendered in static HTML (about 1,100 rows for a full-term deputy, ~25 KB gzipped), grouped by year | no client-side fetch to keep working without JavaScript; size is acceptable | y |
+| `SITE_URL` before the domain exists | `https://mandatoaberto.org` placeholder read from env, replaced by `launch` | the `.org` name is still pending with the maintainer | y |
+| Methodology links | `/metodologia/#participacao`, `#alinhamento-governo`, `#alinhamento-partido`, `#proposicoes`; the page itself comes with `launch` | link shape fixed now so the profile does not change later | y |
+| Suplentes and deputies out of exercise | reachable by search with "Em exercício" unchecked, labelled "Fora de exercício" | grilling premise "Suplentes e afastados" | y |
+| Tests | `vitest` for `data.ts`, the search/filter logic and the formatters; one build-level test that runs `astro build` on the fixture and inspects `dist/` | AGENTS.md: new behaviour ships with a test | y |
+| Fixture contract | `site/tests/fixtures/out/` generated once by the ETL test fixture and committed, re-validated in CI | the site's tests must not depend on a 700 MB download | y |
 
 **Open questions:**
 
