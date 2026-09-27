@@ -148,7 +148,13 @@ def test_cached_copy_with_cpf_is_redacted(fake, placement):
     else:
         assert build(fake) == 0
         dest.write_bytes(_deputados_with_upper_cpf())
-        expected_at = "2026-09-27T12:00:00Z"
+        # a listed date distinct from the pinned clock, so overwriting it with the clock would show
+        manifest = json.loads((fake.raw / "manifest.json").read_text())
+        for entry in manifest:
+            if entry["file"] == "deputados.csv":
+                entry["downloadedAt"] = "2026-09-01T08:00:00Z"
+        (fake.raw / "manifest.json").write_text(json.dumps(manifest))
+        expected_at = "2026-09-01T08:00:00Z"
     assert CPF_IN_DEPUTADOS.encode() in dest.read_bytes()
     requests_before = [p for p in fake.bulk_requests() if p.endswith("deputados.csv")]
     assert build(fake) == 0
