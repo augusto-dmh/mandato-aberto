@@ -12,7 +12,7 @@ When this ships, merging to `main` deploys the site to `https://augusto-dmh.gith
 
 Reuses the whole site and the whole `publish.yml` up to the deploy step; nothing here touches the ETL or the contract.
 
-1. `site/astro.config.mjs` (exists) - `site` defaults to `https://augusto-dmh.github.io` and `base` comes from `SITE_BASE` (default `/`, door 2); the `_redirects` integration stays as it is
+1. `site/astro.config.mjs` (exists) - `base` comes from `SITE_BASE` (default `/`, door 2); `site` keeps its `https://mandatoaberto.org` default, which approved site C33 pins, and `publish.yml` sets `SITE_URL` explicitly (door 1); the `_redirects` integration stays as it is
 2. `site/src/lib/urls.ts` (door 2) - `withBase(path)` joins `import.meta.env.BASE_URL` and a site path; every root-absolute link in `Base.astro`, `Prose.astro`, the six pages, `DeputySearch.vue` and `photos.ts` (all exist) goes through it
 3. `site/src/layouts/Base.astro` (exists) - canonical, `og:url` and `og:image` are built from `Astro.site`, the base and the page path
 4. `site/src/pages/dados-e-privacidade.astro` and `site/src/lib/site.ts` (both existing) - host copy without Cloudflare and without analytics; `CORRECTIONS_EMAIL` filled
