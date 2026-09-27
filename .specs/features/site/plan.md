@@ -53,6 +53,7 @@ Public URLs are consumed outside the codebase the moment someone shares one, so 
 | Fonts | self-hosted `@fontsource-variable/source-serif-4` (headlines, numbers) and `@fontsource-variable/inter` (text), bundled into `dist/` | Google Fonts CDN - one third-party request per visit, which breaks the "no individual identifier" promise the analytics premise makes |
 | Rendering mode | Astro `output: "static"`, no adapter, Vue only as an island on the home search | SSR or an adapter - a server to keep up during the campaign, against AD-001 |
 | Frontend dependency set | runtime: `astro`, `@astrojs/vue`, `vue`, `satori`, `@resvg/resvg-js`, the two `@fontsource-variable` packages; dev: `vitest`; `package-lock.json` committed; Node 24 | a UI kit or CSS framework - the editorial direction (decision 10) is a handful of type and spacing rules, not components |
+| Card fonts (added 2026-09-27, maintainer's choice) | the card renderer reads the `latin` and `latin-ext` `.woff` files of `@fontsource/source-serif-4` and `@fontsource/inter`, added as runtime dependencies; pages keep the `@fontsource-variable` packages | a woff2 decoder (`wawoff2`) at build time - WASM in the build and variable-font instancing satori may render poorly; TTF files committed to the repository - binaries in git and a manual upgrade path |
 
 - Nothing else in this change is hard to reverse
 
