@@ -19,11 +19,11 @@
 ## Handoff
 
 **Feature**: launch
-**Where**: plan approved (doors 1 and 7 confirmed by the maintainer on 2026-09-27; AD-010, AD-011); `checks.md` derived - 69 checks in 10 slices, `validate_checks.py` exits 0; no code yet
-**In progress**: none
-**Next step**: build in a new session (`tlc-spec-lean`, "build this plan"): one builder, estimate 71k under the 150k budget, C1 to C61 in order S1, S2, S3, S4, S5, S8, S6, S9, S7; copy strings are pinned in `checks.md` and the maintainer reviews them in the PR. Then the Verifier, round 1 over C1 to C61. S10 (C62 to C69) runs after the first green `publish.yml` at the domain, as verification round 2. Still pending from `secret-ballots`: check `/votacoes/2645346-18/` and `/votacoes/2576389-4/` in a browser on desktop and phone
-**Blockers**: plan open questions 1 to 4 (domain, names and e-mail, TSE file with its licence capture, Cloudflare account and secrets) block go-live and S10, not the build; the pages build with `[a definir]` until then (C68 rejects it on the deployed site)
-**Open for the maintainer**: (3) root `README.md` "presença" - C59, C60; (5) two roll calls on the same proposition with the same title in the profile list - after launch (plan Out of scope); plan question 5 - confirm in a browser that Cloudflare Web Analytics sets no cookie before setting `CF_ANALYTICS_TOKEN`
+**Where**: build of C1 to C61 committed on `feat/launch` (`f07c179`..`e864906`), site 103 and etl 114 tests green, except C10: its table contradicts AC 10's regex (`?p=/` and `/` + 200 `a`), asked of the maintainer; its test is kept out of the tree until the answer
+**In progress**: waiting on the C10 answer; then commit C10's test and fix, dispatch the Verifier round 1 over C1 to C61 (profile light), `validate_verification.py`, lessons
+**Next step**: after the answer, as above; then PR when the maintainer asks; then the inputs of plan questions 1 to 4 and verification round 2 (C62 to C69) after the first green `publish.yml`
+**Blockers**: C10 (check vs AC 10); plan open questions 1 to 4 block go-live and S10, not the build; pages render `[a definir]` until then
+**Open for the maintainer**: C10; C41's claim tests `-f etl/inputs/candidacy-2026.json` from `working-directory: etl`, always false there, so the step tests `../etl/inputs/candidacy-2026.json` (the proof's grep is unchanged and passes); the site test "scan catches a forbidden term in a template" writes its unscanned control as `notes.txt` instead of `notes.md`, since AC 6 now scans `.md`; plan question 5 - confirm in a browser that Cloudflare Web Analytics sets no cookie before setting `CF_ANALYTICS_TOKEN`
 **Merged**: PR #6 (`site`) and PR #7 (`secret-ballots`) into `main` on 2026-09-27
-**Uncommitted**: none
+**Uncommitted**: none (the C10 table test waits in the builder session, not in the tree)
 **Branch**: `feat/launch`; local `data/out/` is on contract version 2 with `candidacy2026` null (built without the TSE file)
