@@ -16,10 +16,10 @@
 
 ## Handoff
 
-**Feature**: etl-camara
-**Where**: `plan.md` approved by the maintainer on 2026-09-26; `checks.md` not yet written
+**Feature**: etl-camara (verified); site (plan written, awaiting review)
+**Where**: etl-camara C1-C48 green (89 tests); verification round 4 PASS (scoped, self-verified inline at the maintainer's request; rounds 1-3 by independent sub-agents); doors 8 and 9 approved; site `plan.md` on branch `feat/site`
 **In progress**: none
-**Next step**: derive `.specs/features/etl-camara/checks.md` (profile `standard`), run `validate_checks.py`, write `## Handoff` arithmetic, then build
-**Blockers**: none for S1-S4 and S6; S5 runs on a fixture until `etl/inputs/tse/consulta_cand_2026_BRASIL.csv` is downloaded by hand
-**Uncommitted**: none after PR #3
-**Branch**: to be created as `feat/etl-camara`
+**Next step**: maintainer reviews the site plan; open the etl PR when asked
+**Blockers**: S5 badge stays null until `etl/inputs/tse/consulta_cand_2026_BRASIL.csv` is downloaded by hand; site go-live needs the `.org` domain; open maintainer questions on the TSE CSV holding CPF and the other personal columns in the raw cache
+**Uncommitted**: none
+**Branch**: `feat/etl-camara` (not pushed); `feat/site` stacked on it

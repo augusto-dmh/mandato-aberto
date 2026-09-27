@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "deputy.schema.json",
+  "title": "deputies/{id}.json",
+  "description": "One deputy with every vote and authored proposition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "party",
+    "uf",
+    "photoUrl",
+    "inExercise",
+    "sourceUrl",
+    "participation",
+    "governmentAlignment",
+    "partyAlignment",
+    "authoredCount",
+    "firstSignerCount",
+    "requirementsCount",
+    "candidacy2026",
+    "exercisePeriods",
+    "authored",
+    "votes"
+  ],
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string",
+      "description": "Parliamentary name from the latest vote record"
+    },
+    "party": {
+      "type": "string"
+    },
+    "uf": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "photoUrl": {
+      "type": "string",
+      "pattern": "^https://",
+      "description": "Official Câmara photo URL; credit 'Foto: Câmara dos Deputados'"
+    },
+    "inExercise": {
+      "type": "boolean",
+      "description": "Listed by the Câmara API as in exercise at build time"
+    },
+    "sourceUrl": {
+      "type": "string",
+      "pattern": "^https://"
+    },
+    "participation": {
+      "$ref": "#/$defs/indicator"
+    },
+    "governmentAlignment": {
+      "$ref": "#/$defs/indicator"
+    },
+    "partyAlignment": {
+      "$ref": "#/$defs/indicator"
+    },
+    "authoredCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "firstSignerCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "requirementsCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "candidacy2026": {
+      "$ref": "#/$defs/candidacy"
+    },
+    "exercisePeriods": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/period"
+      }
+    },
+    "authored": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/authored"
+      },
+      "description": "Newest first"
+    },
+    "votes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/vote"
+      },
+      "description": "Roll-call date descending, then id"
+    }
+  },
+  "$defs": {
+    "indicator": {
+      "description": "A count over its base; never a percentage (AD-004). Method published on the site's Metodologia page.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "total"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "candidacy": {
+      "description": "2026 candidacy from the TSE registry, matched on civil name + birth date + UF; null when absent or ambiguous.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "office",
+        "party",
+        "ballotNumber",
+        "situation"
+      ],
+      "properties": {
+        "office": {
+          "type": "string"
+        },
+        "party": {
+          "type": "string"
+        },
+        "ballotNumber": {
+          "type": "string"
+        },
+        "situation": {
+          "type": "string"
+        }
+      }
+    },
+    "period": {
+      "description": "Half-open interval [start, end) in Brasília time in which the status was Exercício; the last one ends at build time",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+        },
+        "end": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}$"
+        }
+      }
+    },
+    "authored": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "number",
+        "year",
+        "summary",
+        "presentedAt",
+        "status",
+        "firstSigner",
+        "sourceUrl"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "type": {
+          "enum": [
+            "PL",
+            "PLP",
+            "PEC",
+            "PDL",
+            "PRC"
+          ]
+        },
+        "number": {
+          "type": "integer"
+        },
+        "year": {
+          "type": "integer"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "presentedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "firstSigner": {
+          "type": "boolean"
+        },
+        "sourceUrl": {
+          "type": "string",
+          "pattern": "^https://"
+        }
+      }
+    },
+    "vote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rollCallId",
+        "vote",
+        "party",
+        "partyMajority"
+      ],
+      "properties": {
+        "rollCallId": {
+          "type": "string"
+        },
+        "vote": {
+          "type": "string",
+          "description": "Official value; empty when the record carries none"
+        },
+        "party": {
+          "type": "string",
+          "description": "Party at the time of the vote"
+        },
+        "partyMajority": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Most frequent valid vote of the other party members; null on a tie or when none voted"
+        }
+      }
+    }
+  }
+}

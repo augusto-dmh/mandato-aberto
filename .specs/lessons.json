@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 6,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "surviving_mutant::give each component of a composite match key a fixture row that differs only in that component",
+      "text": "Give each component of a composite match key a fixture row that differs only in that component",
+      "signal": "surviving_mutant",
+      "scope": "etl",
+      "status": "candidate",
+      "features": [
+        "etl-camara"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 1 F3, etl/src/mandato_etl/sources/tse.py (etl)"
+      ],
+      "created": "2026-09-27T04:02:02Z",
+      "last_seen": "2026-09-27T04:02:02Z"
+    },
+    {
+      "id": "L-002",
+      "key": "surviving_mutant::test an exclusion filter with the excluded value against a condition that would otherwise include it",
+      "text": "Test an exclusion filter with the excluded value against a condition that would otherwise include it",
+      "signal": "surviving_mutant",
+      "scope": "etl",
+      "status": "candidate",
+      "features": [
+        "etl-camara"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification rounds 1-2 F5, etl/src/mandato_etl/compute.py:225 (etl)"
+      ],
+      "created": "2026-09-27T04:02:02Z",
+      "last_seen": "2026-09-27T04:02:02Z"
+    },
+    {
+      "id": "L-003",
+      "key": "surviving_mutant::when a test expects a value to be preserved make it differ from the pinned clock and any default the code could substitute",
+      "text": "When a test expects a value to be preserved, make it differ from the pinned clock and any default the code could substitute",
+      "signal": "surviving_mutant",
+      "scope": "etl",
+      "status": "candidate",
+      "features": [
+        "etl-camara"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 3, etl/src/mandato_etl/sources/camara.py:137 (etl)"
+      ],
+      "created": "2026-09-27T04:02:02Z",
+      "last_seen": "2026-09-27T04:02:02Z"
+    },
+    {
+      "id": "L-004",
+      "key": "spec_deviation::apply a never persist rule to caches and intermediate files not only to published output",
+      "text": "Apply a never-persist rule to caches and intermediate files, not only to published output",
+      "signal": "spec_deviation",
+      "scope": "etl",
+      "status": "candidate",
+      "features": [
+        "etl-camara"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 1 gap 2, data/raw/deputados.csv (etl)"
+      ],
+      "created": "2026-09-27T04:02:02Z",
+      "last_seen": "2026-09-27T04:02:02Z"
+    },
+    {
+      "id": "L-005",
+      "key": "spec_precision_gap::assert an error message by its full line never by a substring the injected input also contains",
+      "text": "Assert an error message by its full line, never by a substring the injected input also contains",
+      "signal": "spec_precision_gap",
+      "scope": "etl",
+      "status": "candidate",
+      "features": [
+        "etl-camara"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 2 gap 5, etl/tests/test_cli.py:48 (etl)"
+      ],
+      "created": "2026-09-27T04:02:02Z",
+      "last_seen": "2026-09-27T04:02:02Z"
+    }
+  ]
+}

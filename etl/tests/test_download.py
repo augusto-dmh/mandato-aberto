@@ -1,0 +1,176 @@
+"""S1 - download and snapshot (C1, C3, C5, C6, C7)."""
+
+import csv
+import hashlib
+import json
+from datetime import UTC, datetime
+
+import pytest
+import os
+
+from conftest import CPF_IN_DEPUTADOS, build, legislature, render
+
+from mandato_etl import __version__
+from mandato_etl.sources import camara
+
+FILES_2023 = [
+    "votacoes-2023.csv",
+    "votacoesVotos-2023.csv",
+    "votacoesOrientacoes-2023.csv",
+    "votacoesProposicoes-2023.csv",
+    "proposicoes-2023.csv",
+    "proposicoesAutores-2023.csv",
+    "deputados.csv",
+]
+
+
+def test_empty_cache_downloads_every_source_and_writes_manifest(fake):
+    fake.serve(legislature())
+    assert build(fake) == 0
+    assert sorted(p.rsplit("/", 1)[1] for p in fake.bulk_requests()) == sorted(FILES_2023)
+    manifest = json.loads((fake.raw / "manifest.json").read_text())
+    assert sorted(e["file"] for e in manifest) == sorted(FILES_2023)
+    for entry in manifest:
+        assert set(entry) == {"file", "sourceUrl", "sha256", "bytes", "downloadedAt"}
+        content = (fake.raw / entry["file"]).read_bytes()
+        assert entry["sha256"] == hashlib.sha256(content).hexdigest()
+        assert entry["bytes"] == len(content)
+        assert entry["sourceUrl"].endswith("/" + entry["file"])
+        assert entry["downloadedAt"] == "2026-09-27T12:00:00Z"
+
+
+def test_cached_files_issue_no_request(fake):
+    fake.serve(legislature())
+    assert build(fake) == 0
+    before = len(fake.bulk_requests())
+    assert build(fake) == 0
+    assert len(fake.bulk_requests()) == before == 7
+
+
+def test_refresh_downloads_again(fake):
+    fake.serve(legislature())
+    assert build(fake) == 0
+    assert build(fake, "--refresh") == 0
+    assert len(fake.bulk_requests()) == 14
+
+
+@pytest.mark.parametrize(
+    ("answers", "sleeps", "succeeds"),
+    [
+        ([429, 429, 429, 429], [1, 2, 4], False),
+        ([503, 503, 503, 503], [1, 2, 4], False),
+        ([503], [1], True),
+        ([429, 503], [1, 2], True),
+        ([404], [], False),
+    ],
+    ids=["429-exhausted", "503-exhausted", "503-then-200", "429-503-then-200", "404-not-retried"],
+)
+def test_retry_schedule(fake, tmp_path, answers, sleeps, succeeds):
+    path = fake.bulk_path("votacoes", 2023)
+    fake.routes[path] = b"id\n"
+    fake.fail[path] = list(answers)
+    url = camara.BULK_URL.format(name="votacoes", year=2023)
+    if succeeds:
+        camara._download(url, tmp_path / "votacoes-2023.csv", camara.datetime.now(camara.UTC))
+    else:
+        with pytest.raises(camara.DownloadError):
+            camara._download(url, tmp_path / "votacoes-2023.csv", camara.datetime.now(camara.UTC))
+    assert fake.sleeps == sleeps
+    assert len([p for p, _ in fake.requests if p == path]) == min(len(answers) + succeeds, 4)
+
+
+def test_every_request_sends_user_agent(fake):
+    fake.serve(legislature())
+    assert build(fake) == 0
+    expected = f"mandato-aberto-etl/{__version__} (+https://github.com/augusto-dmh/mandato-aberto)"
+    assert {p.split("?")[0].split("/")[1] for p, _ in fake.requests} == {"arquivos", "api"}
+    assert {ua for _, ua in fake.requests} == {expected}
+
+
+def _histories(fake, ids):
+    for dep in ids:
+        fake.routes[f"/api/v2/deputados/{dep}/historico"] = json.dumps({"dados": []}).encode()
+
+
+def test_history_concurrency_is_capped_at_4(fake):
+    ids = [str(i) for i in range(1, 11)]
+    _histories(fake, ids)
+    fake.delay = 0.2
+    camara.histories(ids, fake.raw, refresh=False)
+    assert fake.max_in_flight == 4
+    assert sorted(p.name for p in (fake.raw / "historico").iterdir()) == sorted(f"{i}.json" for i in ids)
+
+
+def test_history_is_cached_per_deputy(fake):
+    ids = [str(i) for i in range(1, 11)]
+    _histories(fake, ids)
+    camara.histories(ids, fake.raw, refresh=False)
+    first = len(fake.requests)
+    camara.histories(ids, fake.raw, refresh=False)
+    assert first == 10
+    assert len(fake.requests) == first
+
+
+def test_raw_cache_never_keeps_cpf(fake):
+    fake.serve(legislature())
+    assert CPF_IN_DEPUTADOS.encode() in fake.routes["/arquivos/deputados/csv/deputados.csv"]  # the source carries it
+    assert build(fake) == 0
+    with open(fake.raw / "deputados.csv", encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f, delimiter=";"))
+    assert len(rows) == 4
+    assert [r["cpf"] for r in rows] == ["", "", "", ""]
+    for path in fake.raw.rglob("*"):
+        if path.is_file():
+            assert CPF_IN_DEPUTADOS.encode() not in path.read_bytes(), path
+    entry = next(e for e in json.loads((fake.raw / "manifest.json").read_text()) if e["file"] == "deputados.csv")
+    assert entry["sha256"] == hashlib.sha256((fake.raw / "deputados.csv").read_bytes()).hexdigest()
+
+
+def _deputados_with_upper_cpf():
+    body = render("deputados", legislature()["rows"]["deputados"])
+    return body.replace(b'"cpf"', b'"CPF"', 1)
+
+
+def _manifest_entry(raw, name):
+    return next(e for e in json.loads((raw / "manifest.json").read_text()) if e["file"] == name)
+
+
+@pytest.mark.parametrize("placement", ["hand-placed", "replaces-listed"])
+def test_cached_copy_with_cpf_is_redacted(fake, placement):
+    fake.serve(legislature())
+    dest = fake.raw / "deputados.csv"
+    if placement == "hand-placed":
+        fake.raw.mkdir(parents=True)
+        dest.write_bytes(_deputados_with_upper_cpf())
+        stamp = datetime(2026, 8, 28, 12, 0, 0, tzinfo=UTC).timestamp()
+        os.utime(dest, (stamp, stamp))
+        expected_at = "2026-08-28T12:00:00Z"
+    else:
+        assert build(fake) == 0
+        dest.write_bytes(_deputados_with_upper_cpf())
+        # a listed date distinct from the pinned clock, so overwriting it with the clock would show
+        manifest = json.loads((fake.raw / "manifest.json").read_text())
+        for entry in manifest:
+            if entry["file"] == "deputados.csv":
+                entry["downloadedAt"] = "2026-09-01T08:00:00Z"
+        (fake.raw / "manifest.json").write_text(json.dumps(manifest))
+        expected_at = "2026-09-01T08:00:00Z"
+    assert CPF_IN_DEPUTADOS.encode() in dest.read_bytes()
+    requests_before = [p for p in fake.bulk_requests() if p.endswith("deputados.csv")]
+    assert build(fake) == 0
+    assert [p for p in fake.bulk_requests() if p.endswith("deputados.csv")] == requests_before
+    assert CPF_IN_DEPUTADOS.encode() not in dest.read_bytes()
+    entry = _manifest_entry(fake.raw, "deputados.csv")
+    assert entry["sha256"] == hashlib.sha256(dest.read_bytes()).hexdigest()
+    assert entry["bytes"] == len(dest.read_bytes())
+    assert entry["downloadedAt"] == expected_at
+
+
+def test_stale_part_file_is_deleted(fake):
+    fake.serve(legislature())
+    assert build(fake) == 0
+    stale = [fake.raw / "deputados.csv.part", fake.raw / "deputados.csv.part.redacted"]
+    for path in stale:
+        path.write_bytes(_deputados_with_upper_cpf())
+    assert build(fake) == 0
+    assert [p.exists() for p in stale] == [False, False]
