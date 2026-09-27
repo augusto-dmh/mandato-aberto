@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[3]
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "out"
 FIRST_YEAR = 2023
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 BRASILIA = timezone(timedelta(hours=-3))
 
 

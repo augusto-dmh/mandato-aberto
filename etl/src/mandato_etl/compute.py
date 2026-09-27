@@ -100,6 +100,8 @@ def load(read: Callable[[str], Iterable[dict]]) -> Loaded:
             "organ": r["siglaOrgao"],
             "description": r["descricao"].strip(),
             "approved": {"1": True, "0": False}.get(r["aprovacao"]),
+            # read only for a secret ballot, whose records carry no vote to count
+            "official": (r.get("votosSim"), r.get("votosNao"), r.get("votosOutros")),
             "proposition": None,
             "governmentOrientation": None,
         }
@@ -161,9 +163,20 @@ def load(read: Callable[[str], Iterable[dict]]) -> Loaded:
     return data
 
 
+def is_secret(votes: list[str]) -> bool:
+    """A secret ballot: the Câmara records who voted, and every record's vote is empty."""
+    return len(votes) > 0 and all(vote == "" for vote in votes)
+
+
 def _roll_call_summary(rc: dict, votes: dict[str, tuple[str, str]]) -> dict:
     values = [vote for vote, _ in votes.values()]
-    yes, no = values.count("Sim"), values.count("Não")
+    secret = is_secret(values)
+    # the readers always carry the official totals; rows built by hand may not
+    if secret and None not in rc["official"]:
+        yes, no, others = (int(n) for n in rc["official"])
+    else:
+        yes, no = values.count("Sim"), values.count("Não")
+        others = sum(1 for v in values if v) - yes - no
     return {
         "id": rc["id"],
         "date": rc["date"],
@@ -171,7 +184,8 @@ def _roll_call_summary(rc: dict, votes: dict[str, tuple[str, str]]) -> dict:
         "description": rc["description"],
         "proposition": rc["proposition"],
         "approved": rc["approved"],
-        "tallies": {"yes": yes, "no": no, "others": sum(1 for v in values if v) - yes - no},
+        "secret": secret,
+        "tallies": {"yes": yes, "no": no, "others": others},
         "governmentOrientation": rc["governmentOrientation"],
         "sourceUrl": ROLL_CALL_URL.format(id=rc["id"]),
     }
@@ -212,7 +226,11 @@ def assemble(
     for dep, profile in data.profiles.items():
         periods = exercise_periods(histories.get(dep, []), now_local)
         eligible = [rc["id"] for rc in plenary if in_periods(rc["at"], periods)]
-        recorded = sum(1 for rc in eligible if by_roll_call[rc].get(dep, ("", ""))[0])
+        # a record in a secret ballot counts: the Câmara registers who voted, not the vote
+        recorded = sum(
+            1 for rc in eligible
+            if by_roll_call[rc].get(dep, ("", ""))[0] or (dep in by_roll_call[rc] and roll_call_docs[rc]["secret"])
+        )
 
         gov_count = gov_total = party_count = party_total = 0
         votes = []

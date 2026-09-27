@@ -36,7 +36,7 @@
       }
     },
     "tallies": {
-      "description": "Counted from the vote records: Sim, Não, and every other non-empty value",
+      "description": "Counted from the vote records: Sim, Não, and every other non-empty value; for a secret ballot, the official votosSim, votosNao and votosOutros",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -69,6 +69,7 @@
         "description",
         "proposition",
         "approved",
+        "secret",
         "tallies",
         "governmentOrientation",
         "sourceUrl"
@@ -96,6 +97,10 @@
             "boolean",
             "null"
           ]
+        },
+        "secret": {
+          "type": "boolean",
+          "description": "A secret ballot: at least one vote record, and every record's vote is empty"
         },
         "tallies": {
           "$ref": "#/$defs/tallies"

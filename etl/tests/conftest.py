@@ -73,6 +73,12 @@ ROLL_CALLS = {
     CY: ("2025-03-01T10:00:00", "CFT", "0"),
 }
 
+# Only in `legislature(secret=True)`: a secret ballot, every record with an empty vote, official totals 12/5/2.
+# 101 and 102 are in exercise on its date, 103 is not -> participation 4/5 for 101, 3/3 for 102.
+R6 = "100-6"
+SECRET = {R6: ("2025-08-01T15:00:00", "PLEN", "1")}
+SECRET_VOTES = [("101", R6, ""), ("102", R6, ""), ("103", R6, "")]
+
 DEPUTIES = {
     "101": ("Ana Souza", "PT", "SP", "ANA MARIA SOUZA", "1970-05-01"),
     "102": ("Bruno Lima", "PT", "RJ", "JOSÉ BRUNO LIMA", "1980-02-02"),
@@ -90,7 +96,8 @@ VOTES = [
     # Government: R1 Sim=Sim; R4 Artigo 17 excluded -> 1/1.
     ("102", R1, "Sim"), ("102", R4, "Artigo 17"), ("102", CX, "Sim"), ("102", CZ, "Não"),
     # 103, never in exercise per history, alone in NOVO -> participation 0/0, party 0/0, government 0/1.
-    ("103", R1, "Não"),
+    # Its R3 vote keeps R3 open: a roll call whose every record is empty is a secret ballot (R3 has no Governo).
+    ("103", R1, "Não"), ("103", R3, "Não"),
 ]
 
 
@@ -98,7 +105,7 @@ def _vote_row(dep, rc, vote, legislature="57", seconds=5):
     name, party, uf, _, _ = DEPUTIES[dep]
     return {
         "idVotacao": rc, "uriVotacao": f"https://dadosabertos.camara.leg.br/api/v2/votacoes/{rc}",
-        "dataHoraVoto": ROLL_CALLS[rc][0][:-2] + f"{seconds:02d}", "voto": vote,
+        "dataHoraVoto": {**ROLL_CALLS, **SECRET}[rc][0][:-2] + f"{seconds:02d}", "voto": vote,
         "deputado_id": dep, "deputado_uri": f"https://dadosabertos.camara.leg.br/api/v2/deputados/{dep}",
         "deputado_nome": name, "deputado_siglaPartido": party, "deputado_siglaUf": uf,
         "deputado_idLegislatura": legislature,
@@ -123,8 +130,11 @@ PROPOSITIONS = [
 ]
 
 
-def legislature() -> dict:
-    """Source rows by kind, plus the API responses, for the hand-built 57th legislature."""
+def legislature(secret: bool = False) -> dict:
+    """Source rows by kind, plus the API responses, for the hand-built 57th legislature.
+
+    `secret=True` adds the secret ballot `R6`; every other row is the same.
+    """
     rows = {
         "votacoes": [
             {"id": rc, "data": at[:10], "dataHoraRegistro": at, "siglaOrgao": organ, "aprovacao": approved,
@@ -161,6 +171,13 @@ def legislature() -> dict:
             for dep, (name, _, _, civil, born) in DEPUTIES.items()
         ],
     }
+    if secret:
+        rows["votacoes"] += [
+            {"id": rc, "data": at[:10], "dataHoraRegistro": at, "siglaOrgao": organ, "aprovacao": approved,
+             "votosSim": "12", "votosNao": "5", "votosOutros": "2", "descricao": f" Votação {rc} "}
+            for rc, (at, organ, approved) in SECRET.items()
+        ]
+        rows["votacoesVotos"] += [_vote_row(dep, rc, vote) for dep, rc, vote in SECRET_VOTES]
     histories = {
         "101": [("2023-02-01T12:05", "Exercício", 57)],
         "102": [("2022-12-01T10:00", "Exercício", 57), ("2023-02-01T12:05", "Exercício", 57),

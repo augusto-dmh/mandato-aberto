@@ -41,7 +41,7 @@ def test_roll_calls_before_legislature_or_without_votes_are_excluded(built):
 
 def test_roll_call_record_fields(built):
     r1 = load(built.out, f"roll-calls/{R1}.json")
-    assert set(r1) == {"id", "date", "organ", "description", "proposition", "approved", "tallies",
+    assert set(r1) == {"id", "date", "organ", "description", "proposition", "approved", "secret", "tallies",
                        "governmentOrientation", "sourceUrl", "votes"}
     assert r1["date"] == "2023-03-01"
     assert r1["organ"] == "PLEN"
@@ -60,7 +60,7 @@ def test_roll_call_record_fields(built):
     r3 = load(built.out, f"roll-calls/{R3}.json")
     assert r3["approved"] is None
     assert r3["proposition"] is None
-    assert r3["tallies"] == {"yes": 0, "no": 0, "others": 0}
+    assert r3["tallies"] == {"yes": 0, "no": 1, "others": 0}
 
 
 def test_deputy_votes_entries_and_order(built):
