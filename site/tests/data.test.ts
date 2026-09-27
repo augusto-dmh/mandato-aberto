@@ -25,13 +25,33 @@ afterEach(() => {
 const readJson = (path: string) => JSON.parse(readFileSync(path, "utf8"));
 
 describe("loadContract", () => {
-  it("rejects schema_version 2", () => {
+  it("rejects schema_version 3", () => {
     const dir = copyFixture();
     const meta = readJson(join(dir, "meta.json"));
-    writeFileSync(join(dir, "meta.json"), JSON.stringify({ ...meta, schema_version: 2 }));
+    writeFileSync(join(dir, "meta.json"), JSON.stringify({ ...meta, schema_version: 3 }));
     expect(() => loadContract(dir)).toThrowError(
-      new Error("Unsupported data contract: meta.json has schema_version 2; this site reads 1"),
+      new Error("Unsupported data contract: meta.json has schema_version 3; this site reads 2"),
     );
+  });
+
+  it("rejects schema_version 1", () => {
+    const dir = copyFixture();
+    const meta = readJson(join(dir, "meta.json"));
+    writeFileSync(join(dir, "meta.json"), JSON.stringify({ ...meta, schema_version: 1 }));
+    expect(() => loadContract(dir)).toThrowError(
+      new Error("Unsupported data contract: meta.json has schema_version 1; this site reads 2"),
+    );
+  });
+
+  it("reads the secret flag", () => {
+    const contract = loadContract(FIXTURE);
+    expect(contract.rollCalls).toHaveLength(8);
+    for (const r of contract.rollCalls) expect(typeof r.secret).toBe("boolean");
+    const byId = new Map(contract.rollCalls.map((r) => [r.id, r]));
+    expect(byId.get("100-6")!.secret).toBe(true);
+    expect(byId.get("100-1")!.secret).toBe(false);
+    expect(contract.rollCall("100-6").secret).toBe(true);
+    expect(contract.rollCall("100-1").secret).toBe(false);
   });
 
   it("rejects a directory without meta.json", () => {

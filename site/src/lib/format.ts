@@ -47,9 +47,10 @@ export function periodLabel(period: Period, generatedAt: string): string {
   return `${formatDate(period.start)} a ${formatDate(period.end)}`;
 }
 
-export function voteLabel(vote: string): string {
+/** `secret`: the roll call is a secret ballot, whose records all carry an empty vote. */
+export function voteLabel(vote: string, secret = false): string {
   if (vote === "Artigo 17") return "Art. 17 (presidente da sessão)";
-  if (vote === "") return "Registro sem voto";
+  if (vote === "") return secret ? "Votação secreta" : "Registro sem voto";
   return vote;
 }
 

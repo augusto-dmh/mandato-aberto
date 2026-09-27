@@ -29,6 +29,12 @@ describe("format", () => {
     expect(voteLabel("Sim")).toBe("Sim");
   });
 
+  it("vote labels for secret ballots", () => {
+    expect(voteLabel("", true)).toBe("Votação secreta");
+    expect(voteLabel("", false)).toBe("Registro sem voto");
+    expect(voteLabel("Artigo 17", false)).toBe("Art. 17 (presidente da sessão)");
+  });
+
   it("roll-call vote groups", () => {
     const votes = [
       { name: "Zeca", vote: "" },

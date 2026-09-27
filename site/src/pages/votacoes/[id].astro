@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import { contract } from "../../lib/data";
-import { formatDate, formatNumber, groupVotes, organLabel, resultLabel } from "../../lib/format";
+import { byName, formatDate, formatNumber, groupVotes, organLabel, resultLabel } from "../../lib/format";
 
 export function getStaticPaths() {
   return contract().rollCalls.map((r) => ({ params: { id: r.id } }));
@@ -12,19 +12,25 @@ const PROPOSITION_PAGE = "https://www.camara.leg.br/propostas-legislativas/";
 const { deputies } = contract();
 const rollCall = contract().rollCall(Astro.params.id!);
 const deputiesById = new Map(deputies.map((d) => [d.id, d]));
-const groups = groupVotes(
-  rollCall.votes.map((v) => {
-    const deputy = deputiesById.get(v.deputyId)!;
-    return { ...v, name: deputy.name, uf: deputy.uf };
-  }),
-);
+const named = rollCall.votes.map((v) => {
+  const deputy = deputiesById.get(v.deputyId)!;
+  return { ...v, name: deputy.name, uf: deputy.uf };
+});
+// A secret ballot records who voted and no vote: one group, not a group per value.
+const groups = rollCall.secret
+  ? [{ value: "", label: "Deputados que votaram", entries: [...named].sort(byName) }]
+  : groupVotes(named);
 const date = formatDate(rollCall.date);
 const heading = rollCall.proposition?.title ?? `Votação nominal de ${date}`;
 ---
 
 <Base
-  title={`${heading}: como cada deputado votou`}
-  description={`Votação nominal de ${date} (${organLabel(rollCall.organ)}) na Câmara dos Deputados, com o voto de cada deputado e o registro oficial.`}
+  title={rollCall.secret ? `${heading}: votação secreta` : `${heading}: como cada deputado votou`}
+  description={
+    rollCall.secret
+      ? `Votação secreta de ${date} (${organLabel(rollCall.organ)}) na Câmara dos Deputados, com os totais oficiais e os deputados que votaram.`
+      : `Votação nominal de ${date} (${organLabel(rollCall.organ)}) na Câmara dos Deputados, com o voto de cada deputado e o registro oficial.`
+  }
   path={`/votacoes/${rollCall.id}/`}
   image="/cards/site.png"
 >
@@ -34,6 +40,7 @@ const heading = rollCall.proposition?.title ?? `Votação nominal de ${date}`;
   </h1>
   {rollCall.proposition?.summary && <p class="lede">{rollCall.proposition.summary}</p>}
   <p>{rollCall.description}</p>
+  {rollCall.secret && <p class="secret-notice">Votação secreta: a Câmara registra quem votou, não o voto de cada deputado.</p>}
 
   <dl class="facts">
     <div>
@@ -41,7 +48,7 @@ const heading = rollCall.proposition?.title ?? `Votação nominal de ${date}`;
       <dd>{resultLabel(rollCall.approved)}</dd>
     </div>
     <div>
-      <dt>Votos</dt>
+      <dt>{rollCall.secret ? "Totais oficiais da Câmara" : "Votos"}</dt>
       <dd class="tallies">
         <span>Sim <strong>{formatNumber(rollCall.tallies.yes)}</strong></span>
         <span>Não <strong>{formatNumber(rollCall.tallies.no)}</strong></span>
@@ -62,8 +69,14 @@ const heading = rollCall.proposition?.title ?? `Votação nominal de ${date}`;
   <p><a href={rollCall.sourceUrl}>Registro oficial na Câmara dos Deputados</a></p>
 
   <section class="section">
-    <h2>Como cada deputado votou</h2>
-    <p class="note">Agrupado pelo voto registrado; em cada grupo, ordem alfabética. Partido na data da votação.</p>
+    <h2>{rollCall.secret ? "Quem votou" : "Como cada deputado votou"}</h2>
+    <p class="note">
+      {
+        rollCall.secret
+          ? "Em ordem alfabética. Partido na data da votação."
+          : "Agrupado pelo voto registrado; em cada grupo, ordem alfabética. Partido na data da votação."
+      }
+    </p>
     <div class="vote-groups">
       {
         groups.map((group) => (

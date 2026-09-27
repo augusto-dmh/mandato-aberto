@@ -50,7 +50,7 @@ describe("deputy card content", () => {
       "Ana Souza",
       "PT · SP",
       PARTICIPATION,
-      "3 de 4",
+      "4 de 5",
       GOVERNMENT,
       "2 de 3",
       PARTY,
@@ -67,7 +67,7 @@ describe("deputy card content", () => {
     expect(texts(tree101)).toContain("Foto: Câmara dos Deputados");
 
     const tree102 = cardTree(deputy(102), contract.meta, null);
-    expectInOrder(texts(tree102), [PARTICIPATION, "2 de 2", GOVERNMENT, "1 de 1", PARTY, "2 de 3"]);
+    expectInOrder(texts(tree102), [PARTICIPATION, "3 de 3", GOVERNMENT, "1 de 1", PARTY, "2 de 3"]);
 
     const tree103 = cardTree(deputy(103), contract.meta, null);
     expect(images(tree103)).toEqual([]);
