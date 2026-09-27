@@ -1,0 +1,13 @@
+---
+/** Layout of the long-form Markdown pages: their frontmatter carries what `Base` needs. */
+import Base from "./Base.astro";
+
+const { frontmatter } = Astro.props;
+---
+
+<Base title={frontmatter.title} description={frontmatter.description} path={frontmatter.path} image="/cards/site.png">
+  <div class="prose">
+    <h1>{frontmatter.title}</h1>
+    <slot />
+  </div>
+</Base>

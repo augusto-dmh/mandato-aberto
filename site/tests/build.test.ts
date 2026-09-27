@@ -486,3 +486,114 @@ describe("launch S2 report an error", () => {
     );
   });
 });
+
+const methodology = () => page("metodologia");
+const SECTIONS = ["participacao", "alinhamento-governo", "alinhamento-partido", "proposicoes", "candidatura-2026", "fontes"];
+/** A methodology section: from its `<h2 id>` to the next `<h2` or the end of `<main>`. */
+function methodSection(id: string): string {
+  const html = methodology();
+  const start = html.indexOf(`<h2 id="${id}">`);
+  if (start < 0) throw new Error(`no <h2 id="${id}">`);
+  const next = html.indexOf("<h2", start + 1);
+  return html.slice(start, next < 0 ? html.indexOf("</main>") : next);
+}
+const expectSentences = (html: string, sentences: string[]) => {
+  const text = visible(html);
+  for (const sentence of sentences) expect(text).toContain(sentence);
+};
+
+describe("launch S3 methodology", () => {
+  it("methodology sections in order", () => {
+    const html = methodology();
+    const h2s = [...html.matchAll(/<h2\b([^>]*)>/g)].map((m) => /id="([^"]*)"/.exec(m[1])?.[1]);
+    expect(h2s.slice(0, SECTIONS.length)).toEqual(SECTIONS);
+  });
+
+  it("methodology participation", () => {
+    expectSentences(methodSection("participacao"), [
+      "Conta: votações nominais do plenário em que o deputado tem registro com qualquer valor: Sim, Não, Abstenção, Obstrução, Art. 17 ou registro em votação secreta.",
+      "Base: votações nominais do plenário realizadas enquanto o deputado estava em exercício, segundo o histórico de situações publicado pela Câmara. Só os períodos com situação Exercício entram; licença e qualquer outra situação ficam de fora.",
+      "Votações em comissões não entram neste número.",
+      "Os dados abertos não informam por que um deputado não tem registro em uma votação. Por isso o site não atribui motivo a nenhum registro que não existe.",
+    ]);
+  });
+
+  it("methodology government alignment", () => {
+    expectSentences(methodSection("alinhamento-governo"), [
+      "Conta: votos Sim, Não, Abstenção ou Obstrução iguais à orientação da bancada GOVERNO na mesma votação.",
+      "Base: votos Sim, Não, Abstenção ou Obstrução em votações em que a orientação GOVERNO foi um desses quatro valores.",
+      "Orientação Liberado, votação sem orientação registrada, registro Art. 17 e votação secreta ficam fora da conta e da base.",
+    ]);
+  });
+
+  it("methodology party alignment", () => {
+    expectSentences(methodSection("alinhamento-partido"), [
+      "O partido é o registrado no voto, não o atual.",
+      "A maioria é calculada entre os outros deputados do mesmo partido na mesma votação, sobre os mesmos quatro valores, sem o voto do próprio deputado.",
+      "Empate, ou nenhum outro deputado do partido na votação, deixa a votação fora da conta e da base.",
+    ]);
+  });
+
+  it("methodology propositions", () => {
+    expectSentences(methodSection("proposicoes"), [
+      "Conta PL, PLP, PEC, PDL e PRC apresentados a partir de 01/02/2023 em que o deputado consta como proponente.",
+      "Primeiro signatário: o deputado é o primeiro na ordem de assinatura.",
+      "REQ, RIC e INC são contados à parte, como requerimentos.",
+    ]);
+  });
+
+  it("methodology candidacy", () => {
+    const html = methodSection("candidatura-2026");
+    expect(html).toContain('<a href="https://dadosabertos.tse.jus.br/dataset/candidatos-2026">');
+    expectSentences(html, [
+      "O cruzamento usa nome civil, data de nascimento e UF. O CPF não é lido.",
+      "Um deputado que corresponde a mais de uma candidatura não recebe selo.",
+      "A situação exibida é a que consta no arquivo do TSE na data da última atualização manual, registrada no histórico do repositório.",
+    ]);
+  });
+
+  it("methodology sources", () => {
+    const html = methodSection("fontes");
+    const kinds = ["votacoes", "votacoesVotos", "votacoesOrientacoes", "votacoesProposicoes", "proposicoes", "proposicoesAutores"];
+    for (const kind of kinds) {
+      expect(html).toContain(`href="https://dadosabertos.camara.leg.br/arquivos/${kind}/csv/${kind}-2023.csv"`);
+    }
+    expect(html).toContain('href="https://dadosabertos.camara.leg.br/arquivos/deputados/csv/deputados.csv"');
+    const items = [...html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) => m[1]);
+    const apiItem = items.find((item) => item.includes('href="https://dadosabertos.camara.leg.br/api/v2/deputados"'));
+    expect(apiItem).toBeDefined();
+    expect(visible(apiItem!)).toContain("/deputados/{id}/historico");
+    expect(html).toContain('href="https://dadosabertos.tse.jus.br/dataset/candidatos-2026"');
+    expectSentences(html, [
+      "Os arquivos dos anos seguintes têm o mesmo nome, com o ano trocado.",
+      "A 57ª legislatura começou em 01/02/2023.",
+      "Os dados são reconstruídos todos os dias; cada página mostra a data da coleta.",
+    ]);
+  });
+
+  it("methodology secret ballots", () => {
+    expectSentences(methodology(), [
+      "Em uma votação secreta, a Câmara registra quem votou, não o voto de cada deputado. Os totais exibidos são os oficiais da Câmara.",
+    ]);
+  });
+
+  it("methodology deputy set", () => {
+    expectSentences(methodology(), [
+      "O site lista todo deputado com pelo menos um registro de voto na 57ª legislatura, inclusive suplentes e deputados fora de exercício.",
+      "Em exercício significa que o deputado consta na lista atual de deputados da Câmara.",
+    ]);
+  });
+
+  it("methodology photos", () => {
+    expectSentences(methodology(), [
+      "As fotos são as oficiais da Câmara dos Deputados, exibidas sem recorte ou filtro, com o crédito Foto: Câmara dos Deputados.",
+    ]);
+  });
+
+  it("profile methodology links resolve", () => {
+    const anchors = [...profile(101).matchAll(/href="\/metodologia\/#([^"]+)"/g)].map((m) => m[1]);
+    expect(new Set(anchors)).toEqual(new Set(["participacao", "alinhamento-governo", "alinhamento-partido", "proposicoes"]));
+    const ids = new Set([...methodology().matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]));
+    for (const anchor of anchors) expect(ids.has(anchor), anchor).toBe(true);
+  });
+});
