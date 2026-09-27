@@ -6,6 +6,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { extname } from "node:path";
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -820,5 +821,54 @@ describe("launch S6 host files", () => {
         "",
       ].join("\n"),
     );
+  });
+});
+
+const BEACON = (token: string) =>
+  `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${token}"}'></script>`;
+/** Every file under `dir` with the extension `ext`, recursively. */
+function filesWith(dir: string, ext: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return filesWith(path, ext);
+    return extname(entry.name) === ext ? [path] : [];
+  });
+}
+const count = (text: string, fragment: string) => text.split(fragment).length - 1;
+
+describe("launch S7 analytics without cookies", () => {
+  it("analytics beacon with token", () => {
+    const out = join(work, "dist-analytics");
+    const result = astroBuild(FIXTURE, out, { CF_ANALYTICS_TOKEN: "test-token" });
+    expect(result.status, result.stderr).toBe(0);
+    const pages = ["index.html", "deputados/101/index.html", "404.html", "metodologia/index.html"];
+    for (const file of pages) {
+      const html = readFileSync(join(out, file), "utf8");
+      expect(count(html, BEACON("test-token")), file).toBe(1);
+      expect(html, file).not.toContain('<script src="http');
+      expect([...html.matchAll(/<script\b[^>]*\bsrc="https?:/g)], file).toHaveLength(1);
+    }
+  });
+
+  it("no external script without token", () => {
+    const pages = filesWith(dist, ".html");
+    expect(pages.length).toBeGreaterThanOrEqual(18);
+    for (const file of pages) {
+      const html = readFileSync(file, "utf8");
+      expect(html, file).not.toContain('<script src="http');
+      expect(html, file).not.toMatch(/<script\b[^>]*\bsrc="https?:/);
+      expect(html, file).not.toContain("cloudflareinsights");
+    }
+  });
+
+  it("no storage access in site scripts", () => {
+    const scripts = filesWith(join(dist, "_astro"), ".js").map((file) => readFileSync(file, "utf8"));
+    expect(scripts.length).toBeGreaterThan(0);
+    const inline = filesWith(dist, ".html").flatMap((file) =>
+      [...readFileSync(file, "utf8").matchAll(/<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map((m) => m[1]),
+    );
+    for (const text of [...scripts, ...inline]) {
+      for (const api of ["document.cookie", "localStorage", "sessionStorage"]) expect(text).not.toContain(api);
+    }
   });
 });

@@ -22,6 +22,15 @@ const url = new URL(path, Astro.site).href;
 const imageUrl = new URL(image, Astro.site).href;
 const { meta } = contract();
 const documentTitle = path === "/" ? title : `${title} - Mandato Aberto`;
+
+// Cloudflare Web Analytics, only when the build is given a token (plan door 5): no cookie, no identifier.
+const analyticsToken = process.env.CF_ANALYTICS_TOKEN;
+if (analyticsToken && !/^[A-Za-z0-9_-]+$/.test(analyticsToken)) {
+  throw new Error("CF_ANALYTICS_TOKEN must hold only letters, digits, '-' and '_'");
+}
+const beacon = analyticsToken
+  ? `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "${analyticsToken}"}'></script>`
+  : "";
 ---
 
 <!doctype html>
@@ -62,5 +71,6 @@ const documentTitle = path === "/" ? title : `${title} - Mandato Aberto`;
         </nav>
       </div>
     </footer>
+    {beacon && <Fragment set:html={beacon} />}
   </body>
 </html>
