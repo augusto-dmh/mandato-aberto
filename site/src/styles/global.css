@@ -103,8 +103,10 @@ h3 {
   margin: 0;
 }
 
-main {
-  padding: 36px 0 64px;
+/* `main` also carries `.wrap`, whose shorthand padding would otherwise drop the vertical space. */
+main.wrap {
+  padding-top: 36px;
+  padding-bottom: 64px;
 }
 
 .site-footer {
@@ -526,6 +528,18 @@ main {
   margin-left: 4px;
 }
 
+/* Three "n de m" figures do not fit side by side below this width. */
+@media (max-width: 900px) {
+  .indicators {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .indicator h3 {
+    min-height: 0;
+  }
+}
+
 @media (max-width: 640px) {
   :root {
     --gutter: 16px;
@@ -552,11 +566,17 @@ main {
     min-height: 0;
   }
 
+  /* Date, organ and vote on the first line; the title below. */
   .votes-year li {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
+    gap: 2px 12px;
   }
 
-  .votes-year .organ,
+  .votes-year .vote {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
   .votes-year a {
     grid-column: 1 / -1;
   }
