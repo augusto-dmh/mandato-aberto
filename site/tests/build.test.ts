@@ -15,6 +15,7 @@ import { CORRECTIONS_EMAIL, MAINTAINERS } from "../src/lib/site";
 const SITE = resolve(__dirname, "..");
 const FIXTURE = join(__dirname, "fixtures", "out");
 const PHOTO = join(__dirname, "fixtures", "photos", "101.jpg");
+const CORRECTIONS = join(__dirname, "fixtures", "corrections");
 const ORIGIN = "https://preview.example.org";
 const COLLECTED = "Dados coletados em 27/09/2026 às 09:00 (horário de Brasília)";
 const ROLL_CALLS = ["100-1", "100-2", "100-3", "100-4", "100-6", "200-1", "200-2", "200-3"];
@@ -23,7 +24,7 @@ let work: string;
 let dist: string;
 let cache: string;
 
-function astroBuild(dataDir: string, outDir: string) {
+function astroBuild(dataDir: string, outDir: string, env: Record<string, string> = {}) {
   return spawnSync(process.execPath, [join(SITE, "node_modules", "astro", "bin", "astro.mjs"), "build", "--outDir", outDir], {
     cwd: SITE,
     encoding: "utf8",
@@ -34,6 +35,9 @@ function astroBuild(dataDir: string, outDir: string) {
       MANDATO_PHOTO_CACHE: cache,
       SITE_URL: ORIGIN,
       ASTRO_TELEMETRY_DISABLED: "1",
+      MANDATO_CORRECTIONS_DIR: CORRECTIONS,
+      CF_ANALYTICS_TOKEN: "",
+      ...env,
     },
   });
 }
@@ -675,5 +679,65 @@ describe("launch S4 who we are and privacy", () => {
 
   it("privacy balancing test link", () => {
     expect(privacy()).toContain(`<a href="${REPO}/blob/main/research/03-teste-de-balanceamento-lgpd.md">teste de balanceamento</a>`);
+  });
+});
+
+const correctionsPage = () => page("correcoes");
+const entries = (html: string) => [...html.matchAll(/<article\b[^>]*>([\s\S]*?)<\/article>/g)].map((m) => m[1]);
+
+describe("launch S5 corrections", () => {
+  it("corrections page lists records", () => {
+    const [first, second, ...rest] = entries(correctionsPage());
+    expect(rest).toEqual([]);
+    expect(visible(first)).toContain("25/09/2026");
+    expect(first).toContain('<a href="/votacoes/100-1/">/votacoes/100-1/</a>');
+    expect(first).toContain('<a href="/deputados/102/">/deputados/102/</a>');
+    expect(visible(first)).toContain("Resposta publicada");
+    expect(visible(first)).toContain(
+      "Relato de que o voto de Bruno Lima na votação 100-1 não corresponde à posição do deputado sobre a proposta.",
+    );
+    const text = visible(second);
+    for (const value of ["20/09/2026", "Corrigido", "Resolvido em 22/09/2026", "Base de cálculo da participação corrigida (PR #9)"]) {
+      expect(text).toContain(value);
+    }
+    expect(second).toContain('<a href="/deputados/101/">/deputados/101/</a>');
+  });
+
+  it("corrections page renders a reply", () => {
+    const [first, second] = entries(correctionsPage());
+    const reply = "Votei Sim na votação 100-1 porque o texto final incluiu a emenda que apresentei. Peço que esta resposta acompanhe o registro.";
+    expect(visible(first)).toContain(reply);
+    const heading = first.indexOf("<h3>Resposta do parlamentar</h3>");
+    expect(heading).toBeGreaterThanOrEqual(0);
+    expect(first.indexOf(reply)).toBeGreaterThan(heading);
+    expect(second).not.toContain("Resposta do parlamentar");
+  });
+
+  it("corrections page empty state", () => {
+    const empty = join(work, "corrections-empty");
+    mkdirSync(empty);
+    const out = join(work, "dist-corrections-empty");
+    const result = astroBuild(FIXTURE, out, { MANDATO_CORRECTIONS_DIR: empty });
+    expect(result.status, result.stderr).toBe(0);
+    const html = readFileSync(join(out, "correcoes", "index.html"), "utf8");
+    expect(visible(html)).toContain("Nenhuma correção registrada até 27/09/2026.");
+    expect(html).not.toContain("<article");
+  });
+
+  it("build fails on a malformed correction", () => {
+    const bad = join(work, "corrections-bad");
+    mkdirSync(bad);
+    writeFileSync(join(bad, "2026-09-04-d.md"), "---\nreceivedAt: 2026-09-04\npages: [/deputados/101/]\nstatus: fixed\n---\n\nRelato.\n");
+    const result = astroBuild(FIXTURE, join(work, "dist-corrections-bad"), { MANDATO_CORRECTIONS_DIR: bad });
+    expect(result.status).not.toBe(0);
+    expect(result.stdout + result.stderr).toContain("2026-09-04-d.md");
+  });
+
+  it("corrections page policy", () => {
+    expectHtml(correctionsPage(), [
+      `Qualquer pessoa pode reportar um erro pelo <a href="/reportar-erro/">formulário</a> ou pelo e-mail ${mailtoLink}.`,
+      "Toda mensagem recebe triagem em até 48 horas.",
+      "Um erro confirmado é corrigido, e a resposta de um parlamentar é publicada nesta página com o mesmo destaque do dado contestado, em até 7 dias.",
+    ]);
   });
 });

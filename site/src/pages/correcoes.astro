@@ -1,0 +1,62 @@
+---
+import Base from "../layouts/Base.astro";
+import { correctionsDir, paragraphs, readCorrections, statusLabel } from "../lib/corrections";
+import { contract } from "../lib/data";
+import { collectedDate, formatDate } from "../lib/format";
+import { CORRECTIONS_EMAIL } from "../lib/site";
+
+const records = readCorrections(correctionsDir());
+const { meta } = contract();
+---
+
+<Base
+  title="Correções"
+  description="Erros reportados ao Mandato Aberto, o que foi corrigido e as respostas de parlamentares, do mais recente ao mais antigo."
+  path="/correcoes/"
+  image="/cards/site.png"
+>
+  <div class="prose">
+    <h1>Correções</h1>
+    <p>Qualquer pessoa pode reportar um erro pelo <a href="/reportar-erro/">formulário</a> ou pelo e-mail <a href={`mailto:${CORRECTIONS_EMAIL}`}>{CORRECTIONS_EMAIL}</a>.</p>
+    <p>Toda mensagem recebe triagem em até 48 horas.</p>
+    <p>Um erro confirmado é corrigido, e a resposta de um parlamentar é publicada nesta página com o mesmo destaque do dado contestado, em até 7 dias.</p>
+  </div>
+
+  <section class="section corrections">
+    <h2>Registro de correções</h2>
+    {
+      records.length === 0 ? (
+        <p>Nenhuma correção registrada até {collectedDate(meta.generatedAt)}.</p>
+      ) : (
+        records.map((r) => (
+          <article class="correction" id={r.id}>
+            <p class="kicker">
+              Recebido em <time datetime={r.receivedAt}>{formatDate(r.receivedAt)}</time> · {statusLabel(r.status)}
+            </p>
+            <p class="pages">
+              {r.pages.map((path, i) => (
+                <>
+                  {i > 0 && ", "}
+                  <a href={path}>{path}</a>
+                </>
+              ))}
+            </p>
+            {paragraphs(r.body).map((p) => (
+              <p>{p}</p>
+            ))}
+            {r.resolvedAt && <p class="note">Resolvido em {formatDate(r.resolvedAt)}</p>}
+            {r.action && <p class="note">{r.action}</p>}
+            {r.reply !== null && (
+              <div class="reply">
+                <h3>Resposta do parlamentar</h3>
+                {paragraphs(r.reply).map((p) => (
+                  <p>{p}</p>
+                ))}
+              </div>
+            )}
+          </article>
+        ))
+      )
+    }
+  </section>
+</Base>
