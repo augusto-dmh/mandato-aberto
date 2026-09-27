@@ -1,32 +1,26 @@
 # etl-camara verification
 
-**Verdict**: FAIL
+**Verdict**: PASS
 **Profile**: standard
-**Diff range**: fb98700..75250c3
-**Round**: 3 - scoped
-**Verifier**: independent sub-agent (author != verifier)
+**Diff range**: fb98700..327bf5b
+**Round**: 4 - scoped
+**Verifier**: self-verified (degraded - author == verifier; run inline at the maintainer's request instead of a fresh sub-agent)
 
-Round 3 covers the fix diff `d49d892..75250c3`. 75250c3 is the fix; 3e3488e only adds the round-2 report. It also covers every verdict that round 2 did not mark PASS: C19, C40, C43, the unproven Coverage members, the unmet Test policy rows and the three surviving mutants.
+Round 4 covers the fix diff `0dccaf9..327bf5b`. `f729176` changes one test (`etl/tests/test_download.py`, `[replaces-listed]` case); `327bf5b` only adds the lessons and the STATE handoff. It also covers the single verdict round 3 did not mark PASS: C46, its Coverage member "listed entry keeps its original `downloadedAt`", and Test policy row 1.
 
-All proofs re-ran in full at `75250c3`: 89 passed, 0 failed. The new named tests exist and each appears individually as `PASSED`:
-- C46: 2 parametrized ids plus `test_stale_part_file_is_deleted`.
-- C47: 6 ids.
-- C48: 1 test.
+This round was run by the author, inline, because the maintainer asked for it that way. That is a degraded gate: a self-check can reproduce the author's blind spot. It is kept narrow on purpose. Only the round-3 gap and the lines the fix touched are judged here, and everything else is carried from the independent round 3 at `75250c3`, marked as such.
 
-The fix closes most round-2 gaps. All three round-2 survivors are now killed: F5, R2 and the C43 message mutant. Header case, the stale `.part`, the `downloadedAt` ordering regression and `Abstenção` in participation are closed.
+All proofs re-ran in full at `327bf5b`: `uv run --directory etl pytest -v tests/`, 89 passed, 0 failed. Both C46 ids and `test_stale_part_file_is_deleted` appear individually as `PASSED`.
 
-The verdict is still FAIL, for one narrow gap. C46 claims that a copy replacing a listed entry keeps "the listed entry's original" `downloadedAt`. The test's expected value, `2026-09-27T12:00:00Z`, is also the pinned clock of the second build. So a mutant that stamps the build time on a re-redacted listed copy survives. As a result:
-- C46 is PARTIAL.
-- One Coverage member is unproven.
-- The `camara.py` Test policy row stays unmet.
+The fix diff only changes the `[replaces-listed]` setup. Before the second build it rewrites the listed entry's `downloadedAt` to `2026-09-01T08:00:00Z`, which differs from the pinned clock (`2026-09-27T12:00:00Z`), and expects that value. No assertion was removed or loosened: `:166` still compares `entry["downloadedAt"] == expected_at`, and only `expected_at` changed from a value equal to the clock to one that is not.
 
-## Binding sources - AD-003, AD-005 and door 9 verified at 75250c3; other rows carried from d49d892
+## Binding sources - carried from 75250c3; the door-9 row's Uncovered cell updated at 327bf5b
 
 Step 1 is `ui`-only. As in earlier rounds, the AD rows that door 9 exists to satisfy were re-read, because the fix reworded that door (`plan.md:65`).
 
 | Source | Opened | Contradiction | Uncovered |
 | --- | --- | --- | --- |
-| `.specs/STATE.md` AD-003 ("CPF is never persisted, exposed or logged"), AD-005 ("carries the collection timestamp; raw downloads are kept with a hash"), plan door 9 as reworded at 75250c3 | yes - read at 75250c3 | none. Every clause of the reworded door matches the code. Any header containing `cpf` in any case is blanked (`etl/src/mandato_etl/sources/camara.py:82`). A cached copy that still carries a value is redacted on every run (`camara.py:138-141`). `downloadedAt` comes from the listed entry or from the mtime read before redaction (`camara.py:137`). Stale `*.part`/`*.redacted` files are removed at the start of each run (`camara.py:124-125`). | - (each clause has a check: C39 and C46. The `downloadedAt` listed-entry clause is covered by C46 but not discriminated; see Checks and Coverage) |
+| `.specs/STATE.md` AD-003 ("CPF is never persisted, exposed or logged"), AD-005 ("carries the collection timestamp; raw downloads are kept with a hash"), plan door 9 as reworded at 75250c3 | yes - read at 75250c3 | none. Every clause of the reworded door matches the code. Any header containing `cpf` in any case is blanked (`etl/src/mandato_etl/sources/camara.py:82`). A cached copy that still carries a value is redacted on every run (`camara.py:138-141`). `downloadedAt` comes from the listed entry or from the mtime read before redaction (`camara.py:137`). Stale `*.part`/`*.redacted` files are removed at the start of each run (`camara.py:124-125`). Each clause has a check (C39, C46); the listed-entry `downloadedAt` clause is discriminated at 327bf5b (C46, M1 killed). | - |
 | `research/02` decision 9, plan AC 19 | carried from d49d892 | none | - |
 | `research/02` decisions 3 and 8, "Votações incluídas" | carried from d49d892 | none | - |
 | prototype `etl/build.py` (tag `prototype-2026-09`) | carried from d49d892 | none | - |
@@ -40,9 +34,9 @@ Round-2 redaction probes, status at 75250c3:
 | C - header `CPF` kept its values | closed. Both C46 ids use header `CPF` (`test_download.py:129-131`) |
 | E - stale `.part` survived a cached run | closed. Proven by `test_stale_part_file_is_deleted` (`test_download.py:170`); the stale-cleanup mutant was killed |
 
-## Checks - proofs verified at 75250c3; citations refreshed for test_download.py, test_indicators.py, test_cli.py and for C19, C40, C43; the rest carried from d49d892
+## Checks - proofs verified at 327bf5b; C46 citations refreshed at 327bf5b; every other row carried from 75250c3
 
-Proof run for every row: `uv run --directory etl pytest -v tests/` from the repo root, exit 0, 89 passed in 5.02s at `75250c3`. Every named test and each parametrized id appears individually as `PASSED`.
+Proof run for every row: `uv run --directory etl pytest -v tests/` from the repo root, exit 0, 89 passed in 5.48s at `327bf5b`. Every named test and each parametrized id appears individually as `PASSED`.
 
 `rg -n "^def test_(cached_copy_with_cpf_is_redacted|stale_part_file_is_deleted|vote_value_against_sim_orientation|source_missing_column_message)" etl/tests` finds:
 - `test_download.py:139`
@@ -99,20 +93,20 @@ The test diff `d49d892..75250c3` only adds lines. It adds imports, two helpers a
 | C43 | a missing allowlisted column gives exit 1, names the file and the column on stderr, and keeps the previous output | `test_cli.py::test_source_missing_column_exits_1` PASSED | `etl/tests/test_cli.py:45` - `build(fake, "--refresh") == 1`; `:47` - `"votacoes-2023.csv" in err`; `:48` - `"siglaOrgao" in err`; `:49` - out/ byte-identical. `:48` is still a substring of the injected `siglaOrgaoX` (`:44`), but the column is now pinned by C48 (`:68`), which kills the round-2 message mutant. Residual under Precision gaps. | PASS |
 | C44 | `--quiet` gives an empty stderr; without it, one line per stage starting with `sources: 2023-2023` | `::test_quiet_silences_progress` PASSED | `etl/tests/test_cli.py:55` - `== 0`; `:56` - `capsys.readouterr().err == ""`; `:59` - `lines[0] == "sources: 2023-2023"`; `:60` - `len(lines) >= 4` (see Precision gaps) | PASS |
 | C45 | `schema_version: 2` is rejected by both validators | `test_schema.py::test_const_violation_is_rejected_by_both` PASSED | carried from d49d892: `etl/tests/test_schema.py:49-50` | PASS |
-| C46 | a CPF under header `CPF` is blanked, without `--refresh`, both in a hand-placed copy and in a copy replacing a listed entry; the manifest `sha256` matches; `downloadedAt` keeps `2026-08-28T12:00:00Z` (mtime) **or the listed entry's original value**; a stale `.part` is deleted | `test_download.py -k test_cached_copy_with_cpf_is_redacted` - 2 ids PASSED; `::test_stale_part_file_is_deleted` PASSED | `etl/tests/test_download.py:152` - the CPF is present before; `:155` - no new `deputados.csv` request; `:156` - `CPF_IN_DEPUTADOS.encode() not in dest.read_bytes()`; `:158` - `entry["sha256"] == hashlib.sha256(dest.read_bytes()).hexdigest()`; `:159` - `bytes`; `:160` - `entry["downloadedAt"] == expected_at`; `:170` - `[p.exists() for p in stale] == [False, False]`. For `hand-placed`, `expected_at` is `2026-08-28T12:00:00Z` (`:147`), which is discriminating. For `replaces-listed`, `expected_at` is `2026-09-27T12:00:00Z` (`:151`), and that is also the clock of the second build (`PINNED`, `etl/tests/conftest.py:21`). So `:160` cannot tell "kept the listed value" from "stamped the build time". The `downloadedAt` mutant survived. | PARTIAL - the "listed entry's original value" clause is not discriminated |
+| C46 | a CPF under header `CPF` is blanked, without `--refresh`, both in a hand-placed copy and in a copy replacing a listed entry; the manifest `sha256` matches; `downloadedAt` keeps `2026-08-28T12:00:00Z` (mtime) or the listed entry's original value; a stale `.part` is deleted | `test_download.py -k test_cached_copy_with_cpf_is_redacted` - 2 ids PASSED; `::test_stale_part_file_is_deleted` PASSED, at 327bf5b | `etl/tests/test_download.py:147` - `expected_at = "2026-08-28T12:00:00Z"` (hand-placed); `:152-157` - the listed entry is rewritten to `2026-09-01T08:00:00Z` and `expected_at` set to it, distinct from the pinned clock; `:166` - `entry["downloadedAt"] == expected_at`; the CPF, request, `sha256` and `bytes` assertions and `:176` (stale files) unchanged from round 3. M1 (listed -> build clock), M2 (listed ignored -> mtime) and M3 (manifest not rewritten after redaction) are all killed | PASS |
 | C47 | one PLEN roll call, government orientation `Sim`, colleague `Sim`: per vote value X, government, party and participation pairs as tabled | `test_indicators.py -k test_vote_value_against_sim_orientation` - 6 ids PASSED | `etl/tests/test_indicators.py:152` - `as_pair(deputy["governmentAlignment"]) == government`; `:153` - `partyAlignment == party`; `:154` - `participation == participation`, over the literals `:127-132` (orientation `Sim` at `:140`, colleague `Sim` at `:145`). F5 killed at the `Artigo-17` id | PASS |
 | C48 | the stderr of C43 contains exactly the line `error: votacoes-2023.csv: missing columns siglaOrgao` | `test_cli.py::test_source_missing_column_message` PASSED | `etl/tests/test_cli.py:67` - `build(fake) == 1`; `:68` - `"error: votacoes-2023.csv: missing columns siglaOrgao" in capsys.readouterr().err.splitlines()` (a whole-line match). Message mutant killed | PASS |
 
-## Coverage - rows touched by the fix verified at 75250c3; the rest carried from d49d892
+## Coverage - the `downloadedAt` row verified at 327bf5b; every other row carried from 75250c3
 
 | Set (size) | Recomputed from | Member -> proof | Unproven |
 | --- | --- | --- | --- |
 | vote values in alignment (6 values x 2 indicators), verified at 75250c3 | Câmara vote values, AC 18/19, `compute.py:15,194,225-231` | Under orientation `Sim` with a `Sim` colleague: `Sim` 1/1, then `Não`, `Abstenção`, `Obstrução` 0/1, then `Artigo 17` and empty 0/0, for both indicators -> C47 (`test_indicators.py:152-153`). This is the one configuration where the vote filter at `compute.py:225` decides: counting `Artigo 17` or empty would turn 0/0 into 0/1, and dropping a valid value would turn 0/1 into 0/0. F5 killed. The four valid values also count under orientation = vote -> C40 (`:120-121`). | - |
 | vote values in participation (6), verified at 75250c3 | `compute.py:215` (truthiness of the vote) | `Sim`, `Não`, `Abstenção`, `Obstrução`, `Artigo 17` -> 1/1, and empty -> 0/1 -> C47 (`test_indicators.py:154` over `:127-132`). `Abstenção` is now counted on a PLEN roll call in exercise, which closes the round-2 gap. Also C18 (`:17-21`) for the fixture values. | - |
 | raw-cache states that could hold a CPF (4), verified at 75250c3 | `camara.py:96-146`, door 9, AD-003 | fresh download -> C39 (`test_download.py:121,124`; R1 killed in round 2, and the download branch `camara.py:106-107` changed only its call signature) · hand-placed copy with no manifest entry -> C46 `[hand-placed]` (`:156`) · copy replacing a listed entry -> C46 `[replaces-listed]` (`:156`); R2 killed both ids · stale `.part` and `.part.redacted` -> C46 (`:170`); the stale-cleanup mutant was killed. Swept for more members: the cached-branch temp name `deputados.csv.redacted` falls under the same `*.redacted` glob (`camara.py:124`); `historico/*.json` is scanned by C39's walk of every file under raw (`:122-124`). | - |
-| manifest `downloadedAt` source per cache state (3), new row, verified at 75250c3 | `camara.py:113,137`, door 9 ("`downloadedAt` keeps the original download (or modification) time"), AD-005 | fresh download -> build clock, C1 (`test_download.py:39`) · hand-placed copy -> file mtime read before redaction, C46 `[hand-placed]` (`:147,160`); the probe that reads the mtime after `_redact` fails this id · copy replacing a listed entry -> the listed value: asserted at `:160`, but the expected `2026-09-27T12:00:00Z` (`:151`) equals the second build's pinned clock (`conftest.py:21`), and the mutant `listed -> _iso(now)` survived | listed entry keeps its original `downloadedAt` |
+| manifest `downloadedAt` source per cache state (3), verified at 327bf5b | `camara.py:113,137`, door 9, AD-005 | fresh download -> build clock, C1 (`test_download.py:39`) · hand-placed copy -> file mtime read before redaction, C46 `[hand-placed]` (`:147,166`) · copy replacing a listed entry -> the listed value, C46 `[replaces-listed]` (`:152-157,166`), expected `2026-09-01T08:00:00Z` differs from the pinned clock; M1 and M2 killed | - |
 | `mandato-etl build` cause -> exit code (5), verified at 75250c3 | `cli.py:52-78` | success 0 -> C26 · usage 1 -> C33 · schema 1 -> C38 · `SourceLayoutError` 1 -> C43 (`test_cli.py:45`), with its message pinned by C48 (`:67-68`) · download 2 -> C4, C31 | - |
-| one-way doors (9), verified at 75250c3 | plan `Landing` | contract layout C35 · indicator shape C23/C24 · allowlist C9 · manifest C1 · match key C25, C41 · runtime deps C36 · project layout C36 · in-package validator C37, C45 · raw cache redaction: the blanking clauses -> C39, C46 (R2 and the stale-cleanup mutant killed); the `downloadedAt` clause is counted once, as the unproven member of the row above | - |
+| one-way doors (9), verified at 75250c3 | plan `Landing` | contract layout C35 · indicator shape C23/C24 · allowlist C9 · manifest C1 · match key C25, C41 · runtime deps C36 · project layout C36 · in-package validator C37, C45 · raw cache redaction: the blanking clauses -> C39, C46 (R2 and the stale-cleanup mutant killed at 75250c3); the `downloadedAt` clause -> C46 (M1, M2 killed at 327bf5b) | - |
 | `mandato-etl build` flags (5) | carried from d49d892 (`cli.py` untouched by the fix) | `--years` C2/C33 · `--refresh` C3 · `--tse-csv` C25/C26 · `--out` C31 · `--quiet` C44 | - |
 | TSE row kinds (7) | carried from d49d892 | C25, C27, C41, C42 | - |
 | in-package validator keywords (10) | carried from d49d892 | C37, C45 | - |
@@ -136,38 +130,31 @@ Round-2 unproven members, status at 75250c3:
 | `Abstenção` in participation | proven (C47) |
 | raw cache redaction of a hand-placed `deputados.csv`, without and with a manifest entry | proven (C46; R2 killed) |
 
-New unproven member: a listed entry keeps its original `downloadedAt` when its copy is re-redacted.
+Round-3 unproven member "listed entry keeps its original `downloadedAt`": proven at 327bf5b (C46 `[replaces-listed]`; M1 killed).
 
-## Test policy rows - rows 1 and 2 verified at 75250c3; row 3 carried from d49d892
+## Test policy rows - row 1 verified at 327bf5b; rows 2 and 3 carried from 75250c3
 
 | Row | Files it classifies | Required proof | Expectation met |
 | --- | --- | --- | --- |
-| Decides, reached across a boundary (CLI, HTTP) | `cli.py`, `sources/camara.py` | boundary: C4, C26, C33, C38, C43, C44, C48 · own layer: C3, C5, C7, C39, C46 | no. `cli.py` is met. In `camara.py`, the redaction rows (downloaded, hand-placed, listed) and the stale cleanup each have a discriminating case (R2 and the cleanup mutant killed). The `downloadedAt` selection at `camara.py:137` is a two-row decision, and only its hand-placed row has a discriminating case. The listed row's assertion (`test_download.py:160`) passes under the `_iso(now)` mutant. |
+| Decides, reached across a boundary (CLI, HTTP) | `cli.py`, `sources/camara.py` | boundary: C4, C26, C33, C38, C43, C44, C48 · own layer: C3, C5, C7, C39, C46 | yes. `cli.py` carried as met. In `camara.py`, the two-row `downloadedAt` selection at `:137` now has a discriminating case per row (hand-placed `:147`, listed `:152-157`), and the rewrite decision at `:139` is discriminated by the listed case (M3 killed). |
 | Decides, not reached across a boundary | `compute.py`, `sources/tse.py`, `readers.py` | own layer: C9, C10, C18-C23, C25, C27, C40-C42, C47 | yes. The alignment filter (vote set x orientation set) now has a case where the vote filter decides under a valid orientation and an existing party majority (C47; F5 killed). `tse.py` and `readers.py` are carried as met from d49d892. |
 | Instrumentation, pass-throughs | `publish.dumps`, `schema.kind_of`, the `cli.build` wiring | none of their own | yes, carried from d49d892 (the fix did not touch these) |
 
-## Faults injected - verified at 75250c3
+## Faults injected - verified at 327bf5b
 
-The faults ran in `git worktree add --detach /tmp/claude-1000/etl-verify-r3 HEAD` at `75250c3`, where the baseline was 89 passed. For each fault:
-- It was applied alone.
-- The full suite ran (`uv run pytest -q tests/`).
-- The change was reverted with `git checkout -- .`.
-
-The worktree was removed with `git worktree remove --force`, and `git worktree list` shows only the real tree. The real tree's `git status --porcelain` was empty before and after, and the saved files compared identical with `cmp`. `git stash` was not used.
+The faults ran in `git worktree add --detach /tmp/claude-1000/etl-verify-r4 HEAD` at `327bf5b`, where the baseline was 89 passed. Each was applied alone, the full suite ran, and the change was reverted with `git checkout -- .`. The worktree was removed with `git worktree remove --force`. The real tree's `git status --porcelain` was empty before and after and compared identical with `cmp`. `git stash` was not used. A first attempt at M3 targeted the wrong line (140 instead of 139) and changed nothing; it was discarded and re-run on line 139 in a fresh worktree.
 
 | Mutation | Location | Killed |
 | --- | --- | --- |
-| F5: an `Artigo 17` vote under a valid government orientation increments `gov_total` (inserted before `if vote in VALID_VOTES:`) | `etl/src/mandato_etl/compute.py:225` | yes - `test_vote_value_against_sim_orientation[Artigo-17]` fails (C47); 1 failed, 88 passed. C19 and C40's own proofs still pass under it |
-| R2: the cached-copy branch skips `_redact` (`redacted = name in REDACT and _redact(dest)` -> `redacted = False`) | `etl/src/mandato_etl/sources/camara.py:138` | yes - `test_cached_copy_with_cpf_is_redacted[hand-placed]` and `[replaces-listed]` fail (C46); 2 failed, 87 passed |
-| C43/C48: the layout error prints the header it found (`unexpected header {';'.join(header)}`) instead of the missing columns | `etl/src/mandato_etl/readers.py:66` | yes - `test_source_missing_column_message` fails (C48); 1 failed, 88 passed. C43's own proof still passes under it |
-| stale cleanup: the start-of-run sweep drops the `*.redacted` glob (only `*.part` removed) | `etl/src/mandato_etl/sources/camara.py:124` | yes - `test_stale_part_file_is_deleted` fails (C46); 1 failed, 88 passed |
-| `downloadedAt` preservation: a listed entry gets the build time (`listed["downloadedAt"] if listed` -> `_iso(now) if listed`) | `etl/src/mandato_etl/sources/camara.py:137` | no - survived, 89 of 89 pass. The `[replaces-listed]` expected value equals the pinned clock of the second build |
+| M1 (round-3 survivor): a listed entry gets the build time (`listed["downloadedAt"] if listed` -> `_iso(now) if listed`) | `etl/src/mandato_etl/sources/camara.py:137` | yes - `test_cached_copy_with_cpf_is_redacted[replaces-listed]` fails; 1 failed, 88 passed |
+| M2: the listed value is ignored and every cached copy is dated by its mtime | `etl/src/mandato_etl/sources/camara.py:137` | yes - `[replaces-listed]` fails; 1 failed, 88 passed |
+| M3: the manifest entry is not rewritten after a listed copy is redacted (`if listed is None or redacted:` -> `if listed is None:`) | `etl/src/mandato_etl/sources/camara.py:139` | yes - `[replaces-listed]` fails; 1 failed, 88 passed |
 
-Extra probe, not counted toward the cap: moving the mtime read after `_redact`, which was round 2's regression, fails `test_cached_copy_with_cpf_is_redacted[hand-placed]` (1 failed, 88 passed). The ordering regression is therefore guarded.
+Faults injected in round 3 at `75250c3` (F5, R2, the C43/C48 message mutant, the stale-cleanup mutant) were all killed then; the fix diff touches no source file, so they are carried.
 
-## Gate - verified at 75250c3
+## Gate - verified at 327bf5b
 
-`uv run --directory etl pytest -v tests/` at `75250c3` - 89 passed, 0 failed (5.02s)
+`uv run --directory etl pytest -v tests/` at `327bf5b` - 89 passed, 0 failed (5.48s)
 
 ## Precision gaps
 
@@ -178,8 +165,7 @@ These are findings about how the checks are worded. They do not fail the verdict
 - **C43 vs C48.** C43's own column assertion is still a substring match (`etl/tests/test_cli.py:48` against `siglaOrgaoX` at `:44`). C48 says "the stderr of C43", but its test runs a fresh build with no prior successful build and no `--refresh` (`test_cli.py:63-67`). That is the same error path (`readers.py:66`), but not the same scenario as C43.
 - **C46 header spelling.** Both cached-copy ids use `CPF` (`test_download.py:131`). A cached copy with a lowercase `cpf` value is not exercised on the cached branch. The same casefolded `_redact` handles both (`camara.py:82`), and the download path covers lowercase (C39).
 - **C46 stale files.** The test places `deputados.csv.part` and `deputados.csv.part.redacted` (`test_download.py:166`), but not the cached-branch temp file `deputados.csv.redacted`. The same glob covers it (`camara.py:124`).
-- **C39, "occurs in no file under `data/raw/`" (closed).** Round 2 found this proven only for a fresh cache. C46 now covers the hand-placed, listed and stale states.
-- **Carried from d49d892, still open:**
+- **Carried from 75250c3, still open:**
   - AC 19 / C21 "strict majority" (the code computes a plurality, `compute.py:62-70`).
   - C32 "id ascending" compares ids as strings (`compute.py:206`).
   - C44 asserts `len(lines) >= 4` (`test_cli.py:60`).
@@ -187,17 +173,9 @@ These are findings about how the checks are worded. They do not fail the verdict
 
 ## For the maintainer
 
-These are human product decisions. None of them fails the verdict: no check and no active AD is contradicted by code in `d49d892..75250c3`.
+Carried from 75250c3, updated at 327bf5b:
 
-1. **Door 9, "Raw cache redaction", is builder-authored and unapproved.** It was added in round 1 and reworded in this fix (`.specs/features/etl-camara/plan.md:65`), and both rounds' text came from the builder. Its new clauses are one-way: any header containing `cpf` is blanked, cached copies are re-redacted in place, and stale `*.part`/`*.redacted` files are deleted at the start of every run. Each needs your approval like the other seven doors.
-2. **TSE input with `NR_CPF_CANDIDATO`.** Plan Open question 1 (`plan.md:189`) has a person keep `consulta_cand_2026_BRASIL.csv` at `etl/inputs/tse/`. The path is gitignored (`.gitignore:3`), and the file carries every candidate's CPF. The ETL never reads the column (C28), but AD-003 says "never persisted". Decide whether a hand-held input counts, or whether the procedure should delete it after the build or keep a copy with the CPF column blanked.
-3. **Other personal columns in the raw cache.** `data/raw/deputados.csv` keeps sex, death date and birthplace (UF and municipality) for every person in the file. Redaction blanks only CPF columns (`camara.py:82`), and the match key needs none of these fields. AGENTS.md says "Nenhum dado pessoal além de nome, partido, UF, foto oficial e atos do mandato". Decide whether that covers a local, gitignored cache (carried from d49d892).
-4. **Operational note.** The start-of-run sweep (`camara.py:124-125`) deletes every `*.part` in `data/raw/`. Two builds sharing one `data/raw/` would now delete each other's in-flight downloads. They could already overwrite each other's `.part` before this change, so this only confirms that concurrent builds on one cache are unsupported.
-
-Ranked gaps:
-
-1. **The listed-entry `downloadedAt` preservation is not discriminated.** This affects C46, the Coverage row "manifest `downloadedAt` source per cache state" and Test policy row 1. The `[replaces-listed]` case expects `2026-09-27T12:00:00Z` (`etl/tests/test_download.py:151,160`), which is also the pinned clock of the second build (`etl/tests/conftest.py:21`). So the mutant at `etl/src/mandato_etl/sources/camara.py:137` that stamps the build time on a re-redacted listed copy passes all 89 tests. Two ways to close it:
-   - Before the second build, rewrite the listed entry's `downloadedAt` in `manifest.json` to a distinct value and assert that value.
-   - Or pin a different clock for the second build.
-
-   This is a test-only change of about 2 lines.
+1. **Doors 8 and 9 approved.** The maintainer approved the in-package schema validator and the raw cache redaction on 2026-09-27 (`plan.md` `Landing`, `research/decisions-log.md`).
+2. **TSE input with `NR_CPF_CANDIDATO`.** The hand-downloaded `consulta_cand_2026_BRASIL.csv` in `etl/inputs/tse/` (gitignored) carries every candidate's CPF. The ETL never reads the column (C28). Whether a hand-held input counts as "persisted" under AD-003 is still undecided.
+3. **Other personal columns in the raw cache.** `data/raw/deputados.csv` keeps sex, death date and birthplace; only CPF columns are blanked (`camara.py:82`). Still undecided.
+4. **Operational note.** Concurrent builds on one `data/raw/` are unsupported: the start-of-run sweep (`camara.py:124-125`) deletes every `*.part`.
