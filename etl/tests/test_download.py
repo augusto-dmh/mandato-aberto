@@ -3,9 +3,12 @@
 import csv
 import hashlib
 import json
+from datetime import UTC, datetime
 
 import pytest
-from conftest import CPF_IN_DEPUTADOS, build, legislature
+import os
+
+from conftest import CPF_IN_DEPUTADOS, build, legislature, render
 
 from mandato_etl import __version__
 from mandato_etl.sources import camara
@@ -121,3 +124,47 @@ def test_raw_cache_never_keeps_cpf(fake):
             assert CPF_IN_DEPUTADOS.encode() not in path.read_bytes(), path
     entry = next(e for e in json.loads((fake.raw / "manifest.json").read_text()) if e["file"] == "deputados.csv")
     assert entry["sha256"] == hashlib.sha256((fake.raw / "deputados.csv").read_bytes()).hexdigest()
+
+
+def _deputados_with_upper_cpf():
+    body = render("deputados", legislature()["rows"]["deputados"])
+    return body.replace(b'"cpf"', b'"CPF"', 1)
+
+
+def _manifest_entry(raw, name):
+    return next(e for e in json.loads((raw / "manifest.json").read_text()) if e["file"] == name)
+
+
+@pytest.mark.parametrize("placement", ["hand-placed", "replaces-listed"])
+def test_cached_copy_with_cpf_is_redacted(fake, placement):
+    fake.serve(legislature())
+    dest = fake.raw / "deputados.csv"
+    if placement == "hand-placed":
+        fake.raw.mkdir(parents=True)
+        dest.write_bytes(_deputados_with_upper_cpf())
+        stamp = datetime(2026, 8, 28, 12, 0, 0, tzinfo=UTC).timestamp()
+        os.utime(dest, (stamp, stamp))
+        expected_at = "2026-08-28T12:00:00Z"
+    else:
+        assert build(fake) == 0
+        dest.write_bytes(_deputados_with_upper_cpf())
+        expected_at = "2026-09-27T12:00:00Z"
+    assert CPF_IN_DEPUTADOS.encode() in dest.read_bytes()
+    requests_before = [p for p in fake.bulk_requests() if p.endswith("deputados.csv")]
+    assert build(fake) == 0
+    assert [p for p in fake.bulk_requests() if p.endswith("deputados.csv")] == requests_before
+    assert CPF_IN_DEPUTADOS.encode() not in dest.read_bytes()
+    entry = _manifest_entry(fake.raw, "deputados.csv")
+    assert entry["sha256"] == hashlib.sha256(dest.read_bytes()).hexdigest()
+    assert entry["bytes"] == len(dest.read_bytes())
+    assert entry["downloadedAt"] == expected_at
+
+
+def test_stale_part_file_is_deleted(fake):
+    fake.serve(legislature())
+    assert build(fake) == 0
+    stale = [fake.raw / "deputados.csv.part", fake.raw / "deputados.csv.part.redacted"]
+    for path in stale:
+        path.write_bytes(_deputados_with_upper_cpf())
+    assert build(fake) == 0
+    assert [p.exists() for p in stale] == [False, False]

@@ -119,3 +119,36 @@ def test_valid_vote_set_table(vote, expected):
     government, party = _alignment(vote)
     assert government == {"count": expected, "total": expected}
     assert party == {"count": expected, "total": expected}
+
+
+@pytest.mark.parametrize(
+    ("vote", "government", "party", "participation"),
+    [
+        ("Sim", (1, 1), (1, 1), (1, 1)),
+        ("Não", (0, 1), (0, 1), (1, 1)),
+        ("Abstenção", (0, 1), (0, 1), (1, 1)),
+        ("Obstrução", (0, 1), (0, 1), (1, 1)),
+        ("Artigo 17", (0, 0), (0, 0), (1, 1)),
+        ("", (0, 0), (0, 0), (0, 1)),
+    ],
+    ids=["Sim", "Nao", "Abstencao", "Obstrucao", "Artigo-17", "empty"],
+)
+def test_vote_value_against_sim_orientation(vote, government, party, participation):
+    rows = {
+        "votacoes": [{"id": "8-1", "data": "2023-03-01", "dataHoraRegistro": "2023-03-01T10:00:00",
+                      "siglaOrgao": "PLEN", "aprovacao": "1", "descricao": "d"}],
+        "votacoesOrientacoes": [{"idVotacao": "8-1", "siglaBancada": "Governo", "orientacao": "Sim"}],
+        "votacoesVotos": [
+            {"idVotacao": "8-1", "dataHoraVoto": "2023-03-01T10:00:00", "voto": v, "deputado_id": dep,
+             "deputado_nome": f"D{dep}", "deputado_siglaPartido": "P", "deputado_siglaUf": "SP",
+             "deputado_idLegislatura": "57", "deputado_urlFoto": "https://x/p.jpg"}
+            for dep, v in (("1", vote), ("2", "Sim"))
+        ],
+    }
+    history = {"1": [{"dataHora": "2023-02-01T12:05", "situacao": "Exercício"}]}
+    records = compute.assemble(compute.load(lambda kind: rows.get(kind, [])), history, set(), {}, "2026-09-27T09:00:00")
+    deputy = next(d for d in records["deputies"] if d["id"] == 1)
+    as_pair = lambda i: (i["count"], i["total"])
+    assert as_pair(deputy["governmentAlignment"]) == government
+    assert as_pair(deputy["partyAlignment"]) == party
+    assert as_pair(deputy["participation"]) == participation

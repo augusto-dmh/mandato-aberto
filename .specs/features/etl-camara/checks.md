@@ -5,7 +5,7 @@ Plan: `.specs/features/etl-camara/plan.md`
 
 ## Intent
 
-45 checks in 6 slices (C39-C45 added in verification round 1) · 9 one-way doors (7 approved + 2 added: in-package schema validator, raw cache redaction) · 2 open, of which 1 blocks go-live (S5 on fixture until the TSE file exists)
+48 checks in 6 slices (C39-C45 added in verification round 1, C46-C48 in round 2) · 9 one-way doors (7 approved + 2 added: in-package schema validator, raw cache redaction) · 2 open, of which 1 blocks go-live (S5 on fixture until the TSE file exists)
 
 All proofs run from the repository root. `P` below abbreviates `uv run --directory etl pytest`.
 Fixtures are hand-built under `etl/tests/fixtures/`; the clock is pinned at `2026-09-27T12:00:00Z`
@@ -40,6 +40,10 @@ Proof: `P tests/test_download.py::test_history_is_cached_per_deputy`
 
 **C39** - After a build, `data/raw/deputados.csv` keeps its `cpf` header with every value empty, the fixture CPF `52998224725` occurs in no file under `data/raw/`, and the manifest `sha256` of `deputados.csv` equals the stored file (AD-003, door 9, added in round 1)
 Proof: `P tests/test_download.py::test_raw_cache_never_keeps_cpf`
+
+**C46** - A `deputados.csv` carrying a CPF under the header `CPF`, placed by hand with no manifest entry, and one replacing a copy the manifest already lists, are both blanked by the next build without `--refresh`; the manifest `sha256` then equals the stored file and `downloadedAt` keeps `2026-08-28T12:00:00Z` (the hand-placed file's modification time) or the listed entry's original value; a stale `deputados.csv.part` holding a CPF is deleted by the next run (AD-003, AD-005, door 9, added in round 2)
+Proof: `P tests/test_download.py -k test_cached_copy_with_cpf_is_redacted`
+Proof: `P tests/test_download.py::test_stale_part_file_is_deleted`
 
 ### S2 - Deputies and exercise periods · 3 files · 25 KB · ~7k
 
@@ -105,6 +109,9 @@ Proof: `P tests/test_indicators.py::test_no_ratio_or_percentage_in_output`
 **C40** - A vote counts toward `governmentAlignment.total` (orientation equal to the vote) and `partyAlignment.total` (one other member voting the same) exactly when it is `Sim`, `Não`, `Abstenção` or `Obstrução`; `Artigo 17` and an empty vote give `{"count": 0, "total": 0}` for both (AC 18, AC 19, added in round 1)
 Proof: `P tests/test_indicators.py -k test_valid_vote_set_table`
 
+**C47** - A deputy in exercise voting X in one PLEN roll call whose government orientation is `Sim` and where the one other party member votes `Sim` gets: for X = `Sim` government and party `{"count": 1, "total": 1}`; for `Não`, `Abstenção`, `Obstrução` both `{"count": 0, "total": 1}`; for `Artigo 17` and empty both `{"count": 0, "total": 0}`; and `participation` `{"count": 1, "total": 1}` for every X except empty, which gives `{"count": 0, "total": 1}` (AC 17, AC 18, AC 19, added in round 2)
+Proof: `P tests/test_indicators.py -k test_vote_value_against_sim_orientation`
+
 ### S5 - Candidacy 2026 · 2 files · 12 KB · ~3k
 
 **C25** - With a 5-row TSE fixture (latin-1, `;`): an exact match and an accent-only difference (`JOSE` vs `JOSÉ`) each set `candidacy2026` to `{office, party, ballotNumber, situation}` with the fixture values; a row for a non-deputy changes nothing; `meta.candidacy.matched` is `2` (AC 24)
@@ -162,6 +169,9 @@ Proof: `P tests/test_publish.py::test_invalid_output_is_never_published`
 **C43** - A bulk file missing an allowlisted column makes the build exit `1` with the file name and the column on stderr and leaves the previous output unchanged (Observable "exit codes", added in round 1)
 Proof: `P tests/test_cli.py::test_source_missing_column_exits_1`
 
+**C48** - The stderr of C43 contains exactly the line `error: votacoes-2023.csv: missing columns siglaOrgao` (added in round 2)
+Proof: `P tests/test_cli.py::test_source_missing_column_message`
+
 **C44** - `--quiet` with `--tse-csv` given leaves stderr empty on a successful build; without `--quiet` stderr carries one line per stage, starting with `sources: 2023-2023` (assumption "Log format", added in round 1)
 Proof: `P tests/test_cli.py::test_quiet_silences_progress`
 
@@ -177,15 +187,16 @@ Proof: `P tests/test_schema.py::test_const_violation_is_rejected_by_both`
 | `mandato-etl build` exit codes (3) | `0` C26 · `1` C33, C38, C43 · `2` C4 | - |
 | `mandato-etl validate` exit codes (2) | `0` C29 · `1` C29 | - |
 | `mandato-etl build` flags (5) | `--years` C2 · `--refresh` C3 · `--tse-csv` C25 · `--out` C31 · `--quiet` C44 | - |
-| vote values in participation (6) | `Sim` C18 · `Não` C18 · `Abstenção` C18 · `Obstrução` C18 · `Artigo 17` C18 · empty C18 | - |
-| vote values in alignment (6) | `Sim` C40 · `Não` C40 · `Abstenção` C40 · `Obstrução` C40 · `Artigo 17` C40 · empty C40 | - |
+| vote values in participation (6) | `Sim` C18, C47 · `Não` C18, C47 · `Abstenção` C47 · `Obstrução` C18, C47 · `Artigo 17` C18, C47 · empty C18, C47 | - |
+| vote values in alignment (6) | `Sim` C40, C47 · `Não` C40, C47 · `Abstenção` C40, C47 · `Obstrução` C40, C47 · `Artigo 17` C47 · empty C47 | - |
 | government orientation values (4) | `Sim` C17 · `Não` C17 · `Liberado` C19 · absent C17 | - |
 | party majority cases (4) | clear C21 · tie C21 · empty C21 · own vote not valid C21 | - |
 | history transitions (4) | `Exercício` opens C10 · other status closes C10 · entry before 2023-02-01 ignored C10 · open period closes at build time C10 | - |
 | proposition types (9) | `PL` C22 · `PLP` C22 · `PEC` C22 · `PDL` C22 · `PRC` C22 · `REQ` C22 · `RIC` C22 · `INC` C22 · other (`EMC`) C22 | - |
 | TSE row kinds (7) | exact C25 · accent-only C25 · ambiguous C27 · non-deputy C25 · other birth date C41 · other UF C41 · key shared by two deputies C42 | - |
 | output file kinds (5) | C29, table-driven over `meta` `deputies` `roll-calls` `deputy` `roll-call`; layout C35 | - |
-| one-way doors (9) | contract layout C35 · indicator shape C23 · allowlist C9 · manifest C1 · match key C25, C41 · runtime deps C36 · project layout C36 · in-package validator C37, C45 · raw cache redaction C39 | - |
+| one-way doors (9) | contract layout C35 · indicator shape C23 · allowlist C9 · manifest C1 · match key C25, C41 · runtime deps C36 · project layout C36 · in-package validator C37, C45 · raw cache redaction C39, C46 | - |
+| raw-cache states that could hold a CPF (4) | fresh download C39 · hand-placed copy C46 · copy replacing a listed entry C46 · stale `.part` C46 | - |
 | entities in `Relations` (9) | Deputy C8 · ExercisePeriod C10 · Vote C13 · RollCall C15 · Proposition C22 · Orientation C17 · Authorship C22 · Candidacy2026 C25 · SourceFile/Manifest C1 | - |
 | startup config: output root (2 assemblies) | CLI entry point C31 · test harness C1 | - |
 
@@ -221,7 +232,7 @@ Cost: 6 test files, ~45 test functions. Without these rows the exit-code table w
 - idempotency: C3, C32
 - authorization: n/a - no route, no user; the ETL reads public data and writes local files
 - concurrency: C7
-- data lifecycle: C9, C28 (CPF never read into output), C39 (CPF never kept in the raw cache), C31 (previous output kept)
+- data lifecycle: C9, C28 (CPF never read into output), C39, C46 (CPF never kept in the raw cache), C31 (previous output kept)
 - dependency failure: C4, C5, C31
 - state transitions: C10 (exercise periods)
 - observability: C4 (failing URL on stderr), C26 (warning on stderr)

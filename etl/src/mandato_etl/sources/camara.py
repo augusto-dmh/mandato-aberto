@@ -29,8 +29,9 @@ RETRY_DELAYS = (1, 2, 4)
 TIMEOUT = 300
 HISTORY_WORKERS = 4
 LEGISLATURE = "57"
-# Columns blanked before a file is kept in the raw cache (AD-003): the CPF is never persisted.
-REDACT = {"deputados.csv": ["cpf"]}
+# Files whose CPF columns - any header containing "cpf", in any case - are blanked before they are
+# kept in the raw cache (AD-003): the CPF is never persisted.
+REDACT = {"deputados.csv"}
 
 sleep = time.sleep
 
@@ -73,18 +74,23 @@ def _entry(path: Path, url: str, downloaded_at: str) -> dict:
     return {"file": path.name, "sourceUrl": url, "sha256": digest.hexdigest(), "bytes": size, "downloadedAt": downloaded_at}
 
 
-def _redact(path: Path, columns: list[str]) -> None:
-    """Rewrites `path` in place with `columns` blanked, keeping the header and every other value."""
+def _redact(path: Path) -> bool:
+    """Blanks every CPF column of `path` in place, keeping the header; returns whether anything changed."""
+    with open(path, encoding="utf-8-sig", newline="") as src:
+        rows = csv.reader(src, delimiter=";")
+        header = next(rows, [])
+        blank = {i for i, name in enumerate(header) if "cpf" in name.casefold()}
+        if not any(row[i] for row in rows for i in blank if i < len(row)):
+            return False
     tmp = path.with_name(path.name + ".redacted")
     with open(path, encoding="utf-8-sig", newline="") as src, open(tmp, "w", encoding="utf-8-sig", newline="") as dst:
         rows = csv.reader(src, delimiter=";")
-        header = next(rows, [])
-        blank = {header.index(c) for c in columns if c in header}
         writer = csv.writer(dst, delimiter=";", quoting=csv.QUOTE_ALL, lineterminator="\n")
-        writer.writerow(header)
+        writer.writerow(next(rows))
         for row in rows:
             writer.writerow(["" if i in blank else v for i, v in enumerate(row)])
     tmp.replace(path)
+    return True
 
 
 def _download(url: str, dest: Path, now: datetime) -> dict:
@@ -98,7 +104,7 @@ def _download(url: str, dest: Path, now: datetime) -> dict:
     try:
         _get(url, consume)
         if dest.name in REDACT:
-            _redact(part, REDACT[dest.name])
+            _redact(part)
     except BaseException:
         part.unlink(missing_ok=True)
         part.with_name(part.name + ".redacted").unlink(missing_ok=True)
@@ -107,9 +113,16 @@ def _download(url: str, dest: Path, now: datetime) -> dict:
     return _entry(dest, url, _iso(now))
 
 
+def _write_manifest(path: Path, manifest: dict) -> None:
+    path.write_text(json.dumps(sorted(manifest.values(), key=lambda e: e["file"]), indent=2) + "\n")
+
+
 def sync(raw: Path, years: list[int], refresh: bool, now: datetime, log=lambda msg: None) -> list[dict]:
     """Makes sure every bulk file for `years` is in `raw` and returns its manifest entries."""
     raw.mkdir(parents=True, exist_ok=True)
+    # A download killed mid-way leaves these behind, possibly holding a CPF.
+    for stale in [*raw.glob("*.part"), *raw.glob("*.redacted")]:
+        stale.unlink()
     manifest_path = raw / "manifest.json"
     manifest = {}
     if manifest_path.exists():
@@ -119,15 +132,17 @@ def sync(raw: Path, years: list[int], refresh: bool, now: datetime, log=lambda m
     for name, url in wanted:
         dest = raw / name
         if dest.exists() and not refresh:
-            if name not in manifest:
-                # A copy placed by hand: redact it, hash it, date it by its modification time.
-                if name in REDACT:
-                    _redact(dest, REDACT[name])
-                manifest[name] = _entry(dest, url, _iso(datetime.fromtimestamp(dest.stat().st_mtime, UTC)))
+            listed = manifest.get(name)
+            # A copy placed by hand is dated by its modification time, read before any redaction.
+            downloaded_at = listed["downloadedAt"] if listed else _iso(datetime.fromtimestamp(dest.stat().st_mtime, UTC))
+            redacted = name in REDACT and _redact(dest)
+            if listed is None or redacted:
+                manifest[name] = _entry(dest, url, downloaded_at)
+                _write_manifest(manifest_path, manifest)
             continue
         log(f"downloading {url}")
         manifest[name] = _download(url, dest, now)
-        manifest_path.write_text(json.dumps(sorted(manifest.values(), key=lambda e: e["file"]), indent=2) + "\n")
+        _write_manifest(manifest_path, manifest)
     return [manifest[name] for name, _ in wanted]
 
 

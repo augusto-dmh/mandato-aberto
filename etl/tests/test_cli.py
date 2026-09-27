@@ -58,3 +58,11 @@ def test_quiet_silences_progress(fake, capsys):
     lines = capsys.readouterr().err.splitlines()
     assert lines[0] == "sources: 2023-2023"
     assert len(lines) >= 4
+
+
+def test_source_missing_column_message(fake, capsys):
+    fake.serve(legislature())
+    path = fake.bulk_path("votacoes", 2023)
+    fake.routes[path] = fake.routes[path].replace(b'"siglaOrgao"', b'"siglaOrgaoX"', 1)
+    assert build(fake) == 1
+    assert "error: votacoes-2023.csv: missing columns siglaOrgao" in capsys.readouterr().err.splitlines()
