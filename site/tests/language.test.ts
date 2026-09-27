@@ -1,11 +1,12 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { FORBIDDEN_TERMS, findForbidden } from "../src/lib/forbidden-terms";
+import { FORBIDDEN_TERMS, findForbidden, termPattern } from "../src/lib/forbidden-terms";
 
 const SRC = resolve(__dirname, "..", "src");
+const README = resolve(__dirname, "..", "..", "README.md");
 
 describe("descriptive language", () => {
   it("forbidden list holds every required term", () => {
@@ -53,5 +54,11 @@ describe("descriptive language", () => {
     writeFileSync(join(dir, "ok.ts"), "export const label = 'fielmente descrito';\n");
     expect(findForbidden(dir)).toEqual([{ file: join(dir, "page.md"), term: "faltou" }]);
     rmSync(dir, { recursive: true });
+  });
+
+  it("readme uses no forbidden term", () => {
+    const text = readFileSync(README, "utf8");
+    const found = FORBIDDEN_TERMS.filter((term) => termPattern(term).test(text));
+    expect(found).toEqual([]);
   });
 });
