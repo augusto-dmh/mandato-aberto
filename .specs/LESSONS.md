@@ -110,6 +110,36 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: checks.md C41 vs publish.yml working-directory (renegotiated 2026-09-27) (ci)
 - last seen: 2026-09-27T20:26:14Z
 
+### L-017 - A base-path check must cover every URL Astro writes, including astro-island component-url/renderer-url and CSS url(), not only href and src.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `site/base-path` · harmful: 0
+- features: github-pages
+- evidence: site/tests/build.test.ts:896 (C2) (site/base-path)
+- last seen: 2026-09-27T23:23:28Z
+
+### L-018 - Prove an island's hydrated behaviour from its client chunk, not only from server-rendered HTML, when the value comes from import.meta.env.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `site/islands` · harmful: 0
+- features: github-pages
+- evidence: site/tests/search-island.test.ts:30 (C5) (site/islands)
+- last seen: 2026-09-27T23:23:28Z
+
+### L-019 - A source scan for root links misses variables and Markdown links; pair it with a scan of the built pages under the base.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `site/base-path` · harmful: 0
+- features: github-pages
+- evidence: site/tests/urls.test.ts:14 (C8) (site/base-path)
+- last seen: 2026-09-27T23:23:28Z
+
+### L-020 - Before changing a config default or env handling, grep the approved tests: site C33 pins the SITE_URL default, and vitest exports BASE_URL, which overrides Astro's base in child builds.
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `site/build` · harmful: 0
+- features: github-pages
+- evidence: site/tests/build.test.ts:31, site/tests/data.test.ts:155 (site C33) (site/build)
+- last seen: 2026-09-27T23:23:28Z
+
+### L-021 - Never write 'the same files' as a criterion for a build whose asset names are content-hashed; say 'the same paths with the hash removed'.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `specs/criteria` · harmful: 0
+- features: github-pages
+- evidence: AC 1 / C1 (specs/criteria)
+- last seen: 2026-09-27T23:23:29Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

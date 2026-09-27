@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 17,
+  "next_id": 22,
   "lessons": [
     {
       "id": "L-001",
@@ -292,6 +292,96 @@
       ],
       "created": "2026-09-27T20:26:14Z",
       "last_seen": "2026-09-27T20:26:14Z"
+    },
+    {
+      "id": "L-017",
+      "key": "spec_precision_gap::a base path check must cover every url astro writes including astro island component url renderer url and css url not only href and src",
+      "text": "A base-path check must cover every URL Astro writes, including astro-island component-url/renderer-url and CSS url(), not only href and src.",
+      "signal": "spec_precision_gap",
+      "scope": "site/base-path",
+      "status": "candidate",
+      "features": [
+        "github-pages"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "site/tests/build.test.ts:896 (C2) (site/base-path)"
+      ],
+      "created": "2026-09-27T23:23:28Z",
+      "last_seen": "2026-09-27T23:23:28Z"
+    },
+    {
+      "id": "L-018",
+      "key": "spec_precision_gap::prove an island s hydrated behaviour from its client chunk not only from server rendered html when the value comes from import meta env",
+      "text": "Prove an island's hydrated behaviour from its client chunk, not only from server-rendered HTML, when the value comes from import.meta.env.",
+      "signal": "spec_precision_gap",
+      "scope": "site/islands",
+      "status": "candidate",
+      "features": [
+        "github-pages"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "site/tests/search-island.test.ts:30 (C5) (site/islands)"
+      ],
+      "created": "2026-09-27T23:23:28Z",
+      "last_seen": "2026-09-27T23:23:28Z"
+    },
+    {
+      "id": "L-019",
+      "key": "spec_precision_gap::a source scan for root links misses variables and markdown links pair it with a scan of the built pages under the base",
+      "text": "A source scan for root links misses variables and Markdown links; pair it with a scan of the built pages under the base.",
+      "signal": "spec_precision_gap",
+      "scope": "site/base-path",
+      "status": "candidate",
+      "features": [
+        "github-pages"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "site/tests/urls.test.ts:14 (C8) (site/base-path)"
+      ],
+      "created": "2026-09-27T23:23:28Z",
+      "last_seen": "2026-09-27T23:23:28Z"
+    },
+    {
+      "id": "L-020",
+      "key": "spec_deviation::before changing a config default or env handling grep the approved tests site c33 pins the site url default and vitest exports base url which overrides astro s base in child builds",
+      "text": "Before changing a config default or env handling, grep the approved tests: site C33 pins the SITE_URL default, and vitest exports BASE_URL, which overrides Astro's base in child builds.",
+      "signal": "spec_deviation",
+      "scope": "site/build",
+      "status": "candidate",
+      "features": [
+        "github-pages"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "site/tests/build.test.ts:31, site/tests/data.test.ts:155 (site C33) (site/build)"
+      ],
+      "created": "2026-09-27T23:23:28Z",
+      "last_seen": "2026-09-27T23:23:28Z"
+    },
+    {
+      "id": "L-021",
+      "key": "ac_gap::never write the same files as a criterion for a build whose asset names are content hashed say the same paths with the hash removed",
+      "text": "Never write 'the same files' as a criterion for a build whose asset names are content-hashed; say 'the same paths with the hash removed'.",
+      "signal": "ac_gap",
+      "scope": "specs/criteria",
+      "status": "candidate",
+      "features": [
+        "github-pages"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 1 / C1 (specs/criteria)"
+      ],
+      "created": "2026-09-27T23:23:29Z",
+      "last_seen": "2026-09-27T23:23:29Z"
     }
   ]
 }
