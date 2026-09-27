@@ -212,3 +212,6 @@ Carried by `plan.md`.
 
 - Size: S1 8k + S2 7k + S3 7k + S4 5k + S5 3k + S6 12k = 42k of new code and tests, plus ~18k to read `plan.md`, this file and the prototype `etl/build.py` = 60k, under the 150k budget - one builder
 - Mechanism: one builder (fits; no ask)
+- **Boundary:** C1-C38 closed at `b37e34d` (CI job at `ca7ade4`); `uv run --directory etl pytest` 67 passed. A real run over 2023-2026 wrote 643 deputies and 1,597 roll calls, `mandato-etl validate` exit 0, and both alignment indicators agree with the prototype within 1 point for all 643
+- **Settled mid-build:** none asked of the user. `meta.sources[].sourceUrl` accepts `^https?://` because the manifest records the URL actually fetched; every other URL in the contract stays `^https://`. Roll-call `sourceUrl` is the API record, since the Câmara portal has no page per roll call
+- **Abandoned:** none
