@@ -24,8 +24,8 @@ def test_readers_keep_only_allowlisted_columns(tmp_path):
 
 
 def test_cpf_never_reaches_output(built):
-    raw = (built.raw / "deputados.csv").read_text(encoding="utf-8-sig")
-    assert CPF_IN_DEPUTADOS in raw  # the source does carry it
+    source = built.routes["/arquivos/deputados/csv/deputados.csv"].decode("utf-8-sig")
+    assert CPF_IN_DEPUTADOS in source  # the source does carry it
     for path in built.out.rglob("*.json"):
         text = path.read_text()
         assert '"cpf"' not in text.casefold(), path

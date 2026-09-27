@@ -1,15 +1,24 @@
 """S1 - download and snapshot (C1, C3, C5, C6, C7)."""
 
+import csv
 import hashlib
 import json
 
 import pytest
-from conftest import build, legislature
+from conftest import CPF_IN_DEPUTADOS, build, legislature
 
 from mandato_etl import __version__
 from mandato_etl.sources import camara
 
-FILES_2023 = [f"{n}-2023.csv" for n in camara.YEARLY] + ["deputados.csv"]
+FILES_2023 = [
+    "votacoes-2023.csv",
+    "votacoesVotos-2023.csv",
+    "votacoesOrientacoes-2023.csv",
+    "votacoesProposicoes-2023.csv",
+    "proposicoes-2023.csv",
+    "proposicoesAutores-2023.csv",
+    "deputados.csv",
+]
 
 
 def test_empty_cache_downloads_every_source_and_writes_manifest(fake):
@@ -97,3 +106,18 @@ def test_history_is_cached_per_deputy(fake):
     camara.histories(ids, fake.raw, refresh=False)
     assert first == 10
     assert len(fake.requests) == first
+
+
+def test_raw_cache_never_keeps_cpf(fake):
+    fake.serve(legislature())
+    assert CPF_IN_DEPUTADOS.encode() in fake.routes["/arquivos/deputados/csv/deputados.csv"]  # the source carries it
+    assert build(fake) == 0
+    with open(fake.raw / "deputados.csv", encoding="utf-8-sig", newline="") as f:
+        rows = list(csv.DictReader(f, delimiter=";"))
+    assert len(rows) == 4
+    assert [r["cpf"] for r in rows] == ["", "", "", ""]
+    for path in fake.raw.rglob("*"):
+        if path.is_file():
+            assert CPF_IN_DEPUTADOS.encode() not in path.read_bytes(), path
+    entry = next(e for e in json.loads((fake.raw / "manifest.json").read_text()) if e["file"] == "deputados.csv")
+    assert entry["sha256"] == hashlib.sha256((fake.raw / "deputados.csv").read_bytes()).hexdigest()

@@ -41,3 +41,10 @@ def test_builtin_validator_agrees_with_jsonschema_on_invalid(built, mutation):
 def test_unsupported_keyword_is_refused():
     with pytest.raises(schema.SchemaError):
         schema.first_error({}, {"type": "object", "minProperties": 1})
+
+
+def test_const_violation_is_rejected_by_both(built):
+    spec = schema.load("meta")
+    doc = {**load(built.out, "meta.json"), "schema_version": 2}
+    assert schema.first_error(doc, spec) is not None
+    assert not jsonschema.Draft202012Validator(spec).is_valid(doc)

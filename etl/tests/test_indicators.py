@@ -90,3 +90,32 @@ def test_no_ratio_or_percentage_in_output(built):
     indicators = [obj[name] for obj in objects for name in names if name in obj]
     assert len(indicators) == 3 * 3 * 2  # 3 indicators x 3 deputies x (summary + deputy file)
     assert all(set(i) == {"count", "total"} and i["count"] <= i["total"] for i in indicators)
+
+
+def _alignment(vote):
+    """One deputy voting `vote` against a government orientation and a party colleague both equal to it."""
+    rows = {
+        "votacoes": [{"id": "7-1", "data": "2023-03-01", "dataHoraRegistro": "2023-03-01T10:00:00",
+                      "siglaOrgao": "PLEN", "aprovacao": "1", "descricao": "d"}],
+        "votacoesOrientacoes": [{"idVotacao": "7-1", "siglaBancada": "Governo", "orientacao": vote}],
+        "votacoesVotos": [
+            {"idVotacao": "7-1", "dataHoraVoto": "2023-03-01T10:00:00", "voto": v, "deputado_id": dep,
+             "deputado_nome": f"D{dep}", "deputado_siglaPartido": "P", "deputado_siglaUf": "SP",
+             "deputado_idLegislatura": "57", "deputado_urlFoto": "https://x/p.jpg"}
+            for dep, v in (("1", vote), ("2", vote))
+        ],
+    }
+    records = compute.assemble(compute.load(lambda kind: rows.get(kind, [])), {}, set(), {}, "2026-09-27T09:00:00")
+    deputy = next(d for d in records["deputies"] if d["id"] == 1)
+    return deputy["governmentAlignment"], deputy["partyAlignment"]
+
+
+@pytest.mark.parametrize(
+    ("vote", "expected"),
+    [("Sim", 1), ("Não", 1), ("Abstenção", 1), ("Obstrução", 1), ("Artigo 17", 0), ("", 0)],
+    ids=["Sim", "Nao", "Abstencao", "Obstrucao", "Artigo-17", "empty"],
+)
+def test_valid_vote_set_table(vote, expected):
+    government, party = _alignment(vote)
+    assert government == {"count": expected, "total": expected}
+    assert party == {"count": expected, "total": expected}

@@ -1,5 +1,6 @@
 """Downloads the Câmara bulk files and API records, with a local cache and a hashed manifest."""
 
+import csv
 import hashlib
 import json
 import time
@@ -28,6 +29,8 @@ RETRY_DELAYS = (1, 2, 4)
 TIMEOUT = 300
 HISTORY_WORKERS = 4
 LEGISLATURE = "57"
+# Columns blanked before a file is kept in the raw cache (AD-003): the CPF is never persisted.
+REDACT = {"deputados.csv": ["cpf"]}
 
 sleep = time.sleep
 
@@ -70,6 +73,20 @@ def _entry(path: Path, url: str, downloaded_at: str) -> dict:
     return {"file": path.name, "sourceUrl": url, "sha256": digest.hexdigest(), "bytes": size, "downloadedAt": downloaded_at}
 
 
+def _redact(path: Path, columns: list[str]) -> None:
+    """Rewrites `path` in place with `columns` blanked, keeping the header and every other value."""
+    tmp = path.with_name(path.name + ".redacted")
+    with open(path, encoding="utf-8-sig", newline="") as src, open(tmp, "w", encoding="utf-8-sig", newline="") as dst:
+        rows = csv.reader(src, delimiter=";")
+        header = next(rows, [])
+        blank = {header.index(c) for c in columns if c in header}
+        writer = csv.writer(dst, delimiter=";", quoting=csv.QUOTE_ALL, lineterminator="\n")
+        writer.writerow(header)
+        for row in rows:
+            writer.writerow(["" if i in blank else v for i, v in enumerate(row)])
+    tmp.replace(path)
+
+
 def _download(url: str, dest: Path, now: datetime) -> dict:
     part = dest.with_name(dest.name + ".part")
 
@@ -80,8 +97,11 @@ def _download(url: str, dest: Path, now: datetime) -> dict:
 
     try:
         _get(url, consume)
+        if dest.name in REDACT:
+            _redact(part, REDACT[dest.name])
     except BaseException:
         part.unlink(missing_ok=True)
+        part.with_name(part.name + ".redacted").unlink(missing_ok=True)
         raise
     part.replace(dest)
     return _entry(dest, url, _iso(now))
@@ -100,7 +120,9 @@ def sync(raw: Path, years: list[int], refresh: bool, now: datetime, log=lambda m
         dest = raw / name
         if dest.exists() and not refresh:
             if name not in manifest:
-                # A copy placed by hand: hash it, date it by its modification time.
+                # A copy placed by hand: redact it, hash it, date it by its modification time.
+                if name in REDACT:
+                    _redact(dest, REDACT[name])
                 manifest[name] = _entry(dest, url, _iso(datetime.fromtimestamp(dest.stat().st_mtime, UTC)))
             continue
         log(f"downloading {url}")
