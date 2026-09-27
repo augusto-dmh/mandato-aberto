@@ -2,6 +2,7 @@
 
 **Data:** 27/09/2026 · **Versão:** rascunho para revisão dos mantenedores antes do lançamento
 **Controladores:** [a definir] (pessoas físicas identificadas em `site/src/lib/site.ts` e na página Quem somos do site)
+**Canal de contato:** mandatoaberto8@gmail.com (correções e direitos do art. 18)
 **Base legal avaliada:** legítimo interesse (art. 7º, IX da Lei 13.709/2018), combinado com o tratamento de dados de acesso público (art. 7º, §3º) e o tratamento posterior para finalidade compatível (art. 7º, §7º); a publicidade dos dados vem do art. 8º da Lei 12.527/2011 (LAI)
 **Estrutura:** Anexo II do Guia Orientativo sobre Legítimo Interesse da ANPD (2024), como a pesquisa jurídica o lê (`01-pesquisa-juridica.md`, seção 3.1)
 
@@ -44,9 +45,9 @@ Não há alternativa menos invasiva que cumpra a finalidade: mostrar o mandato s
 ## Salvaguardas
 
 - **Transparência (art. 9º):** página Dados e privacidade com campos, finalidade, base legal, controladores e canal; página Metodologia e fontes com a conta de cada número.
-- **Direitos do titular (art. 18):** o e-mail de correções atende também aos pedidos do art. 18; triagem em até 48 horas e correção ou publicação da resposta do parlamentar em até 7 dias, na página Correções, versionada no repositório (AD-008).
+- **Direitos do titular (art. 18):** o e-mail de correções, mandatoaberto8@gmail.com, atende também aos pedidos do art. 18; triagem em até 48 horas e correção ou publicação da resposta do parlamentar em até 7 dias, na página Correções, versionada no repositório (AD-008).
 - **Minimização:** CPF nunca lido nem gravado; lista fechada de colunas em cada leitura; nome civil e data de nascimento só no cruzamento.
-- **Visitantes:** nenhum cookie e nada gravado no navegador; contagem de visitas pelo Cloudflare Web Analytics, sem cookie e sem identificador individual; nenhum formulário com servidor.
+- **Visitantes:** nenhum cookie e nada gravado no navegador; nenhuma contagem de visitas; a hospedagem (GitHub Pages) processa as requisições sob a política de privacidade do GitHub; nenhum formulário com servidor.
 - **Proveniência:** cada registro traz o link para a fonte oficial e cada página a data da coleta; os arquivos brutos baixados são guardados com hash (AD-005).
 - **Agente de pequeno porte:** os controladores são pessoas naturais; pela Resolução CD/ANPD 2/2022, dispensados de encarregado, mantêm o canal de comunicação acima.
 - **Revisão:** este teste é revisto a cada nova fonte ou novo campo, e antes de qualquer tratamento por IA (AD-009).
