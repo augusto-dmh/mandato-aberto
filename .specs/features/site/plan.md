@@ -11,7 +11,7 @@ When this ships, `npm run build` in `site/` turns `data/out/` into a static site
 Reuses the ETL contract as-is: the site never reads `data/raw/` and never recomputes an indicator (AD-002).
 
 1. `data/out/*.json` (exists, produced by `mandato-etl build`) -> `site/src/lib/data.ts` (new, door 2) - reads the contract once per build, rejects any `schema_version` other than `1`, hands typed records to the pages
-2. `data.ts` -> `site/src/lib/photos.ts` (new, door 4) - downloads each `photoUrl` once into `site/.cache/photos/`, hands the local path or `null` to pages and cards
+2. `data.ts` -> `site/src/lib/photos.ts` (new, door 4) - downloads each `photoUrl` not yet cached into `site/.cache/photos/` (`MANDATO_PHOTO_CACHE`; `MANDATO_PHOTOS=off` reads the cache only, as CI does), hands the local path or `null` to pages and cards
 3. `data.ts` -> Astro pages (new, door 1) - `/` (home), `/deputados/{id}/`, `/votacoes/{id}/`, each rendered to static HTML; the home search is one Vue island fed the trimmed deputy list as props
 4. `data.ts` + `photos.ts` -> `site/src/lib/cards.ts` (new, door 3) - renders one 1200x630 PNG per deputy with satori + resvg to `/cards/deputados/{id}.png`
 5. out: `site/dist/`, plain files, deployable to any static host (AD-001); the `launch` feature adds the deploy, the legal pages and the footer
