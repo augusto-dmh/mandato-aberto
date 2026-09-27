@@ -60,6 +60,9 @@ const home = () => page("");
 const profile = (id: number) => page(`deputados/${id}`);
 const rollCall = (id: string) => page(`votacoes/${id}`);
 const allPages = () => [home(), ...[101, 102, 103].map(profile), ...ROLL_CALLS.map(rollCall)];
+const notFound = () => readFileSync(join(dist, "404.html"), "utf8");
+/** The pages the launch adds: the five legal and channel pages and `404.html`. */
+const launchPages = () => [...["metodologia", "quem-somos", "dados-e-privacidade", "correcoes", "reportar-erro"].map(page), notFound()];
 
 const decode = (text: string) =>
   text
@@ -418,7 +421,7 @@ describe("S5 share cards", () => {
 
 describe("S6 language", () => {
   it("built pages use no forbidden term and no percentage", () => {
-    for (const html of allPages()) {
+    for (const html of [...allPages(), ...launchPages()]) {
       const text = visible(html);
       expect(text).not.toContain("%");
       for (const term of FORBIDDEN_TERMS) expect(text).not.toMatch(termPattern(term));
@@ -739,5 +742,66 @@ describe("launch S5 corrections", () => {
       "Toda mensagem recebe triagem em até 48 horas.",
       "Um erro confirmado é corrigido, e a resposta de um parlamentar é publicada nesta página com o mesmo destaque do dado contestado, em até 7 dias.",
     ]);
+  });
+});
+
+/** The nine kinds of page that carry the legal footer. */
+const footerPages = (): [string, string][] => [
+  ["home", home()],
+  ["profile 101", profile(101)],
+  ["roll call 100-1", rollCall("100-1")],
+  ["404", notFound()],
+  ...["metodologia", "quem-somos", "dados-e-privacidade", "correcoes", "reportar-erro"].map((p): [string, string] => [p, page(p)]),
+];
+const footer = (html: string) => element(html, "footer", "");
+
+describe("launch S1 legal footer and 404", () => {
+  it("footer legal sentence on every page", () => {
+    const pages = footerPages();
+    expect(pages).toHaveLength(9);
+    for (const [name, html] of pages) {
+      expect(footer(html), name).toContain(
+        "Este site não apoia nem se opõe a candidaturas, partidos ou federações. Todos os dados provêm de fontes oficiais indicadas em cada página. Não recebe recursos de partidos, candidatos ou campanhas.",
+      );
+    }
+  });
+
+  it("footer credits", () => {
+    for (const [name, html] of footerPages()) {
+      expect(footer(html), name).toContain(
+        'Dados: <a href="https://dadosabertos.camara.leg.br/">Câmara dos Deputados</a> e <a href="https://dadosabertos.tse.jus.br/">TSE</a> (dados abertos). Fotos: Câmara dos Deputados.',
+      );
+    }
+  });
+
+  it("footer links", () => {
+    const links = [
+      '<a href="/metodologia/">Metodologia e fontes</a>',
+      '<a href="/quem-somos/">Quem somos</a>',
+      '<a href="/dados-e-privacidade/">Dados e privacidade</a>',
+      '<a href="/correcoes/">Correções</a>',
+      '<a href="/reportar-erro/">Reportar erro</a>',
+      '<a href="https://github.com/augusto-dmh/mandato-aberto">Código-fonte</a> ',
+    ];
+    for (const [name, html] of footerPages()) for (const link of links) expect(footer(html), name).toContain(link);
+  });
+
+  it("404 page", () => {
+    expect(existsSync(join(dist, "404.html"))).toBe(true);
+    const html = notFound();
+    expect(/<title>([^<]*)<\/title>/.exec(html)?.[1]).toBe("Página não encontrada - Mandato Aberto");
+    expect(/<h1\b[^>]*>([^<]*)<\/h1>/.exec(html)?.[1]).toBe("Página não encontrada");
+    expect(html).toContain("O endereço pode ter sido digitado errado ou a página pode ter deixado de existir.");
+    expect(html).toContain('<a href="/">Voltar à busca de deputados</a>');
+    const indexes: string[] = [];
+    const walk = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) walk(join(dir, entry.name));
+        else if (entry.name === "index.html") indexes.push(join(dir, entry.name));
+      }
+    };
+    walk(dist);
+    expect(indexes.length).toBeGreaterThan(12);
+    for (const file of indexes) expect(readFileSync(file, "utf8"), file).not.toContain("Página não encontrada");
   });
 });

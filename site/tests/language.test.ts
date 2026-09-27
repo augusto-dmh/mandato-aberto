@@ -42,8 +42,16 @@ describe("descriptive language", () => {
     const dir = mkdtempSync(join(tmpdir(), "mandato-terms-"));
     writeFileSync(join(dir, "Page.astro"), "<p>Faltou à sessão</p>\n");
     writeFileSync(join(dir, "ok.ts"), "export const label = 'fielmente descrito';\n");
-    writeFileSync(join(dir, "notes.md"), "faltou\n");
+    writeFileSync(join(dir, "notes.txt"), "faltou\n");
     expect(findForbidden(dir)).toEqual([{ file: join(dir, "Page.astro"), term: "faltou" }]);
+    rmSync(dir, { recursive: true });
+  });
+
+  it("scan covers markdown", () => {
+    const dir = mkdtempSync(join(tmpdir(), "mandato-terms-"));
+    writeFileSync(join(dir, "page.md"), "Faltou à sessão\n");
+    writeFileSync(join(dir, "ok.ts"), "export const label = 'fielmente descrito';\n");
+    expect(findForbidden(dir)).toEqual([{ file: join(dir, "page.md"), term: "faltou" }]);
     rmSync(dir, { recursive: true });
   });
 });

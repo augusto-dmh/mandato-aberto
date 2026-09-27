@@ -591,3 +591,65 @@ main.wrap {
     columns: 1;
   }
 }
+
+/* Legal footer links, the long-form pages, the error form and the corrections list */
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 10px;
+}
+
+.prose {
+  max-width: 44em;
+}
+
+.prose h2 {
+  font-family: var(--serif);
+  margin: 40px 0 8px;
+}
+
+.report {
+  margin-top: 40px;
+  font-size: 0.9rem;
+}
+
+.report-form {
+  display: grid;
+  gap: 6px;
+  max-width: 36em;
+  margin: 24px 0;
+}
+
+.report-form label {
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.report-form input,
+.report-form textarea {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+}
+
+.report-form button {
+  justify-self: start;
+  margin-top: 16px;
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 16px;
+  border: 2px solid var(--ink);
+  background: none;
+  cursor: pointer;
+}
+
+.correction {
+  border-top: 1px solid var(--rule);
+  padding: 16px 0;
+}
+
+.correction .reply {
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+}
