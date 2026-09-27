@@ -10,7 +10,7 @@ import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { FORBIDDEN_TERMS, termPattern } from "../src/lib/forbidden-terms";
-import { CORRECTIONS_EMAIL } from "../src/lib/site";
+import { CORRECTIONS_EMAIL, MAINTAINERS } from "../src/lib/site";
 
 const SITE = resolve(__dirname, "..");
 const FIXTURE = join(__dirname, "fixtures", "out");
@@ -595,5 +595,85 @@ describe("launch S3 methodology", () => {
     expect(new Set(anchors)).toEqual(new Set(["participacao", "alinhamento-governo", "alinhamento-partido", "proposicoes"]));
     const ids = new Set([...methodology().matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]));
     for (const anchor of anchors) expect(ids.has(anchor), anchor).toBe(true);
+  });
+});
+
+const REPO = "https://github.com/augusto-dmh/mandato-aberto";
+const mailtoLink = `<a href="mailto:${CORRECTIONS_EMAIL}">${CORRECTIONS_EMAIL}</a>`;
+const about = () => page("quem-somos");
+const privacy = () => page("dados-e-privacidade");
+const expectHtml = (html: string, fragments: string[]) => {
+  for (const fragment of fragments) expect(html).toContain(fragment);
+};
+
+describe("launch S4 who we are and privacy", () => {
+  it("quem somos", () => {
+    const html = about();
+    const text = visible(html);
+    expect(MAINTAINERS.length).toBeGreaterThan(0);
+    for (const { name, city } of MAINTAINERS) {
+      expect(text).toContain(name);
+      expect(text).toContain(city);
+    }
+    expect(html).toContain(`<a href="mailto:${CORRECTIONS_EMAIL}">`);
+    expectHtml(html, [
+      "O Mandato Aberto é mantido por pessoas físicas, sem vínculo com partidos, candidatos, federações ou campanhas.",
+      "Não recebe dinheiro nem qualquer vantagem de partidos, candidatos, campanhas ou empresas, e não paga impulsionamento de conteúdo.",
+    ]);
+  });
+
+  it("quem somos code and rebuild", () => {
+    expectHtml(about(), [
+      `<a href="${REPO}">`,
+      'O site é reconstruído todos os dias a partir das fontes listadas em <a href="/metodologia/#fontes">Metodologia e fontes</a>.',
+    ]);
+  });
+
+  it("privacy fields", () => {
+    const html = privacy();
+    const items = [...html.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((m) => visible(m[1]));
+    for (const item of [
+      "nome parlamentar",
+      "partido",
+      "UF",
+      "foto oficial",
+      "períodos em exercício",
+      "votos em votações nominais",
+      "proposições de autoria",
+      "para quem é candidato em 2026: cargo, partido, número e situação no TSE",
+    ]) {
+      expect(items, item).toContain(item);
+    }
+    expectHtml(html, [
+      "O nome civil e a data de nascimento publicados pela Câmara são lidos só para cruzar com o registro do TSE e nunca são exibidos.",
+    ]);
+  });
+
+  it("privacy purpose basis and controllers", () => {
+    expectHtml(privacy(), [
+      "Finalidade: dar acesso público aos atos do mandato de cada deputado federal.",
+      "Base legal: art. 7º, IX e §3º da Lei 13.709/2018 (LGPD), combinado com o art. 8º da Lei 12.527/2011 (LAI).",
+      'Controladores: as pessoas físicas identificadas em <a href="/quem-somos/">Quem somos</a>.',
+      `Para exercer os direitos do art. 18 da LGPD, escreva para ${mailtoLink}.`,
+    ]);
+  });
+
+  it("privacy no other field and form", () => {
+    expectHtml(privacy(), [
+      "Nenhum CPF, telefone, endereço, e-mail, cor, raça, religião ou qualquer outro campo das fontes é tratado.",
+      "O formulário de erro não envia nada ao site: a mensagem só sai do seu programa de e-mail, quando você a envia.",
+    ]);
+  });
+
+  it("privacy cookies analytics and host", () => {
+    expectHtml(privacy(), [
+      "O site não grava cookie nem guarda nada no seu navegador.",
+      "A contagem de visitas vem do Cloudflare Web Analytics, sem cookie e sem identificador individual.",
+      'A hospedagem (Cloudflare) processa as requisições sob a <a href="https://www.cloudflare.com/privacypolicy/">política de privacidade dela</a>.',
+    ]);
+  });
+
+  it("privacy balancing test link", () => {
+    expect(privacy()).toContain(`<a href="${REPO}/blob/main/research/03-teste-de-balanceamento-lgpd.md">teste de balanceamento</a>`);
   });
 });
