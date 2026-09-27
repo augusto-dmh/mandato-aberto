@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { reportMailto } from "../src/lib/report";
+import { pagePathFromQuery, reportMailto } from "../src/lib/report";
 import { CORRECTIONS_EMAIL } from "../src/lib/site";
 
 describe("report form", () => {
@@ -26,5 +26,17 @@ describe("report form", () => {
           "Seu e-mail: (não informado)",
         ]),
     );
+  });
+
+  it.each([
+    ["?p=/deputados/101/", "/deputados/101/"],
+    ["?p=/votacoes/2645346-18/", "/votacoes/2645346-18/"],
+    ["?p=/", ""],
+    ["", ""],
+    ["?p=https://x/", ""],
+    ["?p=/a%20b/", ""],
+    [`?p=/${"a".repeat(201)}`, ""],
+  ])("prefill accepts only site paths: %s", (search, expected) => {
+    expect(pagePathFromQuery(search)).toBe(expected);
   });
 });
