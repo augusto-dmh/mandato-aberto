@@ -28,6 +28,10 @@ in `site/tests/`, page `100-3` gains `Não (1)`, profile 103 gains a row, and si
 `100-6` first. A roll call built without the official columns (only possible outside `readers`, which require
 them) keeps tallies counted from its records, so `test_valid_vote_set_table[empty]` runs unchanged.
 
+Extended after verification round 1 (maintainer, 2026-09-27): C4 gains the deputy in exercise with no record in a
+secret roll call, C6 gains the two door-1 validation members it had left out, and C12 pins the secret page's title,
+description, section heading and note. Claims only gain cases; no assertion changes.
+
 ## Checks
 
 ### S1 - The ETL publishes secret ballots with official totals · 8 files · 70 KB · ~18k
@@ -41,15 +45,17 @@ Proof: `P tests/test_secret_ballots.py::test_secret_rule_table`
 **C3** - In the variant, `100-6` has `tallies == {"yes": 12, "no": 5, "others": 2}` in `roll-calls.json` and `roll-calls/100-6.json`, while `100-1` keeps `{"yes": 2, "no": 1, "others": 0}` counted from its records, not the shared `9/9/9` (AC 2)
 Proof: `P tests/test_secret_ballots.py::test_secret_tallies_come_from_official_totals`
 
-**C4** - In the variant, `participation` is `{"count": 4, "total": 5}` for 101, `{"count": 3, "total": 3}` for 102 and `{"count": 0, "total": 0}` for 103; 101's empty vote in the open roll call `100-3` still does not count (AC 3)
+**C4** - In the variant, `participation` is `{"count": 4, "total": 5}` for 101, `{"count": 3, "total": 3}` for 102 and `{"count": 0, "total": 0}` for 103; 101's empty vote in the open roll call `100-3` still does not count; and over two PLEN roll calls where both deputies are in exercise, `9-1` secret with a record by deputy 1 only and `9-2` open with `Sim` by both, participation is `{"count": 2, "total": 2}` for 1 and `{"count": 1, "total": 2}` for 2, who has no record in the secret one (AC 3)
 Proof: `P tests/test_secret_ballots.py::test_secret_record_counts_for_participation`
+Proof: `P tests/test_secret_ballots.py::test_no_record_in_a_secret_roll_call_does_not_count`
 
 **C5** - In the variant, `governmentAlignment` and `partyAlignment` equal those of the shared legislature (101: `2/3`, `2/3`; 102: `1/1`, `2/3`; 103: `0/1`, `0/0`), and every `100-6` entry in a deputy's `votes` has `partyMajority: null` (AC 4)
 Proof: `P tests/test_secret_ballots.py::test_secret_record_is_not_a_valid_vote`
 
-**C6** - A build writes `meta.schema_version == 2`, `etl/schema/meta.schema.json` has `"const": 2`, and `mandato-etl validate` exits `1` for an output whose first `roll-calls.json` item has no `secret` and for one whose `roll-calls/100-1.json` has `"secret": "no"`, and `0` for the unmodified output (AC 5, door 1)
+**C6** - A build writes `meta.schema_version == 2`, `etl/schema/meta.schema.json` has `"const": 2`, and `mandato-etl validate` exits `1` for an output whose first `roll-calls.json` item has no `secret`, for one whose `roll-calls/100-1.json` has `"secret": "no"`, for one whose `roll-calls/100-1.json` has no `secret` and for one whose first `roll-calls.json` item has `"secret": "no"`, and `0` for the unmodified output (AC 5, door 1)
 Proof: `P tests/test_publish.py::test_meta_fields`
 Proof: `P tests/test_secret_ballots.py::test_validate_requires_a_boolean_secret`
+Proof: `P tests/test_secret_ballots.py::test_validate_requires_secret_in_both_files`
 
 **C7** - The approved etl tests run unchanged apart from the two version lines and the renegotiation above: `git diff 9921e6c -- etl/tests` touches only `conftest.py` (the variant and `100-3`), `test_publish.py`, `test_roll_calls.py`, `test_schema.py` and the new `test_secret_ballots.py`, and the whole suite passes
 Proof: `test "$(git diff --name-only 9921e6c -- etl/tests | sort | tr '\n' ' ')" = "etl/tests/conftest.py etl/tests/test_publish.py etl/tests/test_roll_calls.py etl/tests/test_schema.py etl/tests/test_secret_ballots.py " && uv run --directory etl pytest -q`
@@ -71,7 +77,7 @@ Proof: `T tests/build.test.ts -t "fails on schema_version 3"`
 Proof: `T tests/data.test.ts -t "reads the secret flag"`
 Proof: `T tests/data.test.ts -t "reads only schema fields"`
 
-**C12** - Page `100-6` shows `Votação secreta: a Câmara registra quem votou, não o voto de cada deputado.`, the label `Totais oficiais da Câmara` with `Sim 12`, `Não 5`, `Outros 2`, and exactly one vote group headed `Deputados que votaram (3)` listing `/deputados/101/` `Ana Souza` `PT-SP`, `/deputados/102/` `Bruno Lima` `PT-RJ`, `/deputados/103/` `Carla Dias` `NOVO-MG` in that order; it contains no `Registro sem voto` (AC 6)
+**C12** - Page `100-6` shows `Votação secreta: a Câmara registra quem votou, não o voto de cada deputado.`, the label `Totais oficiais da Câmara` with `Sim 12`, `Não 5`, `Outros 2`, and exactly one vote group headed `Deputados que votaram (3)` listing `/deputados/101/` `Ana Souza` `PT-SP`, `/deputados/102/` `Bruno Lima` `PT-RJ`, `/deputados/103/` `Carla Dias` `NOVO-MG` in that order, under the heading `Quem votou` and the note `Em ordem alfabética. Partido na data da votação.`; its `og:title` is `Votação nominal de 01/08/2025: votação secreta` and its `og:description` is `Votação secreta de 01/08/2025 (Plenário) na Câmara dos Deputados, com os totais oficiais e os deputados que votaram.`; it contains no `Registro sem voto` (AC 6)
 Proof: `T tests/build.test.ts -t "secret roll call"`
 
 **C13** - Page `100-1` (open) contains neither `Votação secreta` nor `Totais oficiais da Câmara` and still groups `Sim (2)` and `Não (1)`; page `100-3` still groups its empty record under `Registro sem voto` (AC 6, discrimination)
@@ -103,12 +109,12 @@ Proof: `npm --prefix site ci && npm --prefix site test && MANDATO_DATA_DIR=tests
 | --- | --- | --- |
 | secret rule inputs (5) | `[]` C2 · `[""]` C2 · `["",""]` C2 · `["","Sim"]` C2 · `["Artigo 17"]` C2 | - |
 | tallies source (2) | official totals when secret C3 · records otherwise C3 | - |
-| participation record kinds (3) | non-empty vote C4 · record in a secret roll call C4 · empty record in an open roll call C4 | - |
+| participation record kinds (4) | non-empty vote C4 · record in a secret roll call C4 · empty record in an open roll call C4 · no record in a secret roll call C4 | - |
 | deputies in the variant (3) | 101 in exercise C4 · 102 in exercise after leave C4 · 103 out of exercise C4 | - |
 | alignment indicators unaffected (2) | governmentAlignment C5 · partyAlignment C5 | - |
 | contract version places (3) | ETL `meta.json` C6 · `meta.schema.json` C6 · site `SCHEMA_VERSION` C10 | - |
 | `secret` field places (3) | `roll-calls.json` C1 · `roll-calls/{id}.json` C1 · site data layer C11 | - |
-| `secret` field validation (2) | missing C6 · non-boolean C6 | - |
+| `secret` field validation (4) | missing in `roll-calls.json` C6 · non-boolean in `roll-calls/{id}.json` C6 · missing in `roll-calls/{id}.json` C6 · non-boolean in `roll-calls.json` C6 | - |
 | roll-call page states (2) | secret C12 · open C13 | - |
 | profile vote labels (3) | secret C14 · empty in open roll call C14 · other value C14 | - |
 | `GET /votacoes/{id}/` statuses (2) | 200 C16 · 404 site C1 (unchanged) | - |
@@ -132,7 +138,7 @@ Evidence:
 
 - `compute.is_secret` (new): 3 outcomes over empty, all-empty and mixed records -> decides, own layer C2, boundary C1
 - `compute` tallies: 2 sources chosen by `secret` -> decides, boundary C3 (the choice lives inside the roll-call assembly; C3 asserts both rows)
-- `compute` participation: 3 record kinds -> decides, boundary C4 over all three
+- `compute` participation: 4 record kinds -> decides, boundary C4 over all four
 - `readers` allowlist for `votacoes`: forwards 3 more columns, no conditional -> instrumentation, covered by C3
 - `site/src/lib/format.ts` `voteLabel`: 3 rows -> decides, own layer C14, boundary C14
 - `site/src/pages/votacoes/[id].astro`: branches on `secret` -> decides, boundary C12 and C13

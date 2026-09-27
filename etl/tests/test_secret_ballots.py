@@ -99,3 +99,44 @@ def test_validate_requires_a_boolean_secret(secret_built, capsys):
     doc_path.write_text(json.dumps(doc))
     assert cli.main(["validate", str(out)]) == 1
     assert f"roll-calls/{R1}.json" in capsys.readouterr().err
+
+
+def test_no_record_in_a_secret_roll_call_does_not_count():
+    # Two PLEN roll calls, both deputies in exercise throughout: 9-1 secret with a record by 1 only, 9-2 open.
+    rows = {
+        "votacoes": [
+            {"id": rc, "data": "2023-03-01", "dataHoraRegistro": f"2023-03-01T1{i}:00:00", "siglaOrgao": "PLEN",
+             "aprovacao": "1", "votosSim": "1", "votosNao": "0", "votosOutros": "0", "descricao": "d"}
+            for i, rc in enumerate(("9-1", "9-2"))
+        ],
+        "votacoesVotos": [
+            {"idVotacao": rc, "dataHoraVoto": "2023-03-01T10:00:00", "voto": vote, "deputado_id": dep,
+             "deputado_nome": f"D{dep}", "deputado_siglaPartido": "P", "deputado_siglaUf": "SP",
+             "deputado_idLegislatura": "57", "deputado_urlFoto": "https://x/p.jpg"}
+            for rc, dep, vote in (("9-1", "1", ""), ("9-2", "1", "Sim"), ("9-2", "2", "Sim"))
+        ],
+    }
+    histories = {dep: [{"dataHora": "2023-02-01T00:00", "situacao": "Exercício"}] for dep in ("1", "2")}
+    records = compute.assemble(compute.load(lambda kind: rows.get(kind, [])), histories, set(), {}, "2026-09-27T09:00:00")
+    assert [rc["secret"] for rc in records["roll_calls"] if rc["id"] == "9-1"] == [True]
+    participation = {d["id"]: d["participation"] for d in records["deputies"]}
+    assert participation == {1: {"count": 2, "total": 2}, 2: {"count": 1, "total": 2}}
+
+
+def test_validate_requires_secret_in_both_files(secret_built, capsys):
+    out = secret_built.out
+    doc_path = out / "roll-calls" / f"{R1}.json"
+    original_doc = doc_path.read_text()
+    doc = json.loads(original_doc)
+    del doc["secret"]
+    doc_path.write_text(json.dumps(doc))
+    assert cli.main(["validate", str(out)]) == 1
+    assert f"roll-calls/{R1}.json" in capsys.readouterr().err
+    doc_path.write_text(original_doc)
+
+    index_path = out / "roll-calls.json"
+    index = json.loads(index_path.read_text())
+    index[0]["secret"] = "no"
+    index_path.write_text(json.dumps(index))
+    assert cli.main(["validate", str(out)]) == 1
+    assert "roll-calls.json" in capsys.readouterr().err

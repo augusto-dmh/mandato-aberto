@@ -336,6 +336,12 @@ describe("S4 roll call", () => {
     expect(text).toContain("Votação secreta: a Câmara registra quem votou, não o voto de cada deputado.");
     expect(text).toContain("Totais oficiais da Câmara Sim 12 Não 5 Outros 2");
     expect(text).not.toContain("Registro sem voto");
+    expect(meta(html, "og:title")).toBe("Votação nominal de 01/08/2025: votação secreta");
+    expect(meta(html, "og:description")).toBe(
+      "Votação secreta de 01/08/2025 (Plenário) na Câmara dos Deputados, com os totais oficiais e os deputados que votaram.",
+    );
+    const votes = element(html, "section", 'class="section"');
+    expect(visible(votes)).toMatch(/^Quem votou Em ordem alfabética\. Partido na data da votação\. Deputados que votaram \(3\)/);
     expect([...html.matchAll(/<section\b[^>]*class="vote-group"/g)]).toHaveLength(1);
     const group = element(html, "section", 'class="vote-group"');
     expect(visible(group)).toMatch(/^Deputados que votaram \(3\)/);
