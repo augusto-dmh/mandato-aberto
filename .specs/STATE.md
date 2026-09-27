@@ -17,11 +17,11 @@
 ## Handoff
 
 **Feature**: launch
-**Where**: not started; brief written in `research/HANDOFF-launch.md` on branch `feat/launch` (from `main` at `a523a43`, after PR #7)
-**In progress**: none
-**Next step**: plan `launch` in a new Claude session from `research/HANDOFF-launch.md`; the session stops at `plan.md` for maintainer review. Still pending from `secret-ballots`: run `mandato-etl build --tse-csv <file>` so `data/out/` is on contract version 2 (the site rejects version 1), and check `/votacoes/2645346-18/` and `/votacoes/2576389-4/` in a browser on desktop and phone
-**Blockers**: go-live needs the `.org` domain (`SITE_URL` stays a placeholder); the TSE CSV is not on this machine (`etl/inputs/tse/` does not exist) and whether holding it counts as persisting CPF under AD-003 is undecided; launch date 2026-10-02 unconfirmed
-**Open for the maintainer**: (1) resolved 2026-09-27 - single photo credit on the home list (site `Landing` row); (2) `dist/` is 313 MB over the real data (cards 128 MB) - `launch` sizes the Actions cache and host around it; (3) root `README.md` still says "presença" for the participation indicator; (4) resolved 2026-09-27 - secret ballots built, verified and merged (PR #7); the `launch` methodology page must describe them; (5) the profile vote list shows two roll calls on the same proposition with the same title - after launch
+**Where**: plan written - `.specs/features/launch/plan.md` (58 criteria in 9 slices, 7 one-way doors, 7 open questions of which 4 block go-live); `validate_plan.py` exits 0, warning only that questions stay open; no `checks.md`, no code
+**In progress**: none - waiting for the maintainer's review of the plan
+**Next step**: maintainer reviews the plan: door 1 (Cloudflare Pages, GitHub Pages rejected), door 7 (candidacy export by deputy id instead of any copy of the TSE CSV), the assumptions table, and open questions 1 to 4 (domain, names and e-mail, TSE file with its licence capture, Cloudflare secrets). Then `checks.md` in a new session (`tlc-spec-lean`, "write the checks"), build, Verifier at profile `light`. Still pending from `secret-ballots`: check `/votacoes/2645346-18/` and `/votacoes/2576389-4/` in a browser on desktop and phone
+**Blockers**: open questions 1 to 4 of the plan block go-live, not the build; launch date 2026-10-02 unconfirmed (question 6)
+**Open for the maintainer**: (2) `dist/` 313 MB - sized in the plan's door 1 (about 3,600 files, largest 730 KB, under the Cloudflare Pages limits read 2026-09-27); (3) root `README.md` "presença" - plan AC 55; (5) two roll calls on the same proposition with the same title in the profile list - after launch (plan Out of scope)
 **Merged**: PR #6 (`site`) and PR #7 (`secret-ballots`) into `main` on 2026-09-27
 **Uncommitted**: none
-**Branch**: `feat/launch`; local `data/out/` was rebuilt by `secret-ballots` C8 without `--tse-csv`, so `candidacy2026` is null there until the next build with the TSE file
+**Branch**: `feat/launch`; local `data/out/` is on contract version 2 with `candidacy2026` null (built without the TSE file)
