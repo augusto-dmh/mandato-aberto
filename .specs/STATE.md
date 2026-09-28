@@ -19,12 +19,12 @@
 
 ## Handoff
 
-**Feature**: github-pages (after `launch`, merged as PR #8)
-**Where**: C1 to C15 built and verified - round 1 PASS, profile light, at `6411332` (`.specs/features/github-pages/verification.md`); C16 to C19 (S4, AC 15 to 18) wait for the first deploy
+**Feature**: github-pages (live) and launch (round 2 open on one check)
+**Where**: site live at `https://augusto-dmh.github.io/mandato-aberto/` since 2026-09-28 00:19 UTC (`publish.yml` run 36359746320, after a rerun: the first attempt could not connect to the Câmara for 27 min); verification round 2 against the live site: github-pages PASS (C16 to C19), launch FAIL on C68 only (`/quem-somos/` renders `[a definir]`), C65 and C66 n/a
 **In progress**: none
-**Next step**: open a PR from `feat/github-pages` against `main`. Merging it deploys to `https://augusto-dmh.github.io/mandato-aberto/`. After the first green `publish.yml` run, run verification round 2, scoped to C16 to C19 here plus launch C62, C63, C64, C67, C68 and C69 as renegotiated, with `MANDATO_DOMAIN=augusto-dmh.github.io/mandato-aberto`
-**Blockers**: none for the merge. Plan question 1 (maintainers' names) blocks a go-live with no placeholder: `/quem-somos/` still shows `[a definir]`, and launch C68 fails on it
-**Open for the maintainer**: (1) the brief asked for the `SITE_URL` default to become `https://augusto-dmh.github.io`, but approved site C33 pins `https://mandatoaberto.org`. The default stays, plan `Flow` hop 1 says so, and `publish.yml` sets `SITE_URL` explicitly; renegotiate site C33 only if you want the new default. (2) AC 1's "same files" was settled as the same paths with the `_astro/` content hash removed, because the two assets that carry the base (`Base.*.css`, `DeputySearch.*.js`) change hash. (3) `README.md:24,45,51-54` still describes the Cloudflare deploy and its secrets, and launch C61 still pins those names; the README needs rewriting together with C61. (4) The plan's `Impact` row lists launch C69 as "stands", but its proof was rewritten in the launch paragraph. (5) Verifier gaps that change no result: C5 does not read the island's client chunk; C2 covers `href`/`src` but not `component-url` or CSS `url()`; the C8 scan misses variables and Markdown links; `astroBuild` drops `BASE_URL` (vitest exports it, and Astro lets it override the base). (6) Carried from launch: `research/03` still reads `**Controladores:** [a definir]`; `correctionsDir()` resolves from `process.cwd()`. Still pending: the TSE file for the badge; a browser check of `/votacoes/2645346-18/` and `/votacoes/2576389-4/`
-**Merged**: PR #6 (`site`), PR #7 (`secret-ballots`) and PR #8 (`launch`) into `main` on 2026-09-27
+**Next step**: the maintainer decides the names on Quem somos (github-pages plan question 1): with names, fill `MAINTAINERS` in `site/src/lib/site.ts` and the controllers in `research/03-teste-de-balanceamento-lgpd.md`, merge, and re-run launch C68 against the live site (scoped round 3); without names, record the anonymous launch as a decision that contradicts the legal research. Then: the TSE file for the badge (`--export-candidacy`, commit the JSON, delete the CSV); the browser check of `/votacoes/2645346-18/` and `/votacoes/2576389-4/`; watch the daily run at 09:00 UTC
+**Blockers**: launch C68 until the names are decided; nothing else
+**Open for the maintainer**: (1) names and city on Quem somos; (2) the TSE file; (3) browser check of the two secret ballots; (4) the daily run depends on the Câmara being reachable from GitHub runners - one 27-minute connection failure happened on 2026-09-27 23:45 UTC and a rerun succeeded; if it repeats, consider a retry with longer delays or a later cron
+**Merged**: PR #6 (`site`), PR #7 (`secret-ballots`), PR #8 (`launch`) and PR #9 (`github-pages`) into `main` on 2026-09-27
 **Uncommitted**: none
-**Branch**: `feat/github-pages` from `main` at `5730572`
+**Branch**: `docs/go-live-round-2` from `main` at `1bede0c`

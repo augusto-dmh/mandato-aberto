@@ -1,9 +1,9 @@
 # launch verification
 
-**Verdict**: PASS
+**Verdict**: FAIL - C68 (see "Round 2" below; round 1's own scope, C1 to C61, is unaffected and is carried below unchanged)
 **Profile**: light
 **Diff range**: a523a43..f9844627206db5c78ce5cdef16e7b4c9ab9fd5f5
-**Round**: 1 - full
+**Round**: 2 - scoped (round 1 - full - is carried below unchanged)
 **Verifier**: independent sub-agent (author != verifier)
 
 Scope: C1 to C61, verified at `f984462`. C62 to C69 (S10, go-live against the deployed domain) are deferred to round 2 by `checks.md` and were not run in this round; they carry no verdict here. Checks C10 and C41 were verified in their renegotiated text (checks.md "Renegotiated during build"), and site C36's control file `notes.txt` was confirmed at `site/tests/language.test.ts:46`.
@@ -114,3 +114,30 @@ None of these changes a Result; F1 and F2 are precision gaps about the checks' p
 4. **F4 - C58 does not carry AC 54's "naming the controllers"** (plan AC 54). `research/03-teste-de-balanceamento-lgpd.md:4` reads `**Controladores:** [a definir] ...`; the proof only greps the word `Controladores`. C68 (round 2) rejects `[a definir]` on four deployed pages but not in this research file, which the privacy page links to (C31). Suggest round 2 also run `! grep -q 'a definir' research/03-teste-de-balanceamento-lgpd.md` once the maintainers fill in the names.
 5. **F5 - `correctionsDir()` default depends on the working directory** (`site/src/lib/corrections.ts:30`, `resolve(process.cwd(), ... "../corrections")`). It is `<repo>/corrections` only when cwd is `site/`, which holds for vitest via `npm --prefix site` and for `publish.yml:44-50` (`working-directory: site`). C39 passes as written; note only.
 6. **F6 - plan Path vs checks on cache-save order.** Plan path item 8 draws `deploy -> save the photo cache`; C40 and C43 put `actions/cache/save` before the deploy so `wrangler-action` is last. Both satisfy AC 36, AC 40 and AC 42; no AC contradicted, note only.
+
+## Round 2 - scoped, live site
+
+**Verdict**: FAIL - C68
+**Profile**: light
+**Site**: `https://augusto-dmh.github.io/mandato-aberto/` (`MANDATO_DOMAIN=augusto-dmh.github.io/mandato-aberto` exported for every proof below)
+**Run**: `publish.yml` run `36359746320` (event `push`, head `1bede0c43a35c17c6690bdfedb92a9db6a7fc46e`, conclusion `success`, completed `2026-09-28T00:19:45Z`) - the first green `publish.yml` run on `main`
+**Verifier**: independent sub-agent (author != verifier)
+
+Checks C62, C63, C64, C67, C68, C69 run **as renegotiated** by the dated paragraph "Superseded by github-pages (2026-09-27)" in `checks.md`: C63 keeps its original proof; C64 runs only the `http` to `https` member (github.io has no `www` host); C69 runs its rewritten proof. C65 and C66 are `n/a` per that same paragraph, not run.
+
+| Check | Claim | Proof run | Evidence | Result |
+| --- | --- | --- | --- | --- |
+| C62 | latest `publish.yml` run concluded `success` | `gh run list --workflow publish.yml --limit 1 --json conclusion -q '.[0].conclusion'` piped to `grep -qx success` - exit 0 | output: `success` (run `36359746320`, head `1bede0c`) | PASS |
+| C63 | `/nada/` answers `404` with `Página não encontrada` in the body | `checks.md:254` proof - exit 0 | `curl ... /nada/` -> `404`; body contains `Página não encontrada` | PASS |
+| C64 (renegotiated - `http`->`https` member only) | `http://` answers `301` to the `https://` URL for `/deputados/` | `checks.md:35` renegotiated proof - exit 0 | raw: `curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" "http://$MANDATO_DOMAIN/deputados/"` -> `301 https://augusto-dmh.github.io/mandato-aberto/deputados/` | PASS |
+| C65 | `whois $MANDATO_DOMAIN` names no maintainer, e-mail or phone | n/a | no domain to `whois` under a subpath deploy on `github.io` - per the renegotiation paragraph, this check does not apply at this host | n/a |
+| C66 | host answers with `nosniff`, `referrer-policy`, `X-Frame-Options` | n/a | GitHub Pages sends no custom headers at this host (the `_headers` file, C46, binds nothing here) - per the renegotiation paragraph, this check does not apply at this host | n/a |
+| C67 | home and `/deputados/` answer with no `Set-Cookie` | `checks.md:266` proof - exit 0 | no `set-cookie` header on either response | PASS |
+| C68 | `/quem-somos/`, `/dados-e-privacidade/`, `/correcoes/`, `/reportar-erro/` contain no `[a definir]` | `checks.md:269` proof - **exit 1** | `/quem-somos/` contains `<li>[a definir], [a definir]</li>` inside `<ul class="maintainers">`; `/dados-e-privacidade/`, `/correcoes/`, `/reportar-erro/` are clean | **FAIL** |
+| C69 (renegotiated) | home and a linked profile's `og:image` sit under the domain and answer `200` | `checks.md:35` renegotiated proof - exit 0 | linked id `204379`; home `og:image` `https://augusto-dmh.github.io/mandato-aberto/cards/site.png` -> `200`; profile `og:image` `https://augusto-dmh.github.io/mandato-aberto/cards/deputados/204379.png` -> `200` | PASS |
+
+## Findings (Round 2)
+
+1. **C68 FAIL - `/quem-somos/` still shows the maintainers' names as `[a definir]`.** The deployed page renders `<li>[a definir], [a definir]</li>` where the two maintainers' names and cities belong. This is not a code defect: `plan.md:132` of `.specs/features/github-pages/plan.md` (open question 1) records that the maintainers' names "stay `[a definir]` in `site/src/lib/site.ts`... until the maintainer decides," and `checks.md`'s own header line in the same feature states "2 open, of which 1 blocks a placeholder-free go-live (maintainers' names, plan question 1)." The go-live is not placeholder-free yet, and this check is the one that says so.
+2. **C65 and C66 - `n/a`, not a verdict.** Both are retired for the subpath deploy by the "Superseded by github-pages (2026-09-27)" paragraph: there is no custom domain to run `whois` against, and GitHub Pages serves no custom response headers at `augusto-dmh.github.io`. Neither was run, and neither counts toward the round's pass/fail.
+3. **C64 - only the renegotiated member ran.** The original check named two members (`http` and `www`); `github.io` has no `www` host, so only the `http`-to-`https` member is claimed or proven in this round, per the same renegotiation paragraph.
