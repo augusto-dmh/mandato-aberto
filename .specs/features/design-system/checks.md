@@ -110,7 +110,7 @@ Proof: `npx vitest run tests/package.test.ts -t "package exports tokens and comp
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | token blocks (4) | `diario` light C1 · `diario` dark C1 · `plenario` light C1 · `plenario` dark C1 | - |
-| declared contrast pairs (all, table-driven) | C2 over every pair of every block; C3 proves the pair list is complete for text | - |
+| declared contrast pairs (24) | C2, table-driven over all 24 (3 text colours × 2 surfaces × 2 themes × 2 directions); C3 proves the list is complete for text | - |
 | vote cases, doors 5 and 6 (7) | `Sim` C12 · `Não` C12 · `Abstenção` C12 · `Obstrução` C12 · `Artigo 17` C12 · empty, not secret C12 · empty, secret C12; table-driven, plus unknown value C12 | - |
 | components, door 4 (7) | `NDeM` C9 · `SourceNote` C11 · `VoteMark` C12 · `MandateScore` C13 · `OfficialPhoto` C14 · `TallyBar` C16 · `AiSummaryFrame` C17 | - |
 | component empty states (3) | `NDeM` total 0 C10 · `OfficialPhoto` no photo C15 · `AiSummaryFrame` unreviewed C18 | - |
@@ -150,3 +150,7 @@ Evidence: the repo's closest analogue is `site/tests/`, where `format.test.ts` p
 
 - S1 = 8k, S2 enters at 17k, S3 at 25k, S4 at 28k, plus about 30k for reading the contract, the MVP formats and running Playwright: about 58k, under the 150k budget - one builder
 - C27 cannot close in this build: it waits for the maintainer to choose between the two directions on the published prototype
+
+- **Boundary:** C1-C26 and C28 green in this build; C27 open until the maintainer chooses a direction
+- **Settled mid-build:** C10's "no digit" is read as no number of the record: the footnote marker and its note keep their index digit, because C11 requires every `NDeM` to carry its note, the empty one included. `NDeM` lost its optional unit after the first screenshots showed it repeating the label. The share card's footer names the site instead of repeating the photo credit, which `OfficialPhoto` already prints. CI gains a `design` job running both suites
+- **Abandoned:** a 30%-wide photo column beside the name on phones - the name broke one word per line at 360 px; the photo now sits above the name below 734 px
