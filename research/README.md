@@ -9,6 +9,7 @@ Pesquisa e decisões que precedem o código. Leitura na ordem numérica.
 | [`03-teste-de-balanceamento-lgpd.md`](03-teste-de-balanceamento-lgpd.md) | Teste de balanceamento do legítimo interesse (LGPD): finalidade, necessidade, balanceamento e salvaguardas; rascunho para revisão dos mantenedores |
 | [`04-direcao-v2.md`](04-direcao-v2.md) | Avaliação da proposta de v2 (Laravel + Inertia + Vue, design, IA, exportação), premissas corrigidas e calendário até a 58ª legislatura |
 | [`05-grilling-escopo-v2.md`](05-grilling-escopo-v2.md) | 11 decisões de escopo da v2, 11 premissas, fora de escopo |
+| [`06-pesquisa-design-e-concorrentes.md`](06-pesquisa-design-e-concorrentes.md) | Posicionamento "registro, não nota", princípios de design, armadilhas, três direções visuais e decisões levantadas. Anexos em [`design-anexos/`](design-anexos/) |
 | [`decisions-log.md`](decisions-log.md) | Decisões de produto e processo posteriores ao grilling, uma linha cada |
 | [`HANDOFF-mvp.md`](HANDOFF-mvp.md) | Prompt pronto para a sessão que constrói o MVP |
 
