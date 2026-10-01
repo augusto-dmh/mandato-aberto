@@ -1,6 +1,6 @@
 # Direção da v2 — de site de campanha a produto permanente
 
-**Data:** 30/09/2026 · **Entrada:** reflexão do mantenedor em chat em 30/09, `.specs/STATE.md`, `02-grilling-escopo-mvp.md`, `01-pesquisa-juridica.md` · **Status:** direção aceita pelo mantenedor ("Go", 30/09); escopo detalhado da v2 sai do grilling em `05-grilling-escopo-v2.md`.
+**Data:** 30/09/2026 · **Entrada:** reflexão do mantenedor em chat em 30/09, `.specs/STATE.md`, `02-grilling-escopo-mvp.md`, `01-pesquisa-juridica.md` · **Status:** direção aceita pelo mantenedor ("Go", 30/09); escopo detalhado da v2 em `05-grilling-escopo-v2.md`.
 
 ## O que o mantenedor propôs
 
