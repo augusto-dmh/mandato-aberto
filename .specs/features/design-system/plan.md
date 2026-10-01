@@ -45,6 +45,7 @@ Reuses the ETL contract as-is (AD-002) and the MVP's forbidden-terms list (`site
 | 3. Playwright as a dev dependency for screenshots and layout checks | `"@playwright/test"` in `design/package.json` `devDependencies`, Chromium only | manual screenshots: no exit code, so no check can rest on them |
 | 4. Component names the app will copy | `NDeM`, `SourceNote`, `VoteMark`, `MandateScore`, `OfficialPhoto`, `TallyBar`, `AiSummaryFrame` | Portuguese component names: the project writes identifiers in English (`AGENTS.md`) |
 | 5. Vote encoding used across the product | `yes`: filled mark above the baseline; `no`: filled mark below; `abstention`: hollow short mark on the baseline; `obstruction`: hatched short mark on the baseline; `not-recorded`: gap; every mark in ink tones, never a hue, and always with a text label | green/red by option: reads as right and wrong and fails colour-blind readers (HIG Charts, research section 3 principle 6); party colours: more than twenty parties and colour becomes a flag |
+| 6. Vote values door 5 did not name, found in the contract while writing the checks (`Artigo 17`: 1,042 records; empty vote on a secret ballot) | `article-17`: small filled dot on the baseline, label "Art. 17 (presidente da sessão)"; empty vote with `secret: true`: gap, label "Votação secreta"; empty vote otherwise: `not-recorded`, label "Registro sem voto"; any other value: hollow dot on the baseline with the raw value as label | folding `Artigo 17` into `not-recorded`: the record says the session president did not vote by rule, which is not a missing record; labels follow the MVP's `voteLabel` (`site/src/lib/format.ts`) |
 
 - Nothing else in this change is hard to reverse
 
@@ -128,12 +129,12 @@ The comparison ends in a decision, not two living themes.
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Which directions are prototyped | "Diário" (Newsreader + Inter) with the score element, and "Plenário" (Archivo + Source Serif 4) as contrast | recommendation of `research/design-anexos/a1-referencias-de-design.md` section 5; "Instrumento" alone tends to generic SaaS | n |
-| Accent colour | not the MVP red; a dark blue-green in "Diário" and one accent in "Plenário", both chosen by the contrast rule | red reads as alarm and has strong party association in Brazil (research section 5) | n |
-| Which deputy and roll call the prototype shows | `--deputy` and `--roll-call` flags; defaults are the in-exercise deputy with the longest name and the plenary roll call with the most recorded votes | stresses the layout with the hardest real case | n |
-| Sample AI summary in the prototype | one hand-written sample marked "exemplo" in the prototype only | no AI runs before the association exists; the frame still needs content to be judged | n |
-| Verification profile | `ui` for this feature, declared in `AGENTS.md` next to the `etl-camara` line | the whole deliverable is screens; `light` would not open the binding sources nor enumerate copy per screen | n |
-| Package manager and runtime | npm and Node 24, as `site/` | one toolchain in the repository | n |
+| Which directions are prototyped | "Diário" (Newsreader + Inter) with the score element, and "Plenário" (Archivo + Source Serif 4) as contrast | recommendation of `research/design-anexos/a1-referencias-de-design.md` section 5; "Instrumento" alone tends to generic SaaS || y |
+| Accent colour | not the MVP red; a dark blue-green in "Diário" and one accent in "Plenário", both chosen by the contrast rule | red reads as alarm and has strong party association in Brazil (research section 5) || y |
+| Which deputy and roll call the prototype shows | `--deputy` and `--roll-call` flags; defaults are the in-exercise deputy with the longest name and the plenary roll call with the most recorded votes | stresses the layout with the hardest real case || y |
+| Sample AI summary in the prototype | one hand-written sample marked "exemplo" in the prototype only | no AI runs before the association exists; the frame still needs content to be judged || y |
+| Verification profile | `ui` for this feature, declared in `AGENTS.md` next to the `etl-camara` line | the whole deliverable is screens; `light` would not open the binding sources nor enumerate copy per screen || y |
+| Package manager and runtime | npm and Node 24, as `site/` | one toolchain in the repository || y |
 
 **Open questions:** none - all resolved or logged above.
 
