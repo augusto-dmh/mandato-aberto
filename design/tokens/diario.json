@@ -1,0 +1,275 @@
+{
+  "$description": "Diário: editorial. Newsreader for display and long text, Inter for interface and data, warm paper, one petrol-blue accent.",
+  "font": {
+    "display": {
+      "$type": "fontFamily",
+      "$value": [
+        "Newsreader Variable",
+        "Georgia",
+        "serif"
+      ]
+    },
+    "text": {
+      "$type": "fontFamily",
+      "$value": [
+        "Inter Variable",
+        "system-ui",
+        "sans-serif"
+      ]
+    },
+    "long": {
+      "$type": "fontFamily",
+      "$value": [
+        "Newsreader Variable",
+        "Georgia",
+        "serif"
+      ]
+    }
+  },
+  "type": {
+    "display-1": {
+      "size": {
+        "$type": "dimension",
+        "$value": "80px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.02
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 560
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.02em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.display}"
+      }
+    },
+    "display-2": {
+      "size": {
+        "$type": "dimension",
+        "$value": "56px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.06
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 560
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.015em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.display}"
+      }
+    },
+    "title-1": {
+      "size": {
+        "$type": "dimension",
+        "$value": "40px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.1
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 600
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.01em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.display}"
+      }
+    },
+    "title-2": {
+      "size": {
+        "$type": "dimension",
+        "$value": "28px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.15
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 600
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.005em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.display}"
+      }
+    },
+    "title-3": {
+      "size": {
+        "$type": "dimension",
+        "$value": "21px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.25
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 600
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.01em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.text}"
+      }
+    },
+    "body": {
+      "size": {
+        "$type": "dimension",
+        "$value": "17px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.5
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 400
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.011em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.text}"
+      }
+    },
+    "small": {
+      "size": {
+        "$type": "dimension",
+        "$value": "14px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.43
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 400
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.006em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.text}"
+      }
+    },
+    "micro": {
+      "size": {
+        "$type": "dimension",
+        "$value": "12px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.33
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 500
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "0.01em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.text}"
+      }
+    }
+  },
+  "color": {
+    "paper": {
+      "$type": "color",
+      "$value": "oklch(0.973 0.008 85)",
+      "$description": "page background",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.2 0.008 70)",
+          "role": "surface"
+        }
+      }
+    },
+    "raised": {
+      "$type": "color",
+      "$value": "oklch(0.993 0.004 85)",
+      "$description": "frames: photo mat, AI summary, notes",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.245 0.008 70)",
+          "role": "surface"
+        }
+      }
+    },
+    "ink": {
+      "$type": "color",
+      "$value": "oklch(0.22 0.01 70)",
+      "$description": "text and vote marks",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.94 0.008 85)",
+          "role": "text"
+        }
+      }
+    },
+    "muted": {
+      "$type": "color",
+      "$value": "oklch(0.48 0.012 70)",
+      "$description": "secondary text, the 'de m' of n de m",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.74 0.01 80)",
+          "role": "text"
+        }
+      }
+    },
+    "accent": {
+      "$type": "color",
+      "$value": "oklch(0.46 0.075 215)",
+      "$description": "links, focus and the item the reader searched for; never a vote option or a party",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.8 0.085 205)",
+          "role": "text"
+        }
+      }
+    },
+    "rule": {
+      "$type": "color",
+      "$value": "oklch(0.86 0.012 80)",
+      "$description": "dividers; carries no information",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.36 0.01 70)",
+          "role": "decor"
+        }
+      }
+    }
+  }
+}

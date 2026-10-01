@@ -1,0 +1,291 @@
+{
+  "$description": "Plenário: poster. Archivo with its width axis for display and interface, Source Serif 4 for long text, achromatic, one ultramarine accent.",
+  "font": {
+    "display": {
+      "$type": "fontFamily",
+      "$value": [
+        "Archivo Variable",
+        "Arial Narrow",
+        "sans-serif"
+      ]
+    },
+    "text": {
+      "$type": "fontFamily",
+      "$value": [
+        "Archivo Variable",
+        "system-ui",
+        "sans-serif"
+      ]
+    },
+    "long": {
+      "$type": "fontFamily",
+      "$value": [
+        "Source Serif 4 Variable",
+        "Georgia",
+        "serif"
+      ]
+    }
+  },
+  "type": {
+    "display-1": {
+      "size": {
+        "$type": "dimension",
+        "$value": "96px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 0.95
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 720
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.02em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.display}"
+      },
+      "stretch": {
+        "$type": "string",
+        "$value": "75%"
+      }
+    },
+    "display-2": {
+      "size": {
+        "$type": "dimension",
+        "$value": "64px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.0
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 700
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.015em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.display}"
+      },
+      "stretch": {
+        "$type": "string",
+        "$value": "75%"
+      }
+    },
+    "title-1": {
+      "size": {
+        "$type": "dimension",
+        "$value": "44px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.05
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 700
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.01em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.display}"
+      },
+      "stretch": {
+        "$type": "string",
+        "$value": "80%"
+      }
+    },
+    "title-2": {
+      "size": {
+        "$type": "dimension",
+        "$value": "28px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.12
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 650
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "-0.005em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.display}"
+      },
+      "stretch": {
+        "$type": "string",
+        "$value": "87.5%"
+      }
+    },
+    "title-3": {
+      "size": {
+        "$type": "dimension",
+        "$value": "20px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.25
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 600
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "0em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.text}"
+      }
+    },
+    "body": {
+      "size": {
+        "$type": "dimension",
+        "$value": "17px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.5
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 400
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "0em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.text}"
+      }
+    },
+    "small": {
+      "size": {
+        "$type": "dimension",
+        "$value": "14px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.43
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 400
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "0.005em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.text}"
+      }
+    },
+    "micro": {
+      "size": {
+        "$type": "dimension",
+        "$value": "12px"
+      },
+      "line": {
+        "$type": "number",
+        "$value": 1.33
+      },
+      "weight": {
+        "$type": "fontWeight",
+        "$value": 600
+      },
+      "tracking": {
+        "$type": "dimension",
+        "$value": "0.04em"
+      },
+      "family": {
+        "$type": "fontFamily",
+        "$value": "{font.text}"
+      }
+    }
+  },
+  "color": {
+    "paper": {
+      "$type": "color",
+      "$value": "oklch(1 0 0)",
+      "$description": "page background",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.14 0 0)",
+          "role": "surface"
+        }
+      }
+    },
+    "raised": {
+      "$type": "color",
+      "$value": "oklch(0.965 0 0)",
+      "$description": "frames: photo mat, AI summary, notes",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.2 0 0)",
+          "role": "surface"
+        }
+      }
+    },
+    "ink": {
+      "$type": "color",
+      "$value": "oklch(0.16 0 0)",
+      "$description": "text and vote marks",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.97 0 0)",
+          "role": "text"
+        }
+      }
+    },
+    "muted": {
+      "$type": "color",
+      "$value": "oklch(0.46 0 0)",
+      "$description": "secondary text, the 'de m' of n de m",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.74 0 0)",
+          "role": "text"
+        }
+      }
+    },
+    "accent": {
+      "$type": "color",
+      "$value": "oklch(0.47 0.21 264)",
+      "$description": "links, focus and the item the reader searched for; never a vote option or a party",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.76 0.12 260)",
+          "role": "text"
+        }
+      }
+    },
+    "rule": {
+      "$type": "color",
+      "$value": "oklch(0.88 0 0)",
+      "$description": "dividers; carries no information",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.34 0 0)",
+          "role": "decor"
+        }
+      }
+    }
+  }
+}
