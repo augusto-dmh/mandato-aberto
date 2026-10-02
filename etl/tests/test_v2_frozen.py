@@ -1,7 +1,9 @@
 """Door 2 - the v2 build stays byte-identical to the feature's base commit (C1).
 
-`fixtures/v2-golden.json` holds the sha256 of every file the base commit `bc0a4a8` wrote for these
-two builds; it was generated once, before any contract-v3 code existed, and is never regenerated.
+`fixtures/v2-golden.json` holds the sha256 of every file the base commit `bc0a4a8` writes for these
+two builds over the current fixture inputs. To reproduce it, run this module's `build_variant` with
+`git archive bc0a4a8 etl` extracted elsewhere and its `etl/src` first on `PYTHONPATH`; never regenerate
+it from the code under test.
 """
 
 import hashlib
