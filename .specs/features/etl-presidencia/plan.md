@@ -160,7 +160,7 @@ Every veto device decided by a nominal vote is a roll call whose votes carry the
 28. WHEN resolving a joint vote THEN the system SHALL set `memberId` to the one member of that house whose normalised `name`, mandate `uf` and an exercise period containing the session date all match, and SHALL set `memberId: null` when zero or several match
 29. WHEN the fixture holds two Senate members named "Fernando Carvalho" from SE whose exercise periods do not overlap THEN a vote dated inside one period SHALL resolve to that member's id only
 30. WHEN a joint vote's (`house`, verbatim `name`, `uf`) is listed in `etl/inputs/joint-vote-aliases.json` THEN the system SHALL set `memberId` from that entry without name matching, so that the fixture vote of `Prof. Dorinha Seabra`/TO resolves to Senate member 5386
-31. The system SHALL write `meta.coverage.unmatchedVotes` per house, and SHALL print on stderr one line per unmatched (house, name, uf) with the first session date it appears on
+31. IF any joint vote resolves to no member or to more than one after the aliases THEN the system SHALL print on stderr one line per unmatched (house, name, uf) with the first session date it appears on, write no output, and exit 1 (fail closed, as AD-017 does for unknown values; amended at approval). `meta.coverage.unmatchedVotes` is therefore always 0 in a published build
 
 **Independent test:** recorded responses for one cédula device (VET 49/2023 `49.23.001`), one panel device (`46051`) and one total veto (`03.26.000`), against fixture members, give the expected per-house tallies. One unmatched name appears in the log and in `unmatchedVotes`, and the total veto has no votes file.
 
@@ -218,24 +218,26 @@ The directory is a contract the importer can read without ETL code, and every re
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Verification profile | `standard`, like `etl-camara` and `contract-v3` | member veto counts are numbers a parliamentarian can contest, and the status rule table is an enumerated set that `light` would not recompute | n |
-| PLN in scope | out; only PL, PLP, PEC with author `Poder Executivo` | the brief and decision 8 name "projetos do Executivo" and research `09` names PL, PLP and PEC. PLN are joint-session budget matters with almost no individual votes | n |
-| Term end date | 2027-01-04 for `2023-2026`, 2027-01-05 start for `2027-2030` | EC 111/2021 changes the art. 82 inauguration date from the 2026 election on (verified). The 5 January date itself was not read in an official response this session, so a test pins it against a recorded official text before the first v4 publication | n |
-| Term holder source | constants in code: `Luiz Inácio Lula da Silva` for `2023-2026` with `sourceUrl` = the Congress inauguration session record (`/plenario/resultado/cn/20230101`, `CodigoSessao` 25338), `null` for `2027-2030` until a commit sets it after the result | no API names the president; Planalto refuses the ETL. The holder is a public office-holder named for their official acts (legal research scope covers "presidente") | n |
-| Issue date per kind | MP `dataApresentacao` (Congress, the edition date), veto `DataPublicacao`, bill Câmara `dataApresentacao` | the earliest official date in each source; the veto signing date is not a structured field | n |
-| Bill status source precedence | `normaGerada` (Senate) or Câmara `Transformado em Norma Jurídica` for `law`; Câmara for `withdrawn`/`archived`; anything else `inProgress` with `officialStatus` verbatim | the two sources agreed on 19 of 19 laws in 2023 (research `09` section 5.2); the Câmara has dozens of in-progress values | n |
-| Vote rate limit | 2 requests per second to the Senate API, cache decided devices forever | the API documents 429 above 10 per second; decided devices cannot change. A first full run takes about 1,500 calls and 55 MB of raw JSON (518,796 votes) | n |
-| Device text and veto reason | published verbatim (`text`, `reason`) | official public text; it is what a reader needs to know what was vetoed. Long texts stay in `acts.json` (about 2,500 devices) | n |
-| Project decisions | at approval, the orchestrator appends AD rows for door 1 (contract v4 and dual emission), doors 2-6 (the presidency shape) and door 3 (term dates under EC 111/2021); this plan does not edit `.specs/STATE.md` | parallel planners collide on AD numbering (contract-v3 precedent) | n |
-| v4 house directories need etl-senado | the presidency build requires both house directories (door 6); until etl-senado lands, the fixtures stand in for the Senate | the Senate half of every joint vote resolves against Senate members | n |
+| Verification profile | `standard`, like `etl-camara` and `contract-v3` | member veto counts are numbers a parliamentarian can contest, and the status rule table is an enumerated set that `light` would not recompute | y |
+| PLN in scope | out; only PL, PLP, PEC with author `Poder Executivo` | the brief and decision 8 name "projetos do Executivo" and research `09` names PL, PLP and PEC. PLN are joint-session budget matters with almost no individual votes | y |
+| Term end date | 2027-01-04 for `2023-2026`, 2027-01-05 start for `2027-2030` | EC 111/2021 changes the art. 82 inauguration date from the 2026 election on (verified). The 5 January date itself was not read in an official response this session, so a test pins it against a recorded official text before the first v4 publication | y |
+| Term holder source | constants in code: `Luiz Inácio Lula da Silva` for `2023-2026` with `sourceUrl` = the Congress inauguration session record (`/plenario/resultado/cn/20230101`, `CodigoSessao` 25338), `null` for `2027-2030` until a commit sets it after the result | no API names the president; Planalto refuses the ETL. The holder is a public office-holder named for their official acts (legal research scope covers "presidente") | y |
+| Issue date per kind | MP `dataApresentacao` (Congress, the edition date), veto `DataPublicacao`, bill Câmara `dataApresentacao` | the earliest official date in each source; the veto signing date is not a structured field | y |
+| Bill status source precedence | `normaGerada` (Senate) or Câmara `Transformado em Norma Jurídica` for `law`; Câmara for `withdrawn`/`archived`; anything else `inProgress` with `officialStatus` verbatim | the two sources agreed on 19 of 19 laws in 2023 (research `09` section 5.2); the Câmara has dozens of in-progress values | y |
+| Vote rate limit | 2 requests per second to the Senate API, cache decided devices forever | the API documents 429 above 10 per second; decided devices cannot change. A first full run takes about 1,500 calls and 55 MB of raw JSON (518,796 votes) | y |
+| Device text and veto reason | published verbatim (`text`, `reason`) | official public text; it is what a reader needs to know what was vetoed. Long texts stay in `acts.json` (about 2,500 devices) | y |
+| Project decisions | at approval, the orchestrator appends AD rows for door 1 (contract v4 and dual emission), doors 2-6 (the presidency shape) and door 3 (term dates under EC 111/2021); this plan does not edit `.specs/STATE.md` | parallel planners collide on AD numbering (contract-v3 precedent) | y |
+| v4 house directories need etl-senado | the presidency build requires both house directories (door 6); until etl-senado lands, the fixtures stand in for the Senate | the Senate half of every joint vote resolves against Senate members | y |
 
 **Open questions:**
 
 | # | Kind | Question | Until answered |
 | --- | --- | --- | --- |
-| 1 | open | Should per-member votes on total vetoes be extracted from the Congress result PDF (text-based, 3 columns, party names truncated), or stay `votesAvailable: false`? | AC 26 writes `votesAvailable: false` and links the PDF; the 9 voted total vetoes (including VET 3/2026, overridden) count in no member's `participation` |
-| 2 | blocks go-live | Who sets the `2027-2030` holder constant after the 2026 runoff, and from which official source? | the term is listed with `holder: null` from 2027-01-05; no act can carry a holder name before that commit |
 | 3 | blocks go-live | Who reviews the pt-BR `description` of each status rule before the app publishes it on its methodology page? | the maintainer reviews them in this feature's pull request; unpublished until then (same as contract-v3 open question 2) |
+
+Resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`research/decisions-log.md`): (1) no PDF extraction: total-veto votes stay `votesAvailable: false` and the coverage says so; (2) the `2027-2030` holder is a config entry with the official source (TSE diplomation or the Congress inauguration record), added in a commit after the inauguration; it stays `holder: null` until then and the app shows the term without a name. AC 31 was amended to fail closed: an unmatched joint-vote name would make a member look absent, which is an indicator error a parliamentarian would contest.
+
+**Approval:** approved by the orchestrator under the maintainer's delegation on 2026-10-02, every assumption confirmed; AD-020 records contract v4. Build starts after etl-senado lands.
 
 ## Observable
 
