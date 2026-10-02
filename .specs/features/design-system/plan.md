@@ -129,6 +129,11 @@ Added on 2026-10-02 from `verification.md` round 1; each line closes a gap the b
 34. The system SHALL attach a source-note marker to the numbers of the profile lede and to the roll-call tally, each linking to the official source
 35. WHEN `MandateScore` renders a row THEN the system SHALL draw a tick below the strip at the first vote of each month
 36. The card SHALL render no "%", no AI summary frame and no other deputy's name, and two cards for different deputies SHALL share the same element and class sequence
+37. WHEN the roll-call screen renders THEN the system SHALL stack its regions top to bottom as eyebrow, title, official summary when the roll call has a proposition, AI summary frame, result, utilities, groups (research a1 section 6.2)
+38. WHEN the card renders THEN the system SHALL place the photo left of the body and stack the body as eyebrow, name, party and UF, three figures, score caption, score, and the footer "Fonte: Câmara dos Deputados, dados de DD/MM/AAAA" (research a1 section 6.3)
+39. The system SHALL close the profile's score section with a source note carrying the official source and the collection date, and SHALL attach a marker to each statistic number pointing to its note (principles 1 and 2)
+40. IF a deputy has no exercise period THEN the system SHALL render no "desde" date on the profile or the card
+41. The system SHALL apply the accent colour only in rules for links, focus, hover and disclosure summaries (principle 7)
 
 **Independent test:** run the prototype for the fixture deputy with an empty base and for a roll call without votes; run the browser suite.
 
@@ -157,7 +162,10 @@ Added on 2026-10-02 from `verification.md` round 1; each line closes a gap the b
 | Which deputy and roll call the prototype shows | `--deputy` and `--roll-call` flags; defaults are the in-exercise deputy with the longest name and the plenary roll call with the most recorded votes | stresses the layout with the hardest real case || y |
 | Sample AI summary in the prototype | one hand-written sample marked "exemplo" in the prototype only | no AI runs before the association exists; the frame still needs content to be judged || y |
 | Verification profile | `ui` for this feature, declared in `AGENTS.md` next to the `etl-camara` line | the whole deliverable is screens; `light` would not open the binding sources nor enumerate copy per screen || y |
-| Package manager and runtime | npm and Node 24, as `site/` | one toolchain in the repository || y |
+| Package manager and runtime | npm and Node 24, as `site/` | one toolchain in the repository | y |
+| Which pages AC 22 covers | `profile` and `roll-call`; the card is a fixed 1200 × 630 image template governed by AC 23 | a share image is not read in a 360 px browser | n |
+| Score layout | one row per year, oldest first, with month ticks (AC 35), instead of the single full-width strip of research a1 section 6.1 | at 1120 px a single strip gives 979 votes about 1 px each, too thin to read or to target; per-year rows keep about 4 px per vote | n |
+| Out of scope rows added in round 2 (download, citar, per-party orientation, unit bar, card short address) | excluded from this feature as listed | written by the builder after the plan review; each needs the app, a domain or data the contract lacks | n |
 
 **Open questions:** none - all resolved or logged above.
 

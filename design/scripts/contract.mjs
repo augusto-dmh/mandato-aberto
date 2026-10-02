@@ -50,7 +50,8 @@ export function loadInputs(dir, { deputy: deputyId, rollCall: rollCallId, photoD
   if (!chosenRollCall) throw new Error(`roll call ${rollCallId} is not in ${dir}`);
 
   const deputy = read(dir, "deputies", `${chosen.id}.json`);
-  const since = [...deputy.exercisePeriods].map((p) => p.start).sort()[0] ?? meta.generatedAt;
+  // no exercise period recorded -> no start date shown; never stand in the collection date for it
+  const since = [...deputy.exercisePeriods].map((p) => p.start).sort()[0] ?? null;
   const byId = new Map(index.map((r) => [r.id, r]));
   const votes = deputy.votes
     .filter((v) => byId.has(v.rollCallId))

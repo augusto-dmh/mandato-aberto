@@ -41,7 +41,7 @@ Position and shape carry the option; colour never does (P6). Baseline at mid-hei
 
 ### SourceNote
 
-- **Inputs:** `index`, `sourceUrl`, `sourceLabel` (default "Câmara dos Deputados"), `methodUrl`.
+- **Inputs:** `index`, `sourceUrl`, `sourceLabel` (default "Câmara dos Deputados"), `methodUrl`, `collectedAt`.
 - **Empty state:** without `methodUrl` it shows only the source link.
 - **Principle:** P1 and P2. The note sits inside the frame, right below the number, and links to the official source and the method.
 

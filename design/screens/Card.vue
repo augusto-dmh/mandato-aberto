@@ -23,7 +23,7 @@ const LONG_NAME = 40;
       <div class="ma-card__body">
         <p class="ma-t-micro ma-eyebrow">Mandato Aberto · Câmara dos Deputados</p>
         <h1 :class="['ma-card__name', { 'ma-card__name--long': deputy.name.length > LONG_NAME }]">{{ deputy.name }}</h1>
-        <p class="ma-t-small ma-muted">{{ deputy.party }} · {{ deputy.uf }} · desde <span class="ma-num">{{ formatDate(deputy.since) }}</span></p>
+        <p class="ma-t-small ma-muted">{{ deputy.party }} · {{ deputy.uf }}<template v-if="deputy.since"> · desde <span class="ma-num">{{ formatDate(deputy.since) }}</span></template></p>
         <div class="ma-card__figures">
           <p v-for="f in figures" :key="f.label" class="ma-card__figure">
             <template v-if="f.total > 0">

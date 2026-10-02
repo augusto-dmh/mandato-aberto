@@ -210,3 +210,32 @@ test("every digit is tabular", async ({ page }) => {
       expect(plain, `${d} ${s}`).toEqual([]);
     }
 });
+
+test("roll-call arrangement", async ({ page }) => {
+  for (const d of DIRECTIONS) {
+    await open(page, d, "roll-call");
+    const top = async (sel: string) => (await page.locator(sel).first().boundingBox())!.y;
+    // the official summary (ementa) exists only when the roll call has a proposition; every other region is always there
+    const always = [".ma-rollcall__head .ma-eyebrow", ".ma-rollcall__head h1", ".ma-ai", ".ma-result", ".ma-utilities", ".ma-groups"];
+    for (const sel of always) await expect(page.locator(sel).first(), `${d} ${sel}`).toBeVisible();
+    const order = (await page.locator(".ma-quote").count()) ? [...always.slice(0, 2), ".ma-quote", ...always.slice(2)] : always;
+    const tops = await Promise.all(order.map(top));
+    expect(tops, d).toEqual([...tops].sort((a, b) => a - b));
+    expect(new Set(tops).size).toBe(order.length);
+  }
+});
+
+test("card composition", async ({ page }) => {
+  for (const d of DIRECTIONS) {
+    await open(page, d, "card");
+    const box = async (sel: string) => (await page.locator(`.ma-card ${sel}`).first().boundingBox())!;
+    const [photo, body] = await Promise.all([box(".ma-photo"), box(".ma-card__body")]);
+    expect(photo.x + photo.width, `${d} photo left of body`).toBeLessThanOrEqual(body.x);
+    const order = [".ma-eyebrow", "h1", ".ma-card__body > p.ma-muted", ".ma-card__figures", ".ma-card__score-label", ".ma-score", ".ma-card__foot"];
+    const tops = await Promise.all(order.map(async (sel) => (await box(sel)).y));
+    expect(tops, d).toEqual([...tops].sort((a, b) => a - b));
+    await expect(page.locator(".ma-card__figure")).toHaveCount(3);
+    await expect(page.locator(".ma-card .ma-card__body > p.ma-muted")).toContainText(/^[A-Z]+ · [A-Z]{2}/);
+    await expect(page.locator(".ma-card__foot")).toContainText(/Fonte: Câmara dos Deputados, dados de \d{2}\/\d{2}\/\d{4}/);
+  }
+});

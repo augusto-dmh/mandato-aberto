@@ -29,6 +29,10 @@ defineProps({
         <p class="ma-t-small ma-muted">{{ rollCall.description }}</p>
       </header>
 
+      <section v-if="summary" class="ma-summary">
+        <AiSummaryFrame v-bind="summary" />
+      </section>
+
       <section class="ma-result" aria-label="Resultado">
         <p class="ma-t-title-1">{{ rollCall.resultLabel }}<a class="ma-note-ref" href="#nota-1" aria-describedby="nota-1"><sup class="ma-num">1</sup></a></p>
         <TallyBar v-bind="rollCall.tallies" />
@@ -44,9 +48,6 @@ defineProps({
         <a :href="`#votacao-${rollCall.id}`">Link permanente</a>
       </div>
 
-      <section v-if="summary" class="ma-section">
-        <AiSummaryFrame v-bind="summary" />
-      </section>
 
       <section class="ma-section" :id="`votacao-${rollCall.id}`">
         <div class="ma-section__head">

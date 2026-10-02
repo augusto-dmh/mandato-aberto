@@ -117,7 +117,7 @@ describe("tokens", () => {
       return [
         0.2104542553 * l + 0.793617785 * m - 0.0040720468 * q,
         1.9779984951 * l - 2.428592205 * m + 0.4505937099 * q,
-        0.0259040371 * l + 0.7827717662 * m - 0.808885698 * q,
+        0.0259040371 * l + 0.7827717662 * m - 0.808675766 * q,
       ];
     };
     const oklab = (value: string) => {
@@ -142,6 +142,16 @@ describe("tokens", () => {
       const colour = direction.color as Record<string, { $value: string; $extensions: { mandato: { dark: string; role: string } } }>;
       expect(colour.mat.$value).toBe(colour.raised.$value);
       expect(colour.mat.$extensions.mandato.dark).toBe(colour.raised.$value);
+    }
+  });
+
+  it("accent marks only interaction", () => {
+    const styles = readFileSync(join(ROOT, "styles", "components.css"), "utf8");
+    const rules = [...styles.matchAll(/([^{}]+)\{([^}]*)\}/g)].filter(([, , body]) => body.includes("--ma-color-accent"));
+    expect(rules.length).toBeGreaterThan(0);
+    for (const [, selector] of rules) {
+      for (const sel of selector.split(",").map((x) => x.trim()))
+        expect(sel, sel).toMatch(/(^|\s)a(\b|$)|a\.|:focus-visible|:hover|summary/);
     }
   });
 

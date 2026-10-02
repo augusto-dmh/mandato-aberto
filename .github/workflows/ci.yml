@@ -68,9 +68,13 @@ jobs:
         with:
           node-version: 24
           cache: npm
-          cache-dependency-path: design/package-lock.json
+          cache-dependency-path: |
+            design/package-lock.json
+            site/package-lock.json
       - name: Install
         run: npm ci
+      - name: Install the site (tests read its forbidden-terms list)
+        run: npm ci --prefix ../site
       - name: Build tokens
         run: npm run build
       - name: Test

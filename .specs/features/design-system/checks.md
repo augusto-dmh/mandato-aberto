@@ -3,7 +3,7 @@
 Profile: ui
 Plan: `.specs/features/design-system/plan.md`
 
-38 checks in 5 slices · 6 one-way doors · 1 open, which blocks go-live (C27 waits for the maintainer's choice). C29-C38 and the extra proofs marked "round 2" were added on 2026-10-02 to close the gaps of verification round 1; no proof was removed or weakened
+43 checks in 5 slices · 6 one-way doors · 1 open, which blocks go-live (C27 waits for the maintainer's choice). C29-C38 and the proofs marked "round 2" close the gaps of verification round 1, C39-C43 those of round 2 (all added on 2026-10-02); no proof was removed or weakened
 
 All commands run from `design/`. `npx vitest run <file> -t "<name>"` for unit and render tests; `npx playwright test <file> -g "<name>"` for layout tests against the generated prototype.
 
@@ -144,6 +144,21 @@ Proof: `npx vitest run tests/components.test.ts -t "MandateScore ticks each mont
 **C38** - Cards for deputies 101 and 102 share the same element and class sequence, and neither contains "%", the other deputy's name or an AI frame (AC 36)
 Proof: `npx vitest run tests/prototype.test.ts -t "every card shares one template"`
 
+**C39** - On the fixture roll call, the roll-call regions start top to bottom as eyebrow, title, official summary when present, AI frame, result, utilities, groups, in both directions (AC 37)
+Proof: `npx playwright test e2e/screens.spec.ts -g "roll-call arrangement"`
+
+**C40** - On the card, the photo ends left of the body, the body regions start top to bottom as eyebrow, name, party and UF, figures, score caption, score, footer; there are 3 figures and the footer reads "Fonte: Câmara dos Deputados, dados de DD/MM/AAAA" (AC 38)
+Proof: `npx playwright test e2e/screens.spec.ts -g "card composition"`
+
+**C41** - The score section's note links the deputy's `sourceUrl` and reads "dados de 27/09/2026" for the fixture, and each of the 3 statistics carries a marker to a note linking the same source (AC 39)
+Proof: `npx vitest run tests/prototype.test.ts -t "score and stats carry source notes"`
+
+**C42** - With `exercisePeriods` emptied for deputy 101, neither the profile nor the card contains "desde" followed by a date (AC 40)
+Proof: `npx vitest run tests/prototype.test.ts -t "no start date without an exercise period"`
+
+**C43** - Every rule of `styles/components.css` that uses `--ma-color-accent` has only selectors for a link, `:focus-visible`, `:hover` or `summary` (AC 41)
+Proof: `npx vitest run tests/tokens.test.ts -t "accent marks only interaction"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -155,6 +170,7 @@ Proof: `npx vitest run tests/prototype.test.ts -t "every card shares one templat
 | component empty states (6) | `NDeM` total 0 C10 · `OfficialPhoto` no photo C15 · `AiSummaryFrame` unreviewed C18 · `SourceNote` no method C11 · `MandateScore` no votes C13 · `TallyBar` zero counts C16 | - |
 | screen empty states (3) | profile lede total 0 C29 · card figure total 0 C29 · roll call without votes C31 | - |
 | roll-call group order (7) | `Sim` C30 · `Não` C30 · `Abstenção` C30 · `Obstrução` C30 · `Artigo 17` C30 · empty C30 · other value C30 | - |
+| proof environments (2) | local `design/` with the site installed C19 · CI job `design`, which installs `../site` (`.github/workflows/ci.yml`) C19 | - |
 | page background per theme (12) | profile×diario×light C26 · profile×diario×dark C26 · roll-call×diario×light C26 · roll-call×diario×dark C26 · card×diario×light C26 · card×diario×dark C26 · profile×plenario×light C26 · profile×plenario×dark C26 · roll-call×plenario×light C26 · roll-call×plenario×dark C26 · card×plenario×light C26 · card×plenario×dark C26 | - |
 | pages at 360 px (8) | profile×diario×light C24 · profile×diario×dark C24 · profile×plenario×light C24 · profile×plenario×dark C24 · roll-call×diario×light C24 · roll-call×diario×dark C24 · roll-call×plenario×light C24 · roll-call×plenario×dark C24 | - |
 | pages under reduced motion (6) | diario profile C23 · diario roll-call C23 · diario card C23 · plenario profile C23 · plenario roll-call C23 · plenario card C23 | - |
@@ -198,3 +214,5 @@ Evidence: the repo's closest analogue is `site/tests/`, where `format.test.ts` p
 - **Abandoned:** a 30%-wide photo column beside the name on phones - the name broke one word per line at 360 px; the photo now sits above the name below 734 px
 - **Boundary (round 2):** C29-C38 added and green with the extra proofs on C7, C11, C13, C15, C16; C27 still open
 - **Settled mid-build (round 2):** Plenário's accent moved from blue `oklch(0.47 0.21 264)` to violet `oklch(0.46 0.2 300)`, away from the gov.br blues. A new `mat` colour token, role `decor`, keeps the photo mat light in dark mode. The page sets tabular figures globally. Explicit spaces now sit between the number spans, because Vue's whitespace condensing glued "0de 1votos" for screen readers and copy. The score row deviation from research a1 section 6.1 is an assumption row in the plan
+- **Boundary (round 3):** C39-C43 added and green; the CI job installs the site's dependencies because the prototype tests read the site's forbidden-terms module; C27 still open
+- **Settled mid-build (round 3):** the roll call now shows the AI frame before the result, as research a1 section 6.2 orders it. A deputy with no exercise period shows no start date; it used to fall back to the collection date. `SourceNote` gained an optional `collectedAt`. The assumptions table had lost two rows to a failed edit and carried a malformed cell; both are repaired, and the score-layout deviation is now recorded there

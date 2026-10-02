@@ -161,6 +161,40 @@ describe("prototype", () => {
     }
   });
 
+  it("score and stats carry source notes", () => {
+    const generatedAt = JSON.parse(readFileSync(join(FIXTURE, "meta.json"), "utf8")).generatedAt;
+    const [y, m, d] = generatedAt.slice(0, 10).split("-");
+    for (const dir of DIRECTIONS) {
+      const doc = parse(page(dir, "profile"));
+      const section = doc.querySelector(".ma-score")!.closest("section")!;
+      const note = section.querySelector("p.ma-note")!;
+      expect(note.textContent!.replace(/\s+/g, " ")).toContain(`dados de ${d}/${m}/${y}`);
+      expect(note.querySelector("a")!.getAttribute("href")).toBe(DEPUTY.sourceUrl);
+      const stats = [...doc.querySelectorAll(".ma-stat")];
+      expect(stats).toHaveLength(3);
+      for (const stat of stats) {
+        const ref = stat.querySelector("a.ma-note-ref")!;
+        const target = doc.getElementById(ref.getAttribute("href")!.slice(1))!;
+        expect(target.querySelector("a")!.getAttribute("href")).toBe(DEPUTY.sourceUrl);
+      }
+    }
+  });
+
+  it("no start date without an exercise period", () => {
+    const out = join(OUT, "no-period");
+    const data = mkdtempSync(join(tmpdir(), "mandato-noperiod-"));
+    cpSync(FIXTURE, data, { recursive: true });
+    const file = join(data, "deputies", "101.json");
+    writeFileSync(file, JSON.stringify({ ...JSON.parse(readFileSync(file, "utf8")), exercisePeriods: [] }));
+    expect(prototype(data, out, ["--deputy", "101"]).status).toBe(0);
+    for (const dir of DIRECTIONS) {
+      for (const screen of ["profile", "card"]) {
+        const text = parse(readFileSync(join(out, dir, `${screen}.html`), "utf8")).querySelector("main, .ma-card")!.textContent!;
+        expect(text, `${dir} ${screen}`).not.toMatch(/desde \d/);
+      }
+    }
+  });
+
   it("every card shares one template", () => {
     const shape = (html: string) =>
       [...parse(html).querySelectorAll(".ma-card *")]

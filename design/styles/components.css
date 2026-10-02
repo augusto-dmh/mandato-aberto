@@ -548,6 +548,10 @@
 }
 
 /* Roll call */
+.ma-summary {
+  margin-top: var(--ma-space-7);
+}
+
 .ma-rollcall__head {
   display: grid;
   gap: var(--ma-space-4);

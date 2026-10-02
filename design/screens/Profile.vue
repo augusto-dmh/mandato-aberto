@@ -32,8 +32,8 @@ defineProps({
 
       <p v-if="deputy.participation.total > 0" class="ma-lede ma-t-title-3">
         Registrou voto em <span class="ma-num">{{ formatNumber(deputy.participation.count) }}</span> de
-        <span class="ma-num">{{ formatNumber(deputy.participation.total) }}</span> votações nominais do plenário desde
-        <span class="ma-num">{{ formatDate(deputy.since) }}</span>.<a class="ma-note-ref" href="#nota-1" aria-describedby="nota-1"><sup class="ma-num">1</sup></a>
+        <span class="ma-num">{{ formatNumber(deputy.participation.total) }}</span> votações nominais do plenário<template v-if="deputy.since"> desde
+        <span class="ma-num">{{ formatDate(deputy.since) }}</span></template>.<a class="ma-note-ref" href="#nota-1" aria-describedby="nota-1"><sup class="ma-num">1</sup></a>
       </p>
       <p v-else class="ma-lede ma-t-title-3 ma-empty">Votações nominais do plenário: {{ NO_BASE }}.<a class="ma-note-ref" href="#nota-1" aria-describedby="nota-1"><sup class="ma-num">1</sup></a></p>
 
@@ -44,15 +44,15 @@ defineProps({
         <div class="ma-stats">
           <div class="ma-stat">
             <span class="ma-t-small ma-muted">Proposições de autoria</span>
-            <span class="ma-t-title-1 ma-num">{{ formatNumber(deputy.authoredCount) }}</span>
+            <span class="ma-t-title-1 ma-num">{{ formatNumber(deputy.authoredCount) }}<a class="ma-note-ref" :href="`#nota-${indicators.length + 1}`" :aria-describedby="`nota-${indicators.length + 1}`"><sup class="ma-num">{{ indicators.length + 1 }}</sup></a></span>
           </div>
           <div class="ma-stat">
             <span class="ma-t-small ma-muted">Como primeiro signatário</span>
-            <span class="ma-t-title-1 ma-num">{{ formatNumber(deputy.firstSignerCount) }}</span>
+            <span class="ma-t-title-1 ma-num">{{ formatNumber(deputy.firstSignerCount) }}<a class="ma-note-ref" :href="`#nota-${indicators.length + 1}`" :aria-describedby="`nota-${indicators.length + 1}`"><sup class="ma-num">{{ indicators.length + 1 }}</sup></a></span>
           </div>
           <div class="ma-stat">
             <span class="ma-t-small ma-muted">Requerimentos</span>
-            <span class="ma-t-title-1 ma-num">{{ formatNumber(deputy.requirementsCount) }}</span>
+            <span class="ma-t-title-1 ma-num">{{ formatNumber(deputy.requirementsCount) }}<a class="ma-note-ref" :href="`#nota-${indicators.length + 1}`" :aria-describedby="`nota-${indicators.length + 1}`"><sup class="ma-num">{{ indicators.length + 1 }}</sup></a></span>
           </div>
         </div>
         <SourceNote :index="indicators.length + 1" :source-url="deputy.sourceUrl" :method-url="`${methodBase}#proposicoes`" />
@@ -67,6 +67,12 @@ defineProps({
           </p>
         </div>
         <MandateScore :votes="votes" />
+        <SourceNote
+          :index="indicators.length + 2"
+          :source-url="deputy.sourceUrl"
+          :method-url="`${methodBase}#participacao`"
+          :collected-at="generatedAt"
+        />
       </section>
     </main>
   </Chrome>
