@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "classification-rules.schema.json",
+  "title": "classification-rules.json",
+  "description": "The rules applied in this run, in order; the first match sets kind and kindRule (door 6)",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/rule"
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "house",
+        "kind",
+        "field",
+        "pattern",
+        "description"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(camara|senado)\\.[0-9]{2}$"
+        },
+        "house": {
+          "type": "string",
+          "enum": [
+            "camara",
+            "senado"
+          ],
+          "description": "The chamber the record belongs to; part of every key (door 3)"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "final",
+            "amendment",
+            "procedural"
+          ]
+        },
+        "field": {
+          "type": "string"
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Python regular expression searched in the NFKD accent-stripped, casefolded, whitespace-collapsed field"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
