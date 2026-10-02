@@ -168,21 +168,23 @@ The masthead and footer that every public page shares point to the new pages and
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Histogram decision (research 06 section 8 item 2) | rejected; on approval, record in `.specs/STATE.md` as the next AD: "aggregate pages show counts of a house's activity, never a distribution or ordering of a per-member indicator" (AC 31) | see Out of scope, first row; the rule binds later features (comparator, exploration), so it belongs in STATE, not only here | n |
-| Search mechanism | server-side, plain GET; SQL filters, PHP accent-insensitive token match and pt-BR collation over one legislature's memberships (door 3, AC 8 to 15) | about 600 to 700 member rows per legislature; works without JavaScript and without a cookie; one normaliser; alphabetical order cannot be displaced by a relevance score | n |
-| Results on their own route, `noindex, follow` | `/busca/` (door 1, AC 21) | the home keeps one canonical and preview; search pages are not indexed but their links are followed until a sitemap exists; the query never reaches a share preview, so a crafted link cannot put words in the site's title | n |
-| Query echo | `q` appears only as the input's value (AC 20) | "Nenhum parlamentar encontrado para 'X'" with arbitrary X makes a screenshot that reads as the site's statement | n |
-| Page size | 50 rows (AC 16) | 594 seats make 12 pages; 50 text rows keep `/busca/` under 25 KB gzip | n |
-| No client script on the three pages | `hydrate: false` with the SSR-down fallback (door 2, AC 35, 36) | the budget cannot hold with 58 KB of JS; nothing on these pages needs it | n |
-| Performance budget | HTML gzip 20 / 25 / 30 KB; CSS 8 KB; no JS; total first load 125 / 130 / 135 KB in Chromium, empty cache (AC 39 to 41) | the Archivo latin subset (90,104 bytes, AD-015) is most of it; the totals are 57 to 60% below the MVP's 311 KB. Matching 33 to 40 KB would need system fonts, which AD-015 rules out | n |
-| Calendar granularity | months, with the number written in each cell and a table (AC 25, 26) | a day grid is about 1,460 cells per house, ten times the HTML, and is readable only by hovering; the month cell works in a screenshot and without interaction (P10, P11) | n |
-| Recent roll calls | the 10 latest plenary `nominal` or `secret` per house (AC 27) | symbolic decisions outnumber them (5,499 symbolic Câmara plenary roll calls in the contract-v3 snapshot) and would fill the list with rows that record no vote | n |
-| Party and UF shown and filtered | the membership's own party and UF in the chosen legislature (AC 7, 11) | a member who changed party appears under the party of that mandate, as the member page shows it (app-contract-v3 AC 23) | n |
-| A person in both houses | two rows, one per member record | contract-v3 excludes cross-house identity (AD-003 rules out CPF); linking them would be a guess | n |
-| Caching | none; every request queries | the heaviest query groups a few thousand roll calls by month; a cache keyed by the latest import is a later commit if timing shows a need | n |
-| Verification profile | `ui` | three screens whose risk is copy and arrangement (anti-ranking, empty states), as app-contract-v3 chose; `light` would not enumerate copy per screen | n |
+| Histogram decision (research 06 section 8 item 2) | rejected; on approval, record in `.specs/STATE.md` as the next AD: "aggregate pages show counts of a house's activity, never a distribution or ordering of a per-member indicator" (AC 31) | see Out of scope, first row; the rule binds later features (comparator, exploration), so it belongs in STATE, not only here | y |
+| Search mechanism | server-side, plain GET; SQL filters, PHP accent-insensitive token match and pt-BR collation over one legislature's memberships (door 3, AC 8 to 15) | about 600 to 700 member rows per legislature; works without JavaScript and without a cookie; one normaliser; alphabetical order cannot be displaced by a relevance score | y |
+| Results on their own route, `noindex, follow` | `/busca/` (door 1, AC 21) | the home keeps one canonical and preview; search pages are not indexed but their links are followed until a sitemap exists; the query never reaches a share preview, so a crafted link cannot put words in the site's title | y |
+| Query echo | `q` appears only as the input's value (AC 20) | "Nenhum parlamentar encontrado para 'X'" with arbitrary X makes a screenshot that reads as the site's statement | y |
+| Page size | 50 rows (AC 16) | 594 seats make 12 pages; 50 text rows keep `/busca/` under 25 KB gzip | y |
+| No client script on the three pages | `hydrate: false` with the SSR-down fallback (door 2, AC 35, 36) | the budget cannot hold with 58 KB of JS; nothing on these pages needs it | y |
+| Performance budget | HTML gzip 20 / 25 / 30 KB; CSS 8 KB; no JS; total first load 125 / 130 / 135 KB in Chromium, empty cache (AC 39 to 41) | the Archivo latin subset (90,104 bytes, AD-015) is most of it; the totals are 57 to 60% below the MVP's 311 KB. Matching 33 to 40 KB would need system fonts, which AD-015 rules out | y |
+| Calendar granularity | months, with the number written in each cell and a table (AC 25, 26) | a day grid is about 1,460 cells per house, ten times the HTML, and is readable only by hovering; the month cell works in a screenshot and without interaction (P10, P11) | y |
+| Recent roll calls | the 10 latest plenary `nominal` or `secret` per house (AC 27) | symbolic decisions outnumber them (5,499 symbolic Câmara plenary roll calls in the contract-v3 snapshot) and would fill the list with rows that record no vote | y |
+| Party and UF shown and filtered | the membership's own party and UF in the chosen legislature (AC 7, 11) | a member who changed party appears under the party of that mandate, as the member page shows it (app-contract-v3 AC 23) | y |
+| A person in both houses | two rows, one per member record | contract-v3 excludes cross-house identity (AD-003 rules out CPF); linking them would be a guess | y |
+| Caching | none; every request queries | the heaviest query groups a few thousand roll calls by month; a cache keyed by the latest import is a later commit if timing shows a need | y |
+| Verification profile | `ui` | three screens whose risk is copy and arrangement (anti-ranking, empty states), as app-contract-v3 chose; `light` would not enumerate copy per screen | y |
 
 **Open questions:** none - all resolved or logged above.
+
+**Approval:** approved by the orchestrator under the maintainer's delegation on 2026-10-02, every assumption confirmed; the histogram rejection is AD-019. Build starts after app-contract-v3.
 
 ## Observable
 
