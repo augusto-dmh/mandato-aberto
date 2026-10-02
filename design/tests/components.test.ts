@@ -158,6 +158,14 @@ describe("components", () => {
     ]);
   });
 
+  it("SourceNote dates the collection in Brasília", async () => {
+    // 02:00 UTC on the 28th is still the 27th in Brasília (UTC-3), as the MVP's brasiliaLocal reads it
+    const { doc } = await render(SourceNote, { ...note, collectedAt: "2026-09-28T02:00:00Z" });
+    expect(doc.body.textContent!.replace(/\s+/g, " ")).toContain("dados de 27/09/2026");
+    const late = await render(SourceNote, { ...note, collectedAt: "2026-09-28T03:00:00Z" });
+    expect(late.doc.body.textContent!.replace(/\s+/g, " ")).toContain("dados de 28/09/2026");
+  });
+
   it("SourceNote without a method", async () => {
     const { doc } = await render(SourceNote, { index: 2, sourceUrl: note.sourceUrl });
     expect([...doc.querySelectorAll("a")].map((a) => a.getAttribute("href"))).toEqual([note.sourceUrl]);

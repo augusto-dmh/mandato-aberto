@@ -1,5 +1,5 @@
 <script setup>
-import { formatDate } from "./format.js";
+import { formatCollected } from "./format.js";
 // The note a footnote marker points to: the official source and how the number is computed.
 defineProps({
   index: { type: Number, required: true },
@@ -13,6 +13,6 @@ defineProps({
 <template>
   <p class="ma-note" :id="`nota-${index}`">
     <sup class="ma-num">{{ index }}</sup>
-    Fonte: <a :href="sourceUrl">{{ sourceLabel }}</a><template v-if="collectedAt">, dados de <span class="ma-num">{{ formatDate(collectedAt) }}</span></template><template v-if="methodUrl"> · <a :href="methodUrl">Como calculamos</a></template>
+    Fonte: <a :href="sourceUrl">{{ sourceLabel }}</a><template v-if="collectedAt">, dados de <span class="ma-num">{{ formatCollected(collectedAt) }}</span></template><template v-if="methodUrl"> · <a :href="methodUrl">Como calculamos</a></template>
   </p>
 </template>

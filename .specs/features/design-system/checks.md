@@ -152,6 +152,7 @@ Proof: `npx playwright test e2e/screens.spec.ts -g "card composition"`
 
 **C41** - The score section's note links the deputy's `sourceUrl` and reads "dados de 27/09/2026" for the fixture, and each of the 3 statistics carries a marker to a note linking the same source (AC 39)
 Proof: `npx vitest run tests/prototype.test.ts -t "score and stats carry source notes"`
+Proof (after round 3): `npx vitest run tests/components.test.ts -t "SourceNote dates the collection in Brasília"`
 
 **C42** - With `exercisePeriods` emptied for deputy 101, neither the profile nor the card contains "desde" followed by a date (AC 40)
 Proof: `npx vitest run tests/prototype.test.ts -t "no start date without an exercise period"`
@@ -216,3 +217,4 @@ Evidence: the repo's closest analogue is `site/tests/`, where `format.test.ts` p
 - **Settled mid-build (round 2):** Plenário's accent moved from blue `oklch(0.47 0.21 264)` to violet `oklch(0.46 0.2 300)`, away from the gov.br blues. A new `mat` colour token, role `decor`, keeps the photo mat light in dark mode. The page sets tabular figures globally. Explicit spaces now sit between the number spans, because Vue's whitespace condensing glued "0de 1votos" for screen readers and copy. The score row deviation from research a1 section 6.1 is an assumption row in the plan
 - **Boundary (round 3):** C39-C43 added and green; the CI job installs the site's dependencies because the prototype tests read the site's forbidden-terms module; C27 still open
 - **Settled mid-build (round 3):** the roll call now shows the AI frame before the result, as research a1 section 6.2 orders it. A deputy with no exercise period shows no start date; it used to fall back to the collection date. `SourceNote` gained an optional `collectedAt`. The assumptions table had lost two rows to a failed edit and carried a malformed cell; both are repaired, and the score-layout deviation is now recorded there
+- **After round 3:** collection dates now render as the calendar day in Brasília, like the MVP's `brasiliaLocal`; the plan's assumptions table lost its malformed cells and lists the four open questions for the maintainer

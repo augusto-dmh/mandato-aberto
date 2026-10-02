@@ -10,6 +10,12 @@ export function formatDate(value) {
   return `${d}/${m}/${y}`;
 }
 
+/** Collection timestamp (UTC, as the ETL writes it) -> its calendar day in Brasília, `DD/MM/AAAA`; mirrors the MVP's brasiliaLocal. */
+export function formatCollected(generatedAt) {
+  const shifted = new Date(new Date(generatedAt).getTime() - 3 * 60 * 60 * 1000);
+  return formatDate(shifted.toISOString());
+}
+
 /** First letter of the first and last words of a name. */
 export function initials(name) {
   const words = name.trim().split(/\s+/);

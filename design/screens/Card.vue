@@ -1,6 +1,6 @@
 <script setup>
 // The share card template: identical for every deputy, only the content changes.
-import { NO_BASE, formatDate, formatNumber } from "../components/format.js";
+import { NO_BASE, formatCollected, formatDate, formatNumber } from "../components/format.js";
 import MandateScore from "../components/MandateScore.vue";
 import OfficialPhoto from "../components/OfficialPhoto.vue";
 
@@ -37,7 +37,7 @@ const LONG_NAME = 40;
         <p class="ma-card__score-label ma-t-micro">{{ formatNumber(votes.length) }} votações nominais com registro, da mais antiga à mais recente</p>
         <MandateScore :votes="votes" compact />
         <p class="ma-card__foot ma-t-micro">
-          <span>Fonte: Câmara dos Deputados, dados de <span class="ma-num">{{ formatDate(generatedAt) }}</span></span>
+          <span>Fonte: Câmara dos Deputados, dados de <span class="ma-num">{{ formatCollected(generatedAt) }}</span></span>
           <span>mandato aberto</span>
         </p>
       </div>

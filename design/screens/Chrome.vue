@@ -1,6 +1,6 @@
 <script setup>
 // Masthead and footer shared by the prototype pages.
-import { formatDate } from "../components/format.js";
+import { formatCollected } from "../components/format.js";
 
 defineOptions({ inheritAttrs: false });
 
@@ -20,7 +20,7 @@ defineProps({
   <slot />
   <footer class="ma-footer">
     <div class="ma-wrap ma-t-small">
-      <p>Dados abertos da Câmara dos Deputados, coletados em <span class="ma-num">{{ formatDate(generatedAt) }}</span>. Cada número leva à fonte oficial e ao método.</p>
+      <p>Dados abertos da Câmara dos Deputados, coletados em <span class="ma-num">{{ formatCollected(generatedAt) }}</span>. Cada número leva à fonte oficial e ao método.</p>
       <p>Protótipo do sistema de design da versão 2. Não é uma página publicada do Mandato Aberto.</p>
     </div>
   </footer>
