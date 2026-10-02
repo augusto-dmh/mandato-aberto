@@ -2,174 +2,133 @@
 
 **Verdict**: FAIL
 **Profile**: ui
-**Diff range**: c9b1a4a..1b079cf3c458d761f5f5513be2d9110e42de1f88
-**Round**: 3 - scoped
+**Diff range**: c9b1a4a..37a8394069b66532497bdc3c9c2a3b2c93984083
+**Round**: 4 - scoped
 **Verifier**: independent sub-agent (author != verifier)
 
-**Scope.** The fix `d9d3b90..1b079cf` touched 14 files:
+Scope: the diff `1b079cf..37a8394`, plus every round-3 verdict that was not PASS: C27 and the four maintainer questions. The round-3 report is committed at e4efd0b.
 
-- `ci.yml`
-- `plan.md` (AC 37-41 and Assumptions)
-- `checks.md` (C39-C43)
-- `README.md`
-- `SourceNote.vue`
-- the three screens
-- `contract.mjs`
-- `components.css`
-- `e2e/screens.spec.ts`
-- `prototype.test.ts`
-- `tokens.test.ts`
+The diff contains three commits:
+- aad89be dates the collection day in Brasília. It adds `formatCollected` and uses it in `SourceNote`, the card footer and the page footer.
+- e4efd0b is the round-3 report.
+- 37a8394 is the maintainer's choice. It removes `tokens/diario.json` and the Newsreader and Inter packages, adds AD-015, and marks the Assumptions rows as confirmed. It also points the tests at one direction and two font packages.
 
-Round 3 also re-judges every round-2 verdict that was not PASS: C27, the roll-call and card arrangements, the proof environments, P1 stats, P2 score note, P7, the empty `exercisePeriods` fallback and the missing score-layout assumption. Round 2 is committed at 75c188f.
-
-**Proofs re-ran in full at 1b079cf:**
-
+Proofs re-ran in full at 37a8394, in the real tree and again in a fresh CI-equivalent worktree:
 - `npm run build`: exit 0.
-- `npx vitest run tests/ --reporter=verbose`: 39 passed, 0 failed, each named test listed individually.
+- `npx vitest run tests/ --reporter=verbose`: 40 passed, 0 failed. Each named test is listed individually, including the new "SourceNote dates the collection in Brasília".
 - `npx playwright test --reporter=list`: 13 passed, 0 failed.
-- The same three commands in a fresh CI-equivalent worktree, with `npm ci` in `design/` and `npm ci --prefix ../site`: 39 passed and 13 passed.
+- C27 command proof: exit 0.
+- The CI-equivalent worktree ran `npm ci`, `npm ci --prefix ../site`, `npm test` and `npm run test:e2e`: 40 and 13 green. Only `archivo` and `source-serif-4` were installed under `@fontsource-variable`.
 
-**Verdict.** Every code gap from round 2 is closed and every fault was killed. The verdict stays FAIL for two reasons:
-
-- C27 is open by design.
-- Three plan rows are recorded but not confirmed by the maintainer. One of them is a recorded departure from a binding source (score layout versus a1 6.1). They are listed below as open questions, not passes.
-
-Nothing else blocks.
+C27 now passes, and the maintainer answered all four open questions. The verdict is FAIL for one reason: a surviving mutant on a surface this diff created. The card footer and the page footer switched to the Brasília day, and no proof can tell them from the old UTC day (fault H6).
 
 ## Binding sources
 
-Verified at 1b079cf for every screen and plan row the fix touched. The remaining rows are carried from d9d3b90.
+Verified at 37a8394 for the rows this diff touched. The others are carried from 1b079cf.
 
 | Source | Opened | Contradiction | Uncovered |
 | --- | --- | --- | --- |
-| `research/05-grilling-escopo-v2.md` decision 10 | carried from d9d3b90 - yes | none | Publishing the prototype as an artifact for validation (plan Flow step 5) has no check. This is a process step that goes with C27's choice. Low rank. |
-| `06` section 3 / a1 section 3, P1 "todo número carrega a sua nota" | yes | none | **Resolved.** The three stats now each carry a marker to note 4, linking `sourceUrl` (C41, `design/tests/prototype.test.ts:174-178`). The lede and tally were already covered in round 2 (C36). |
-| P2 "a fonte fica dentro do enquadramento" | yes | none | **Resolved.** The score section ends with a `SourceNote` carrying the source, "dados de DD/MM/AAAA" and the method link (`design/screens/Profile.vue:70-75`, C41). |
-| P7 accent single role | yes | none | **Resolved.** C43. The four rules using `--ma-color-accent` are `.ma-page a`, `.ma-page :focus-visible`, `.ma-score__col:focus-visible` and `.ma-score__table summary` (`design/styles/components.css:95-375`). |
-| a1 section 6.1 profile, score layout | yes - plan Assumptions row `plan.md:167` read | **Open question for the maintainer, not settled.** The plan now records "one row per year ... instead of the single full-width strip of research a1 section 6.1". The rationale is about 1 px per vote at 1120 px. The row is marked Confirmed `n`. A recorded departure from a binding source that the maintainer has not accepted is a decision still pending, so it does not pass silently. | Month ticks are covered by C37. |
-| a1 section 6.2 roll-call | yes | none | **Resolved.** C39 checks the regions eyebrow, title, ementa when present, AI frame, result, utilities, groups, strictly top to bottom (`e2e/screens.spec.ts:220-224`). The fix moved the AI frame above the result as the source orders it (`design/screens/RollCall.vue:32-34`). |
-| a1 section 6.3 card | yes | none | **Resolved.** C40 checks the photo left of the body; then eyebrow, name, party-UF, figures, score caption, score and footer top to bottom; 3 figures; and the footer "Fonte: Câmara dos Deputados, dados de DD/MM/AAAA" (`e2e/screens.spec.ts:233-239`). |
-| Plan Out of scope rows added in round 2 (download, citar, per-party orientation, unit bar, card short address) | yes - `plan.md:146-149` and Assumptions `plan.md:168` | **Open question for the maintainer.** The plan's own row says the builder wrote them after the plan review, and they are Confirmed `n`. Each excludes an element a1 6.1-6.3 draws. They are reasoned, and the per-party orientation reason was verified against `etl/schema/roll-call.schema.json:52-57`, but they are policy only the maintainer can accept. | - |
-| Plan Assumptions row "Which pages AC 22 covers" (`plan.md:166`) | yes | **Open question for the maintainer** (Confirmed `n`). It exempts the card from the 360 px rule. C24 already measured only profile and roll-call, so this records an existing scope rather than changing one. | - |
-| `etl/schema/*.json`, empty `exercisePeriods` | yes | none | **Resolved.** The `?? null` fallback is at `design/scripts/contract.mjs:54`, the `since` guards are at `Card.vue:26` and `Profile.vue:35-36`, and C42 covers it. |
-| `site/src/lib/format.ts` | yes | none | Precision note. The new collection dates (`SourceNote.vue` `formatDate(collectedAt)`, and the card footer) take the UTC date of `generatedAt`. The MVP's `collectedDate` converts to Brasília time first (`site/src/lib/format.ts`, `brasiliaParts`). The two agree for every `generatedAt` after 03:00 UTC: the fixture is at 12:00Z, `data/out` at 18:02Z. A run between 00:00 and 03:00 UTC would show the next day. Low rank. |
-| `research/06` section 4, a1 section 4, directions | carried from d9d3b90 - yes | none | - |
+| `research/05-grilling-escopo-v2.md` decision 10 | carried - yes | none | The validation step is closed by the maintainer's choice on the side-by-side prototype (AD-015, `research/decisions-log.md` 2026-10-02 row). |
+| `06` section 5 / a1 section 5 (directions) | yes | none: AD-015 keeps Plenário = Archivo (width axis) + Source Serif 4, achromatic, one accent. That matches the direction as the research defines it, with the accent moved off gov.br blue (C34). AD-015 also records a1's discipline rule: never set the name in capitals, never use an extreme weight on a sentence about a person. | - |
+| a1 section 6.1, score layout | yes - `plan.md:167` | none: the departure from the single full-width strip is now confirmed by the maintainer (`y`, and the `decisions-log.md` row). | - |
+| Out of scope rows added in round 2 | yes - `plan.md:146-149`, `:168` | none: confirmed `y` by the maintainer | - |
+| AC 22 scope (card outside 360 px) | yes - `plan.md:166` | none: confirmed `y` | - |
+| `site/src/lib/format.ts` (collection date) | yes - `brasiliaParts` / `brasiliaLocal` | none: `formatCollected` (`design/components/format.js:14-17`) uses the MVP's fixed UTC-3 shift. | Two uses have no proof: the card footer (`design/screens/Card.vue:40`) and the page footer (`design/screens/Chrome.vue:23`). Every proof that renders them uses the fixture's `generatedAt` 12:00Z, where the UTC and Brasília days agree. See fault H6. |
+| everything else | carried from 1b079cf | none | - |
 
-Plan hygiene, low rank:
-
-- `plan.md:170` still reads "Open questions: none - all resolved or logged above" while three rows are Confirmed `n`.
-- Five older Assumptions rows (`plan.md:160-164`) keep the malformed `|| y |` cell, which renders their Confirmed column empty. The round-3 Handoff says this was repaired.
+Plan hygiene noted in round 3 is fixed. `plan.md:170` now records the four answers. The malformed `|| y |` cells are gone: `grep -c "|| y |"` returns 0.
 
 ## Checks
 
-Rows C1-C38: evidence carried from d9d3b90, because the fix did not touch their assertions. All of their proofs re-ran green at 1b079cf. C11 and C41 share the `SourceNote` the fix extended, and both are green. Rows C39-C43 were verified at 1b079cf.
+Rows C27, C1, C4, C8, C11, C20, C34 and C41 are verified at 37a8394. Their assertions or member sets changed in this diff. Every other row's evidence is carried from 1b079cf, and all its proofs re-ran green at 37a8394.
+
+**Were any test edits weakening?** Each edit in 37a8394 was compared before and after.
+
+- **`DIRECTIONS` in `e2e/screens.spec.ts:7` and `tests/prototype.test.ts:13`.** The edit only removes `diario`, which no longer exists. Every remaining page × theme is still enumerated.
+- **The font url bound in `prototype.test.ts:223`, ≥ 8 changed to ≥ 4.** The bound is still tight. The rendered `fonts.css` holds exactly 4 urls (2 packages × latin and latin-ext), counted on a fresh render. The licence list stays an exact `toEqual` (`:229`).
+- **The C4 near-floor value in `tokens.test.ts:85-92`.** It is now Plenário muted dark `oklch(0.59 0 0)` at 4.40:1. The verifier recomputed it independently: 4.403 against raised and 4.842 against paper. That sits 0.10 under the floor, against 0.39 before, so the test is stricter.
+- **The block test in `tokens.test.ts:35`.** It became an exact `toEqual(["plenario"])`, so a leftover direction fails it (fault H4 killed).
+
+No assertion was removed beyond members that no longer exist.
+
+**Precision gap (documentation, non-blocking).** Some checks text still describes the state before the choice, while the tests assert the state after it:
+- C1 claims "four blocks, `diario` light, `diario` dark, `plenario` light, `plenario` dark" (`.specs/features/design-system/checks.md:14`).
+- C20 names `dist/prototype/diario/` (`:84`).
+- Three Coverage rows list `diario` members (`:167`, `:175-177`).
+- Plan AC 1 still says four blocks.
+- The test name "defines every token in four blocks" now asserts two.
+
+AC 25 and C27 define this transition, and the checks Handoff records it, so C1 and C20 are judged against the remaining member set. The text should still be amended.
 
 | Check | Claim | Proof run | Evidence | Result |
 | --- | --- | --- | --- | --- |
-| C1 | four blocks, every token | vitest ✓ | `design/tests/tokens.test.ts:36`, `:44`, `:47` (carried) | PASS |
-| C2 | pairs meet floors | vitest ✓ | `tokens.test.ts:57-58` (carried) | PASS |
-| C3 | text × surface complete | vitest ✓ | `tokens.test.ts:75` (carried) | PASS |
-| C4 | below-floor pair fails the build | vitest ✓ | `tokens.test.ts:91-92` (carried) | PASS |
-| C5 | one accent, no valence/party names | vitest ✓ | `tokens.test.ts:99-103` (carried) | PASS |
+| C1 | every token defined in its blocks (now Plenário light and dark, per AD-015) | vitest ✓ | `design/tests/tokens.test.ts:35` `toEqual(["plenario"])`; `dist/tokens.css` markers are `/* plenario light */` (line 23) and `/* plenario dark */` (line 82). Per-variable assertions carried. | PASS |
+| C2 | pairs meet floors | vitest ✓ | carried (`tokens.test.ts:57-58`); 12 Plenário pairs | PASS |
+| C3 | text × surface complete | vitest ✓ | carried | PASS |
+| C4 | a below-floor pair fails the build | vitest ✓ | `tokens.test.ts:92` `toContain("plenario dark muted on raised: 4.40:1 is below 4.5:1")`; `:93` `not.toContain("muted on paper")` | PASS |
+| C5 | one accent, no valence or party names | vitest ✓ | carried | PASS |
 | C6 | ≤ 10 type sizes | vitest ✓ | carried | PASS |
-| C7 | tabular figures | vitest ✓ ×2; playwright ✓ | `components.test.ts:61`; `e2e/screens.spec.ts:210` (carried) | PASS |
-| C8 | local OFL fonts, no third-party host | vitest ✓; playwright ✓ | carried; green in the CI-equivalent tree too | PASS |
-| C9 | n de m baseline and sizes | vitest ✓; playwright ✓ | `components.test.ts:33`; `e2e/screens.spec.ts:35` (carried) | PASS |
-| C10 | NDeM empty base | vitest ✓ | carried | PASS |
-| C11 | NDeM and SourceNote links | vitest ✓ ×3 | `components.test.ts:155-158`, `:163-164` (carried; `collectedAt` is optional, so these stay unchanged) | PASS |
-| C12 | vote cases | vitest ✓ | `components.test.ts:90-94`, `:110` (carried) | PASS |
-| C13 | score order, links, no votes | vitest ✓ ×2 | carried | PASS |
-| C14 | official photo untouched | playwright ✓ | carried | PASS |
-| C15 | initials frame same size | vitest ✓; playwright ✓ | `e2e/screens.spec.ts:147-152` (carried) | PASS |
-| C16 | tally cells, zero counts | vitest ✓ ×2 | carried | PASS |
-| C17 | AI frame labelled | vitest ✓ | carried | PASS |
-| C18 | unreviewed AI frame renders nothing | vitest ✓ | carried | PASS |
-| C19 | no forbidden term | vitest ✓ | carried; also green in the CI-equivalent tree | PASS |
-| C20 | three screens per direction | vitest ✓ | carried | PASS |
-| C21 | schema_version 1 rejected | vitest ✓ | carried | PASS |
-| C22 | no script, count in HTML | vitest ✓ | carried | PASS |
-| C23 | reduced motion | playwright ✓ | carried | PASS |
-| C24 | no scroll at 360 (profile, roll-call) | playwright ✓ | carried | PASS |
-| C25 | card 1200 × 630, longest name | playwright ✓ | carried | PASS |
-| C26 | theme on three screens | playwright ✓ | `e2e/screens.spec.ts:133` (carried) | PASS |
-| C27 | tokens hold base + chosen; AD-015 | `ls tokens` -> `base.json diario.json plenario.json`; no `\| AD-015 \|` row in `.specs/STATE.md` | No evidence. Open by design: waits for the maintainer to choose diario or plenario. | FAIL |
-| C28 | README and package exports | vitest ✓ ×2 | carried; README now lists `collectedAt` | PASS |
-| C29 | empty bases never read 0 de 0 | vitest ✓ | `prototype.test.ts:85-93` (carried) | PASS |
-| C30 | roll-call groups | vitest ✓ | `prototype.test.ts:124-131` (carried) | PASS |
-| C31 | roll call without votes | vitest ✓ | carried | PASS |
-| C32 | profile arrangement | playwright ✓ | `e2e/screens.spec.ts:166-173` (carried) | PASS |
-| C33 | mat light in dark | vitest ✓; playwright ✓ | carried | PASS |
-| C34 | accents away from gov.br blues | vitest ✓ | `tokens.test.ts:134`; the matrix coefficient is now the published `0.808675766` (`:120`), which closes the round-2 nit | PASS |
-| C35 | every digit tabular | playwright ✓ | carried | PASS |
-| C36 | lede and tally notes | vitest ✓ | carried | PASS |
-| C37 | month ticks | vitest ✓ | carried | PASS |
-| C38 | one card template | vitest ✓ | `prototype.test.ts` card test (carried). The fix's conditional "desde" adds a text node, not an element, so the class sequence is unchanged. | PASS |
-| C39 | roll-call regions top to bottom | playwright "roll-call arrangement" ✓ | `e2e/screens.spec.ts:220` each region visible; `:223` `expect(tops, d).toEqual([...tops].sort(...))`; `:224` all tops distinct. Fault G1 was killed. | PASS |
-| C40 | card composition and footer | playwright "card composition" ✓ | `e2e/screens.spec.ts:233` photo left of body; `:236` region order; `:237` 3 figures; `:239` `toContainText(/Fonte: Câmara dos Deputados, dados de \d{2}\/\d{2}\/\d{4}/)`. Fault G2 was killed. | PASS |
-| C41 | score note with source and date; stat markers | vitest "score and stats carry source notes" ✓ | `prototype.test.ts:171` `toContain(\`dados de ${d}/${m}/${y}\`)`; `:172` `toBe(DEPUTY.sourceUrl)`; `:174` 3 stats; `:178` each marker target links `DEPUTY.sourceUrl`. Fault G4 was killed. | PASS |
-| C42 | no "desde" without an exercise period | vitest ✓ | `prototype.test.ts:193` `not.toMatch(/desde \d/)` on profile `main` and `.ma-card`, both directions. Fault G3 was killed. | PASS |
-| C43 | accent only in interaction rules | vitest "accent marks only interaction" ✓ | `tokens.test.ts:154` each selector `toMatch(/(^\|\s)a(\b\|$)\|a\.\|:focus-visible\|:hover\|summary/)`. Fault G5 was killed. Precision: the `a\.` alternative would also accept an unrelated selector that merely contains "a." (none exists today), and accent used through another custom property would escape the scan. | PASS |
+| C7 | tabular figures | vitest ✓; playwright ✓ | carried | PASS |
+| C8 | local OFL fonts, no third-party host | vitest ✓; playwright ✓ | `prototype.test.ts:223` (exactly 4 urls); `:229` `toEqual(["LICENSE-archivo.txt", "LICENSE-source-serif-4.txt"])`; `e2e/screens.spec.ts:20` carried | PASS |
+| C9-C10 | n de m; empty base | vitest ✓; playwright ✓ | carried | PASS |
+| C11 | NDeM and SourceNote links | vitest ✓ ×3 | carried; `SourceNote` now formats `collectedAt` with `formatCollected`, and these assertions are unchanged and green | PASS |
+| C12-C19 | vote cases, score, photo, initials, tally, AI frame, forbidden terms | vitest ✓; playwright ✓ | carried | PASS |
+| C20 | screens written for the direction(s) | vitest ✓ | `prototype.test.ts` "writes three screens per direction" over `DIRECTIONS = ["plenario"]` (`:13`); file list and h1 assertions carried | PASS |
+| C21-C26 | schema version, no JS, motion, 360 px, card fit, theme | vitest ✓; playwright ✓ | carried; one direction × all screens and themes | PASS |
+| C27 | `tokens/` holds `base.json` and the chosen file; AD-015 recorded | `test "$(ls tokens \| sort \| tr '\n' ' ')" = "base.json plenario.json " && grep -q '^\| AD-015 \|' ../.specs/STATE.md` exit 0 | `design/tokens/` = `base.json plenario.json`; `.specs/STATE.md:21` `\| AD-015 \| The v2 design system has one direction, "Plenário" ...`. Faults H4 and H5 killed. | PASS |
+| C28 | README and package exports | vitest ✓ ×2 | carried; README records AD-015 | PASS |
+| C29-C40 | screen empty states, groups, arrangements, mat, accents, digits, notes, ticks, card template and composition | vitest ✓; playwright ✓ | carried. C34 now loops over the Plenário accent only, which is the remaining member. | PASS |
+| C41 | score note with source and Brasília date; stat markers | vitest "score and stats carry source notes" ✓; vitest "SourceNote dates the collection in Brasília" ✓ | `components.test.ts:164` `toContain("dados de 27/09/2026")` for `2026-09-28T02:00:00Z`; `:166` `toContain("dados de 28/09/2026")` for `03:00:00Z`; the prototype assertions are carried. Faults H1 and H2 killed. | PASS |
+| C42-C43 | no start date without a period; accent only on interaction | vitest ✓ | carried | PASS |
 
 ## Coverage
 
-Rows touched by the fix were verified at 1b079cf. The others are carried from d9d3b90, and all their proofs re-ran green.
+Verified at 37a8394 for the sets this diff resized or created. The others are carried from 1b079cf and re-ran green.
 
 | Set (size) | Recomputed from | Member -> proof | Unproven |
 | --- | --- | --- | --- |
-| token blocks (4) | carried | C1 | - |
-| declared contrast pairs (24) | carried | C2 | - |
-| vote cases, doors 5 and 6 (7 + unknown) | carried | C12 | - |
-| components, door 4 (7) | carried | C9, C11, C12, C13, C14, C16, C17 | - |
-| component empty states (7) | `design/README.md`, which now lists SourceNote `collectedAt` (optional, rendered only when given) | C10, C11, C12, C13, C15, C16, C18 | - |
-| screen empty states (3) | carried | C29, C31 | - |
-| roll-call group order (7) | carried | C30 | - |
-| page background per theme (12) | carried | C26 | - |
-| digit-bearing elements (6 pages) | carried | C35 | - |
-| screen arrangements (3) | a1 sections 6.1-6.3 | profile C32 · roll-call C39 · card C40 | - |
-| profile numbers with a note (lede, 3 indicators, 3 stats, score) | `Profile.vue` at 1b079cf | lede C36 · indicators C11 · stats C41 · score C41 | - |
-| accent rules in `components.css` (4) | `grep` of `--ma-color-accent` | `a`, `:focus-visible` ×2, `summary` -> C43 | - |
-| proof environments (2) | the real tree, plus a fresh worktree reproducing the CI `design` job: `npm ci`, `npm ci --prefix ../site`, `npm run build`, `npm test`, `npm run test:e2e`. The job definition was parsed with `yaml.safe_load`: `working-directory: design`, and the steps exactly as listed (`.github/workflows/ci.yml:59-85`). | real tree 39 + 13 · CI-equivalent 39 + 13 | - |
-| pages at 360 px (8), reduced motion (6), schema_version (2) | carried | C24, C23, C20/C21 | - |
+| directions after AD-015 (1) | `design/tokens/` and AD-015 | Plenário -> C1, C27 | - |
+| token blocks (2) | `dist/tokens.css` | Plenário light, Plenário dark -> C1 | - |
+| declared contrast pairs (12) | `pairs()` over `plenario.json` | C2 | - |
+| font packages (2) | `design/package.json`, fresh `npm ci` | archivo, source-serif-4 -> C8 | - |
+| pages at 360 px (4), reduced motion (3), theme (6) | 1 direction × screens × themes | C24, C23, C26 | - |
+| uses of the Brasília collection day (3) | `grep formatCollected` | `SourceNote.vue:16` -> C41 (`components.test.ts:164-166`) | `Card.vue:40` (card footer) and `Chrome.vue:23` (page footer): every proof renders them at 12:00Z, where the UTC and Brasília days coincide. Fault H6 survived. |
+| proof environments (2) | the real tree, and a fresh worktree running the CI job's steps | 40 + 13 in both | - |
+| all other sets | carried from 1b079cf | as in round 3 | - |
 
 ## Test policy rows
 
-Verified at 1b079cf.
+Verified at 37a8394 for the rows classifying touched files. The rest are carried.
 
 | Row | Files it classifies | Required proof | Expectation met |
 | --- | --- | --- | --- |
-| Token build | `scripts/build-tokens.mjs`, `scripts/color.mjs`, `tokens/*.json`, and the CSS rule scan of C43 | own layer | yes |
-| Vote option mapping | `components/vote.js` | own layer | yes (untouched; carried) |
-| Components | `components/*.vue` (`SourceNote` touched) | render test, empty and normal case | yes: `SourceNote` with and without a method; the score note with `collectedAt` is read through the screen (C41) |
-| Layout and computed style | `styles/components.css`, `screens/*.vue` | browser test per listed member | yes: C39 and C40 added for the two remaining screens |
-| Prototype script | `scripts/prototype.mjs`, `scripts/contract.mjs` | own layer, child process | yes: C42 spawns the script with an emptied `exercisePeriods`; green in both environments |
+| Token build | `tokens/*.json`, `scripts/build-tokens.mjs` | own layer: every pair; one failing case | yes. The failing case is tighter (4.40:1). |
+| Vote option mapping | `components/vote.js` | own layer | yes (carried) |
+| Components | `components/*.vue`, `components/format.js` (`formatCollected`) | render test, normal and edge case | yes for `SourceNote`, both sides of the UTC-3 day boundary |
+| Layout and computed style | `screens/*.vue` (Card and Chrome footers touched) | browser test per listed member | no: the date the card and page footers print has no proof that tells Brasília from UTC (H6). C40 only matches `\d{2}/\d{2}/\d{4}`, at `e2e/screens.spec.ts:239`. |
+| Prototype script | `scripts/prototype.mjs` (font list), `scripts/render.js` | own layer, child process | yes |
 
-Swept rows re-read: the `contract.mjs:54` fallback is now `null`, and the validation and failure paths are unchanged (`build-tokens.mjs:110-112`, `contract.mjs:18-19`, `prototype.mjs:88-90`).
+Swept rows: the C27 state transition happened, with exactly two token files and AD-015 present. The validation and failure paths are unchanged.
 
 ## Faults injected
 
-Verified at 1b079cf.
+Verified at 37a8394.
 
-Scratch: `git worktree add --detach <scratchpad>/wt3 HEAD`. It started with no `site/node_modules`, then got `npm ci` in `design/` and `npm ci --prefix ../site`, which is the CI job's install. The real tree's `git status --porcelain` was empty before. After `git worktree remove --force` it was still empty, and `git worktree list` showed only the real tree.
+Scratch: `git worktree add --detach <scratchpad>/wt4 HEAD`, then `npm ci` and `npm ci --prefix ../site`. The real tree's `git status --porcelain` was empty before. After `git worktree remove --force` it was still empty, and `git worktree list` showed only the real tree.
 
 | Mutation | Location | Killed |
 | --- | --- | --- |
-| G1: AI frame moved below the utilities | `design/screens/RollCall.vue:32-34`; playwright "roll-call arrangement" | yes, 1 failed |
-| G2: card footer "Fonte: Câmara dos Deputados, dados de" changed to "... · dados de" | `design/screens/Card.vue` footer; playwright "card composition" | yes, `toContainText` failed |
-| G3: `since` fallback `?? null` changed back to `?? meta.generatedAt` | `design/scripts/contract.mjs:54`; "no start date without an exercise period" | yes, `diario profile ... not to match /desde \d/` |
-| G4: `:collected-at="generatedAt"` removed from the score note | `design/screens/Profile.vue:74`; "score and stats carry source notes" | yes, `... to contain 'dados de 27/09/2026'` |
-| G5: `.ma-eyebrow` coloured with `--ma-color-accent` | `design/styles/components.css` `.ma-eyebrow`; "accent marks only interaction" | yes, `'.ma-eyebrow' to match ...` |
-
-Open questions for the maintainer. These are policy. They are neither passes nor defects:
-
-1. Score layout: one row per year with month ticks, instead of a1 6.1's single full-width strip (`plan.md:167`, Confirmed `n`).
-2. The round-2 Out of scope rows: download/citar, per-party orientation, unit bar, card short address (`plan.md:146-149`, `:168`, Confirmed `n`).
-3. AC 22 limited to profile and roll-call (`plan.md:166`, Confirmed `n`).
-4. C27: choose diario or plenario, then delete the other direction's file and record AD-015.
+| H1: collection day without the UTC-3 shift (`- 0`) | `design/components/format.js:15`; "SourceNote dates the collection in Brasília" | yes: `... to contain 'dados de 27/09/2026'` |
+| H2: shift of 2 h instead of 3 h | `design/components/format.js:15`; same test | yes: `... to contain 'dados de 27/09/2026'` |
+| H4: `tokens/diario.json` restored next to `plenario.json` | `design/tokens/`; C27 command proof and "defines every token in four blocks" | yes: C27 exit 1; vitest 1 failed |
+| H5: the AD-015 row removed from `.specs/STATE.md` | `.specs/STATE.md:21`; C27 command proof | yes: exit 1 |
+| H6: card footer back to `formatDate(generatedAt)`, the UTC day | `design/screens/Card.vue:40`; full vitest and playwright suites | **no**: 40 passed, 13 passed |
 
 ## Gate
 
 - `npm run build`: exit 0.
-- `npx vitest run tests/ --reporter=verbose`: 39 passed, 0 failed.
+- `npx vitest run tests/ --reporter=verbose`: 40 passed, 0 failed.
 - `npx playwright test --reporter=list`: 13 passed, 0 failed.
-- CI-equivalent worktree: 39 passed and 13 passed.
+- C27 command proof: exit 0.
+- CI-equivalent worktree: 40 + 13 passed.
 - `python3 /home/augusto/.claude/skills/tlc-spec-lean/scripts/validate_verification.py design-system`: exit 1, "verdict is FAIL - route the ranked gaps back as fixes, then re-verify" (1 error, 0 warnings; no row contradicts the verdict).
