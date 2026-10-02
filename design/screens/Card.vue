@@ -1,6 +1,6 @@
 <script setup>
 // The share card template: identical for every deputy, only the content changes.
-import { formatDate, formatNumber } from "../components/format.js";
+import { NO_BASE, formatDate, formatNumber } from "../components/format.js";
 import MandateScore from "../components/MandateScore.vue";
 import OfficialPhoto from "../components/OfficialPhoto.vue";
 
@@ -26,9 +26,12 @@ const LONG_NAME = 40;
         <p class="ma-t-small ma-muted">{{ deputy.party }} · {{ deputy.uf }} · desde <span class="ma-num">{{ formatDate(deputy.since) }}</span></p>
         <div class="ma-card__figures">
           <p v-for="f in figures" :key="f.label" class="ma-card__figure">
-            <span class="ma-card__n ma-num">{{ formatNumber(f.count) }}</span>
-            <span class="ma-card__m">de <span class="ma-num">{{ formatNumber(f.total) }}</span></span>
-            <span class="ma-card__label ma-t-small">{{ f.label }}</span>
+            <template v-if="f.total > 0">
+              <span class="ma-card__n ma-num">{{ formatNumber(f.count) }}</span>{{ " " }}<span class="ma-card__m">de <span class="ma-num">{{ formatNumber(f.total) }}</span></span>{{ " " }}<span class="ma-card__label ma-t-small">{{ f.label }}</span>
+            </template>
+            <template v-else>
+              <span class="ma-card__label ma-t-small">{{ f.label }}:</span>{{ " " }}<span class="ma-card__m ma-empty">{{ NO_BASE }}</span>
+            </template>
           </p>
         </div>
         <p class="ma-card__score-label ma-t-micro">{{ formatNumber(votes.length) }} votações nominais com registro, da mais antiga à mais recente</p>

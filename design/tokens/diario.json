@@ -270,6 +270,17 @@
           "role": "decor"
         }
       }
+    },
+    "mat": {
+      "$type": "color",
+      "$value": "oklch(0.993 0.004 85)",
+      "$description": "mat around an official photo; stays light in the dark theme so the photo keeps its own ground (research a1 principle 9)",
+      "$extensions": {
+        "mandato": {
+          "dark": "oklch(0.993 0.004 85)",
+          "role": "decor"
+        }
+      }
     }
   }
 }

@@ -28,4 +28,10 @@ export default function setup() {
     stdio: "inherit",
     env: { ...process.env, MANDATO_DATA: data, MANDATO_PHOTO_CACHE: photos },
   });
+  // the same deputy with no photo, served under /nophoto/
+  execFileSync("node", ["scripts/prototype.mjs", "--out", join(OUT, "nophoto")], {
+    cwd: ROOT,
+    stdio: "inherit",
+    env: { ...process.env, MANDATO_DATA: data, MANDATO_PHOTO_CACHE: join(data, "no-photos") },
+  });
 }

@@ -1,6 +1,7 @@
 <script setup>
 import AiSummaryFrame from "../components/AiSummaryFrame.vue";
 import { formatDate, formatNumber } from "../components/format.js";
+import SourceNote from "../components/SourceNote.vue";
 import TallyBar from "../components/TallyBar.vue";
 import VoteMark from "../components/VoteMark.vue";
 import Chrome from "./Chrome.vue";
@@ -29,8 +30,9 @@ defineProps({
       </header>
 
       <section class="ma-result" aria-label="Resultado">
-        <p class="ma-t-title-1">{{ rollCall.resultLabel }}</p>
+        <p class="ma-t-title-1">{{ rollCall.resultLabel }}<a class="ma-note-ref" href="#nota-1" aria-describedby="nota-1"><sup class="ma-num">1</sup></a></p>
         <TallyBar v-bind="rollCall.tallies" />
+        <SourceNote :index="1" :source-url="rollCall.sourceUrl" source-label="Câmara dos Deputados, dados abertos da votação" />
         <p class="ma-t-small">
           <template v-if="rollCall.governmentOrientation">Orientação do governo: {{ rollCall.governmentOrientation }}</template>
           <template v-else>Sem orientação do governo registrada</template>
@@ -51,7 +53,8 @@ defineProps({
           <h2 class="ma-t-title-2">Como cada deputado votou</h2>
           <p class="ma-t-small ma-muted">Em ordem alfabética dentro de cada opção. Partido na data da votação.</p>
         </div>
-        <div class="ma-groups">
+        <p v-if="groups.length === 0" class="ma-empty">Nenhum voto individual registrado nesta votação.</p>
+        <div v-else class="ma-groups">
           <section v-for="g in groups" :key="g.value" class="ma-group">
             <h3 class="ma-group__head ma-t-title-3">
               <VoteMark :vote="g.value" :secret="rollCall.secret" />

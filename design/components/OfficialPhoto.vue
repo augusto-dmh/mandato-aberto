@@ -11,7 +11,7 @@ defineProps({
 
 <template>
   <figure class="ma-photo">
-    <div class="ma-photo__mat">
+    <div :class="['ma-photo__mat', { 'ma-photo__mat--photo': src }]">
       <img v-if="src" class="ma-photo__img" :src="src" width="354" height="472" :alt="`Foto oficial de ${name}`" decoding="async" />
       <div v-else class="ma-photo__initials" role="img" :aria-label="`Sem foto oficial de ${name}`">{{ initials(name) }}</div>
     </div>

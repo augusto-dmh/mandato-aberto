@@ -1,5 +1,5 @@
 <script setup>
-import { formatDate, formatNumber } from "../components/format.js";
+import { NO_BASE, formatDate, formatNumber } from "../components/format.js";
 import MandateScore from "../components/MandateScore.vue";
 import NDeM from "../components/NDeM.vue";
 import OfficialPhoto from "../components/OfficialPhoto.vue";
@@ -30,11 +30,12 @@ defineProps({
         </div>
       </section>
 
-      <p class="ma-lede ma-t-title-3">
+      <p v-if="deputy.participation.total > 0" class="ma-lede ma-t-title-3">
         Registrou voto em <span class="ma-num">{{ formatNumber(deputy.participation.count) }}</span> de
         <span class="ma-num">{{ formatNumber(deputy.participation.total) }}</span> votações nominais do plenário desde
-        <span class="ma-num">{{ formatDate(deputy.since) }}</span>.
+        <span class="ma-num">{{ formatDate(deputy.since) }}</span>.<a class="ma-note-ref" href="#nota-1" aria-describedby="nota-1"><sup class="ma-num">1</sup></a>
       </p>
+      <p v-else class="ma-lede ma-t-title-3 ma-empty">Votações nominais do plenário: {{ NO_BASE }}.<a class="ma-note-ref" href="#nota-1" aria-describedby="nota-1"><sup class="ma-num">1</sup></a></p>
 
       <section class="ma-section" aria-label="Indicadores">
         <div class="ma-indicators">

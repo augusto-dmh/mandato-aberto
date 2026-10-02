@@ -4,6 +4,7 @@ import AiSummaryFrame from "../components/AiSummaryFrame.vue";
 import MandateScore from "../components/MandateScore.vue";
 import NDeM from "../components/NDeM.vue";
 import OfficialPhoto from "../components/OfficialPhoto.vue";
+import SourceNote from "../components/SourceNote.vue";
 import TallyBar from "../components/TallyBar.vue";
 import VoteMark from "../components/VoteMark.vue";
 import { render, textWithout } from "./render";
@@ -28,6 +29,8 @@ describe("components", () => {
     expect(doc.querySelector(".ma-ndem__m")?.textContent?.replace(/\s+/g, " ").trim()).toBe("de 450");
     expect(doc.querySelector(".ma-ndem__n")?.parentElement).toBe(doc.querySelector(".ma-ndem__m")?.parentElement);
     expect(doc.body.textContent).not.toContain("%");
+    // read aloud or copied, the number and its base stay separate words
+    expect(textWithout(doc.querySelector(".ma-ndem__value")!, ".ma-note-ref").replace(/\s+/g, " ").trim()).toBe("412 de 450");
   });
 
   it("NDeM with an empty base", async () => {
@@ -82,8 +85,13 @@ describe("components", () => {
         expect(svg.querySelector("path")).toBeNull();
       }],
       ["Obstrução", false, "obstruction", "Ana Souza, PT-SP, votou Obstrução", (svg) => {
-        expect(svg.querySelector("rect")!.getAttribute("fill")).toBe("none");
-        expect(svg.querySelector("path")).not.toBeNull();
+        const r = svg.querySelector("rect")!;
+        expect(r.getAttribute("fill")).toBe("none");
+        expect(Number(r.getAttribute("y"))).toBeLessThan(12);
+        expect(Number(r.getAttribute("y")) + Number(r.getAttribute("height"))).toBeGreaterThan(12);
+        const ys = [...svg.querySelector("path")!.getAttribute("d")!.matchAll(/[\d.]+ ([\d.]+)/g)].map((m) => Number(m[1]));
+        expect(Math.min(...ys)).toBeGreaterThanOrEqual(Number(r.getAttribute("y")));
+        expect(Math.max(...ys)).toBeLessThanOrEqual(Number(r.getAttribute("y")) + Number(r.getAttribute("height")));
       }],
       ["Artigo 17", false, "article-17", "Ana Souza, PT-SP, Art. 17 (presidente da sessão)", (svg) => {
         const c = svg.querySelector("circle")!;
@@ -99,6 +107,7 @@ describe("components", () => {
       ["Presente", false, "other", "Ana Souza, PT-SP, Presente", (svg) => {
         const c = svg.querySelector("circle")!;
         expect(c.getAttribute("fill")).toBe("none");
+        expect(c.getAttribute("cy")).toBe("12");
       }],
     ];
     const kinds = new Set<string>();
@@ -136,6 +145,43 @@ describe("components", () => {
     ]);
     const tableLinks = [...doc.querySelectorAll(".ma-score__table tbody a")].map((a) => a.getAttribute("href"));
     expect(tableLinks).toEqual(expected.map((id) => `/votacoes/${id}/`));
+  });
+
+  it("SourceNote links source and method", async () => {
+    const { doc } = await render(SourceNote, note);
+    const p = doc.querySelector("p.ma-note")!;
+    expect(p.id).toBe("nota-1");
+    expect(p.querySelector("sup")?.textContent).toBe("1");
+    expect([...p.querySelectorAll("a")].map((a) => [a.textContent, a.getAttribute("href")])).toEqual([
+      ["Câmara dos Deputados", note.sourceUrl],
+      ["Como calculamos", note.methodUrl],
+    ]);
+  });
+
+  it("SourceNote without a method", async () => {
+    const { doc } = await render(SourceNote, { index: 2, sourceUrl: note.sourceUrl });
+    expect([...doc.querySelectorAll("a")].map((a) => a.getAttribute("href"))).toEqual([note.sourceUrl]);
+    expect(doc.body.textContent).not.toContain("Como calculamos");
+  });
+
+  it("MandateScore without votes", async () => {
+    const { doc } = await render(MandateScore, { votes: [] });
+    expect(doc.querySelectorAll(".ma-score__row")).toHaveLength(0);
+    expect(doc.querySelectorAll(".ma-score__table tbody tr")).toHaveLength(0);
+  });
+
+  it("MandateScore ticks each month", async () => {
+    const { doc } = await render(MandateScore, { votes });
+    const ticks = (row: Element) => [...row.querySelectorAll("line.ma-score__month")].map((l) => Number(l.getAttribute("x1")));
+    const rows = [...doc.querySelectorAll(".ma-score__row")];
+    // 2023: 01/03 (march), 20/11 and 20/11 (november) -> ticks at votes 0 and 1; 2024: 02/05 -> tick at vote 0
+    expect(rows.map(ticks)).toEqual([[0.5, 4.5], [0.5]]);
+  });
+
+  it("TallyBar with zero counts", async () => {
+    const { doc } = await render(TallyBar, { yes: 0, no: 0, others: 0 });
+    expect(doc.querySelectorAll(".ma-tally__cell")).toHaveLength(0);
+    expect([...doc.querySelectorAll(".ma-tally__counts dd")].map((d) => d.textContent?.trim())).toEqual(["0", "0", "0"]);
   });
 
   it("OfficialPhoto without a photo", async () => {

@@ -15,8 +15,7 @@ defineProps({
   <figure class="ma-ndem">
     <figcaption class="ma-ndem__label">{{ label }}</figcaption>
     <p v-if="total > 0" class="ma-ndem__value">
-      <span class="ma-ndem__n ma-num">{{ formatNumber(count) }}</span>
-      <span class="ma-ndem__m">de <span class="ma-num">{{ formatNumber(total) }}</span></span>
+      <span class="ma-ndem__n ma-num">{{ formatNumber(count) }}</span>{{ " " }}<span class="ma-ndem__m">de <span class="ma-num">{{ formatNumber(total) }}</span></span>
       <a class="ma-note-ref" :href="`#nota-${note.index}`" :aria-describedby="`nota-${note.index}`"><sup class="ma-num">{{ note.index }}</sup></a>
     </p>
     <p v-else class="ma-ndem__value ma-ndem__value--empty">

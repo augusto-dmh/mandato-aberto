@@ -113,6 +113,25 @@ The comparison ends in a decision, not two living themes.
 
 **Independent test:** after the choice, list `design/tokens/` and read AD-015 and the README.
 
+### S5: gaps found by the Verifier in round 1 (P1)
+
+Added on 2026-10-02 from `verification.md` round 1; each line closes a gap the binding sources or the Observable table already implied.
+
+**Acceptance Criteria**
+
+27. IF an indicator shown in the profile lede or on the card has `total` 0 THEN the system SHALL render "Sem base de cálculo no período" in its place and no "0 de 0"
+28. WHEN the roll-call screen renders THEN the system SHALL list the deputies in groups ordered `Sim`, `Não`, `Abstenção`, `Obstrução`, `Artigo 17`, empty, then any other value alphabetically, with names in pt-BR alphabetical order inside a group, each heading showing its count and each row carrying a `VoteMark` with the deputy's sentence
+29. IF a roll call has no individual votes THEN the roll-call screen SHALL render "Nenhum voto individual registrado nesta votação" and no group
+30. WHEN the profile is laid out at 1280 px THEN the system SHALL place the photo left of the name and the regions top to bottom as hero, lede, indicators, score; and at 360 px it SHALL place the photo above the name
+31. WHILE the dark theme applies the system SHALL keep the mat around an official photo in the light theme's `raised` colour (research a1 principle 9)
+32. The system SHALL keep every accent colour at an OKLab distance of at least 0.1 from the gov.br blues `#1351B4` and `#155BCB` (research section 4, "parecer site oficial")
+33. The system SHALL compute `font-variant-numeric` with `tabular-nums` on every element of the six pages whose own text contains a digit
+34. The system SHALL attach a source-note marker to the numbers of the profile lede and to the roll-call tally, each linking to the official source
+35. WHEN `MandateScore` renders a row THEN the system SHALL draw a tick below the strip at the first vote of each month
+36. The card SHALL render no "%", no AI summary frame and no other deputy's name, and two cards for different deputies SHALL share the same element and class sequence
+
+**Independent test:** run the prototype for the fixture deputy with an empty base and for a roll call without votes; run the browser suite.
+
 ## Out of scope
 
 | Excluded | Why |
@@ -124,6 +143,10 @@ The comparison ends in a decision, not two living themes.
 | Quorum marker on the tally | the contract carries no required-quorum field (`etl/schema/roll-call.schema.json`) |
 | AI summary generation | the frame is designed here; generation waits for the association (grilling decision 7) |
 | "Gastos" block | research section 8, item 1, undecided |
+| Download buttons (CSV/JSON), "Citar este perfil", "Citar" and permalink formats | need the app's routes and a public domain (AD-012 deferred the domain); research a1 sections 6.1 to 6.2 |
+| Per-party orientation table on the roll call | the contract carries only the government orientation (`etl/schema/roll-call.schema.json`) |
+| Unit bar under each "n de m" (one cell per vote) | `MandateScore` already draws one column per vote; a second per-vote bar per indicator waits for the profile feature |
+| The card's short address | no public domain yet (AD-012); the footer names the site meanwhile |
 
 ## Assumptions
 

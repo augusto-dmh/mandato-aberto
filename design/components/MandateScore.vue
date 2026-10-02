@@ -27,6 +27,8 @@ const rows = computed(() => {
 });
 const widest = computed(() => Math.max(1, ...rows.value.map((r) => r.votes.length)));
 const label = (v) => voteCase(v.vote, v.secret).label;
+/** Index of the first vote of each month in a row: where a month tick goes. */
+const monthStarts = (votes) => votes.flatMap((v, i) => (i === 0 || v.date.slice(0, 7) !== votes[i - 1].date.slice(0, 7) ? [i] : []));
 </script>
 
 <template>
@@ -35,13 +37,27 @@ const label = (v) => voteCase(v.vote, v.secret).label;
       <span v-if="row.year" class="ma-score__year ma-num">{{ row.year }}</span>
       <svg
         class="ma-score__strip"
-        :viewBox="`0 0 ${row.votes.length * COLUMN} 24`"
+        :viewBox="`0 0 ${row.votes.length * COLUMN} ${compact ? 24 : 28}`"
         preserveAspectRatio="none"
         :style="{ width: `${(row.votes.length / widest) * 100}%` }"
         role="img"
         :aria-label="`${row.votes.length} votações nominais${row.year ? ` em ${row.year}` : ''}`"
       >
         <line x1="0" :x2="row.votes.length * COLUMN" y1="12" y2="12" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.4" vector-effect="non-scaling-stroke" />
+        <template v-if="!compact">
+          <line
+            v-for="i in monthStarts(row.votes)"
+            :key="`m-${i}`"
+            class="ma-score__month"
+            :x1="i * COLUMN + 0.5"
+            :x2="i * COLUMN + 0.5"
+            y1="25"
+            y2="28"
+            stroke="currentColor"
+            stroke-width="1"
+            vector-effect="non-scaling-stroke"
+          />
+        </template>
         <component
           :is="compact ? 'g' : 'a'"
           v-for="(v, i) in row.votes"

@@ -81,23 +81,67 @@ describe("tokens", () => {
     cpSync(TOKENS, dir, { recursive: true });
     const file = join(dir, "diario.json");
     const tokens = JSON.parse(readFileSync(file, "utf8"));
-    tokens.color.muted.$extensions.mandato.dark = "oklch(0.3 0.01 70)";
+    // just under the floor on one surface only: 4.11:1 against raised, 4.58:1 against paper
+    tokens.color.muted.$extensions.mandato.dark = "oklch(0.6 0.01 70)";
     writeFileSync(file, JSON.stringify(tokens));
     const run = spawnSync("node", [join(ROOT, "scripts", "build-tokens.mjs"), dir, join(dir, "out.css")], {
       encoding: "utf8",
     });
     expect(run.status).not.toBe(0);
-    expect(run.stderr).toMatch(/diario dark muted on paper: \d+\.\d{2}:1 is below 4\.5:1/);
+    expect(run.stderr).toContain("diario dark muted on raised: 4.11:1 is below 4.5:1");
+    expect(run.stderr).not.toContain("muted on paper");
   });
 
   it("one accent and no valence names", () => {
     const parties = new Set<string>();
     for (const d of JSON.parse(readFileSync(join(FIXTURE, "deputies.json"), "utf8"))) parties.add(d.party.toLowerCase());
+    // parties with seats in the 57th legislature, from the contract's vote records (data/out, 2026-09-27)
+    for (const p of ["avante", "cidadania", "mdb", "novo", "patriota", "pcdob", "pdt", "pl", "pode", "pp", "pros", "psb", "psc", "psd", "psdb", "psol", "pt", "ptb", "pv", "rede", "republicanos", "solidariedade", "união"])
+      parties.add(p);
     const banned = ["yes", "no", "good", "bad", "success", "danger", "warning", ...parties];
     for (const direction of Object.values(directions) as Tree[]) {
       const names = Object.keys(direction.color as Tree);
       expect(names.filter((n) => n.startsWith("accent"))).toHaveLength(1);
       for (const n of names) for (const word of banned) expect(n.split("-")).not.toContain(word);
+    }
+  });
+
+  it("accents keep away from the gov.br blues", () => {
+    const srgbToOklab = (hex: string) => {
+      const [r, g, b] = [1, 3, 5]
+        .map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map((u) => (u <= 0.04045 ? u / 12.92 : ((u + 0.055) / 1.055) ** 2.4));
+      const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+      const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+      const q = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+      return [
+        0.2104542553 * l + 0.793617785 * m - 0.0040720468 * q,
+        1.9779984951 * l - 2.428592205 * m + 0.4505937099 * q,
+        0.0259040371 * l + 0.7827717662 * m - 0.808885698 * q,
+      ];
+    };
+    const oklab = (value: string) => {
+      const [L, C, h] = /oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)/.exec(value)!.slice(1).map(Number);
+      return [L, C * Math.cos((h * Math.PI) / 180), C * Math.sin((h * Math.PI) / 180)];
+    };
+    const gov = ["#1351B4", "#155BCB"].map(srgbToOklab);
+    expect(gov[0][0]).toBeCloseTo(0.47, 1); // sanity: the reference blue converts to a mid lightness
+    for (const [name, direction] of Object.entries(directions) as [string, Tree][]) {
+      const accent = (direction.color as Record<string, { $value: string; $extensions: { mandato: { dark: string } } }>).accent;
+      for (const value of [accent.$value, accent.$extensions.mandato.dark]) {
+        for (const g of gov) {
+          const [a, b] = [oklab(value), g];
+          expect(Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]), `${name} ${value}`).toBeGreaterThanOrEqual(0.1);
+        }
+      }
+    }
+  });
+
+  it("photo mat stays light in the dark theme", () => {
+    for (const direction of Object.values(directions) as Tree[]) {
+      const colour = direction.color as Record<string, { $value: string; $extensions: { mandato: { dark: string; role: string } } }>;
+      expect(colour.mat.$value).toBe(colour.raised.$value);
+      expect(colour.mat.$extensions.mandato.dark).toBe(colour.raised.$value);
     }
   });
 

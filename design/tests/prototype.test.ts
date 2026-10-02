@@ -19,8 +19,8 @@ const DEPUTY = [...deputies].filter((d) => d.inExercise).sort((a, b) => b.name.l
 const total = (r: { tallies: Record<string, number> }) => r.tallies.yes + r.tallies.no + r.tallies.others;
 const ROLL_CALL = [...rollCalls].filter((r) => r.organ === "PLEN").sort((a, b) => total(b) - total(a) || a.id.localeCompare(b.id))[0];
 
-function prototype(data: string, out: string) {
-  return spawnSync("node", ["scripts/prototype.mjs", "--out", out], {
+function prototype(data: string, out: string, args: string[] = []) {
+  return spawnSync("node", ["scripts/prototype.mjs", "--out", out, ...args], {
     cwd: ROOT,
     encoding: "utf8",
     env: { ...process.env, MANDATO_DATA: data, MANDATO_PHOTO_CACHE: join(OUT, "no-photos") },
@@ -72,6 +72,114 @@ describe("prototype", () => {
       const first = doc.querySelector(".ma-ndem")!;
       expect(first.querySelector(".ma-ndem__n")?.textContent?.trim()).toBe(String(deputy.participation.count));
       expect(first.querySelector(".ma-ndem__m")?.textContent?.replace(/\s+/g, " ").trim()).toBe(`de ${deputy.participation.total}`);
+    }
+  });
+
+  it("empty bases never read 0 de 0", () => {
+    const out = join(OUT, "empty-base");
+    const run = prototype(FIXTURE, out, ["--deputy", "103"]);
+    expect(run.status, run.stderr).toBe(0);
+    for (const d of DIRECTIONS) {
+      const profile = parse(readFileSync(join(out, d, "profile.html"), "utf8"));
+      const lede = profile.querySelector(".ma-lede")!;
+      expect(lede.textContent).toContain("Sem base de cálculo no período");
+      expect(lede.textContent).not.toMatch(/\b0 de 0\b/);
+      const card = parse(readFileSync(join(out, d, "card.html"), "utf8"));
+      const figures = [...card.querySelectorAll(".ma-card__figure")].map((f) => f.textContent!.replace(/\s+/g, " ").trim());
+      // deputy 103: participation 0/0, government 0/1, party 0/0
+      expect(figures[0]).toContain("Sem base de cálculo no período");
+      expect(figures[1]).toMatch(/^0 de 1 /);
+      expect(figures[2]).toContain("Sem base de cálculo no período");
+      expect(card.body.textContent).not.toMatch(/\b0 de 0\b/);
+    }
+  });
+
+  it("roll call groups deputies by vote", () => {
+    const out = join(OUT, "groups");
+    const data = mkdtempSync(join(tmpdir(), "mandato-groups-"));
+    cpSync(FIXTURE, data, { recursive: true });
+    // one roll call holding every vote value, with names out of order and an accented one
+    const names: Record<number, string> = { 101: "Ana Souza", 102: "Bruno Lima", 103: "Carla Dias" };
+    const list = JSON.parse(readFileSync(join(data, "deputies.json"), "utf8"));
+    const extra = [
+      [201, "Érico Alves", "Sim"], [202, "Davi Rocha", "Sim"], [203, "Zélia Moura", "Abstenção"],
+      [204, "Ítalo Reis", "Presente"], [205, "Beatriz Nunes", "Artigo 17"],
+    ] as const;
+    for (const [id, name] of extra) list.push({ ...list[0], id, name, uf: "RJ" });
+    writeFileSync(join(data, "deputies.json"), JSON.stringify(list));
+    const rc = JSON.parse(readFileSync(join(data, "roll-calls", "100-1.json"), "utf8"));
+    rc.votes = [
+      { deputyId: 103, party: "PSOL", vote: "" }, { deputyId: 101, party: "PT", vote: "Não" },
+      { deputyId: 102, party: "PT", vote: "Obstrução" },
+      ...extra.map(([deputyId, , vote]) => ({ deputyId, party: "PL", vote })),
+    ];
+    writeFileSync(join(data, "roll-calls", "100-1.json"), JSON.stringify(rc));
+    const run = prototype(data, out, ["--roll-call", "100-1", "--deputy", "101"]);
+    expect(run.status, run.stderr).toBe(0);
+    const doc = parse(readFileSync(join(out, "diario", "roll-call.html"), "utf8"));
+    const groups = [...doc.querySelectorAll(".ma-group")].map((g) => ({
+      head: g.querySelector(".ma-group__head")!.textContent!.replace(/\s+/g, " ").trim(),
+      rows: [...g.querySelectorAll("li")].map((li) => li.querySelector("svg")!.getAttribute("aria-label")),
+    }));
+    expect(groups).toEqual([
+      { head: "Sim 2", rows: ["Davi Rocha, PL-RJ, votou Sim", "Érico Alves, PL-RJ, votou Sim"] },
+      { head: "Não 1", rows: ["Ana Souza, PT-SP, votou Não"] },
+      { head: "Abstenção 1", rows: ["Zélia Moura, PL-RJ, votou Abstenção"] },
+      { head: "Obstrução 1", rows: [`${names[102]}, PT-${list.find((d: { id: number }) => d.id === 102).uf}, votou Obstrução`] },
+      { head: "Art. 17 (presidente da sessão) 1", rows: ["Beatriz Nunes, PL-RJ, Art. 17 (presidente da sessão)"] },
+      { head: "Registro sem voto 1", rows: [`${names[103]}, PSOL-${list.find((d: { id: number }) => d.id === 103).uf}, Registro sem voto`] },
+      { head: "Presente 1", rows: ["Ítalo Reis, PL-RJ, Presente"] },
+    ]);
+  });
+
+  it("roll call without individual votes", () => {
+    const out = join(OUT, "no-votes");
+    const data = mkdtempSync(join(tmpdir(), "mandato-novotes-"));
+    cpSync(FIXTURE, data, { recursive: true });
+    const rc = JSON.parse(readFileSync(join(data, "roll-calls", "100-2.json"), "utf8"));
+    rc.votes = [];
+    writeFileSync(join(data, "roll-calls", "100-2.json"), JSON.stringify(rc));
+    expect(prototype(data, out, ["--roll-call", "100-2"]).status).toBe(0);
+    for (const d of DIRECTIONS) {
+      const doc = parse(readFileSync(join(out, d, "roll-call.html"), "utf8"));
+      expect(doc.body.textContent).toContain("Nenhum voto individual registrado nesta votação.");
+      expect(doc.querySelectorAll(".ma-group")).toHaveLength(0);
+    }
+  });
+
+  it("source notes on the lede and the tally", () => {
+    for (const d of DIRECTIONS) {
+      const profile = parse(page(d, "profile"));
+      const ref = profile.querySelector(".ma-lede a.ma-note-ref")!;
+      const note = profile.getElementById(ref.getAttribute("href")!.slice(1))!;
+      expect(note.querySelector("a")!.getAttribute("href")).toBe(DEPUTY.sourceUrl);
+      const rc = parse(page(d, "roll-call"));
+      const tallyRef = rc.querySelector(".ma-result a.ma-note-ref")!;
+      const tallyNote = rc.getElementById(tallyRef.getAttribute("href")!.slice(1))!;
+      expect(tallyNote.closest(".ma-result")).not.toBeNull();
+      expect(tallyNote.querySelector("a")!.getAttribute("href")).toBe(ROLL_CALL.sourceUrl);
+    }
+  });
+
+  it("every card shares one template", () => {
+    const shape = (html: string) =>
+      [...parse(html).querySelectorAll(".ma-card *")]
+        .filter((el) => !el.closest("svg"))
+        .map((el) => `${el.tagName}.${el.className}`)
+        .join(" ");
+    const a = join(OUT, "card-101");
+    const b = join(OUT, "card-102");
+    expect(prototype(FIXTURE, a, ["--deputy", "101"]).status).toBe(0);
+    expect(prototype(FIXTURE, b, ["--deputy", "102"]).status).toBe(0);
+    for (const d of DIRECTIONS) {
+      const [ha, hb] = [a, b].map((dir) => readFileSync(join(dir, d, "card.html"), "utf8"));
+      expect(shape(ha)).toBe(shape(hb));
+      for (const [html, other] of [[ha, "Bruno Lima"], [hb, "Ana Souza"]]) {
+        const card = parse(html).querySelector(".ma-card")!;
+        expect(card.textContent).not.toContain("%");
+        expect(card.textContent).not.toContain(other);
+        expect(card.querySelector(".ma-ai")).toBeNull();
+      }
     }
   });
 

@@ -29,6 +29,10 @@ test("n de m shares a baseline", async ({ page }) => {
       expect(await value.evaluate((el) => getComputedStyle(el).alignItems)).toBe("baseline");
       await expect(value.locator("> .ma-ndem__n")).toHaveCount(1);
       await expect(value.locator("> .ma-ndem__m")).toHaveCount(1);
+      const [n, m] = await Promise.all(
+        [".ma-ndem__n", ".ma-ndem__m"].map((sel) => value.locator(`> ${sel}`).evaluate((el) => parseFloat(getComputedStyle(el).fontSize))),
+      );
+      expect(n).toBeGreaterThanOrEqual(2 * m);
     }
   }
 });
@@ -118,15 +122,91 @@ test("theme follows the system", async ({ browser }) => {
     for (const theme of THEMES) {
       const context = await browser.newContext({ colorScheme: theme });
       const page = await context.newPage();
-      await open(page, d, "profile");
-      const [body, probe] = await page.evaluate((value) => {
-        const el = document.createElement("div");
-        el.style.background = value;
-        document.body.append(el);
-        return [getComputedStyle(document.body).backgroundColor, getComputedStyle(el).backgroundColor];
-      }, expected[theme]);
-      expect(body, `${d} ${theme}`).toBe(probe);
+      for (const s of SCREENS) {
+        await open(page, d, s);
+        const [body, probe] = await page.evaluate((value) => {
+          const el = document.createElement("div");
+          el.style.background = value;
+          document.body.append(el);
+          return [getComputedStyle(document.body).backgroundColor, getComputedStyle(el).backgroundColor];
+        }, expected[theme]);
+        expect(body, `${d} ${s} ${theme}`).toBe(probe);
+      }
       await context.close();
     }
   }
+});
+
+test("initials frame matches the photo frame", async ({ page }) => {
+  for (const d of DIRECTIONS)
+    for (const [s, width] of [["profile", 1280], ["profile", 360], ["card", 1280]] as const) {
+      await page.setViewportSize({ width, height: 900 });
+      await open(page, d, s);
+      const withPhoto = (await page.locator(".ma-photo__mat").boundingBox())!;
+      await page.goto(`/nophoto/${d}/${s}.html`);
+      await expect(page.locator(".ma-photo__img")).toHaveCount(0);
+      const initials = page.locator(".ma-photo__initials");
+      await expect(initials).toHaveText("LB");
+      const without = (await page.locator(".ma-photo__mat").boundingBox())!;
+      expect(Math.abs(without.width - withPhoto.width), `${d} ${s} ${width} width`).toBeLessThanOrEqual(1);
+      expect(Math.abs(without.height - withPhoto.height), `${d} ${s} ${width} height`).toBeLessThanOrEqual(1);
+      const box = (await initials.boundingBox())!;
+      expect(Math.abs(box.width / box.height - 3 / 4)).toBeLessThan(0.01);
+    }
+});
+
+test("profile arrangement", async ({ page }) => {
+  for (const d of DIRECTIONS) {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await open(page, d, "profile");
+    const box = async (sel: string) => (await page.locator(sel).first().boundingBox())!;
+    const [photo, name, hero, lede, indicators, score] = await Promise.all(
+      [".ma-hero .ma-photo", ".ma-hero__name", ".ma-hero", ".ma-lede", ".ma-indicators", ".ma-score"].map(box),
+    );
+    expect(photo.x + photo.width, `${d} photo left of name`).toBeLessThanOrEqual(name.x);
+    const tops = [hero, lede, indicators, score].map((b) => b.y);
+    expect(tops, `${d} region order`).toEqual([...tops].sort((a, b) => a - b));
+    expect(hero.y + hero.height).toBeLessThanOrEqual(lede.y);
+    await page.setViewportSize({ width: 360, height: 800 });
+    await open(page, d, "profile");
+    const [photo2, name2] = await Promise.all([".ma-hero .ma-photo", ".ma-hero__name"].map(box));
+    expect(photo2.y + photo2.height, `${d} photo above name at 360`).toBeLessThanOrEqual(name2.y);
+  }
+});
+
+test("photo mat stays light in dark", async ({ browser }) => {
+  for (const d of DIRECTIONS) {
+    const raised = JSON.parse(readFileSync(join(ROOT, "tokens", `${d}.json`), "utf8")).color.raised.$value;
+    const context = await browser.newContext({ colorScheme: "dark" });
+    const page = await context.newPage();
+    for (const s of ["profile", "card"]) {
+      await open(page, d, s);
+      const [mat, probe] = await page.evaluate((value) => {
+        const el = document.createElement("div");
+        el.style.background = value;
+        document.body.append(el);
+        return [getComputedStyle(document.querySelector(".ma-photo__mat")!).backgroundColor, getComputedStyle(el).backgroundColor];
+      }, raised);
+      expect(mat, `${d} ${s}`).toBe(probe);
+    }
+    await context.close();
+  }
+});
+
+test("every digit is tabular", async ({ page }) => {
+  for (const d of DIRECTIONS)
+    for (const s of SCREENS) {
+      await open(page, d, s);
+      const plain = await page.evaluate(() =>
+        [...document.body.querySelectorAll("*")]
+          .filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && /\d/.test(n.textContent ?? "")))
+          .filter((el) => !getComputedStyle(el).fontVariantNumeric.includes("tabular-nums"))
+          .map((el) => el.outerHTML.slice(0, 80)),
+      );
+      const counted = await page.evaluate(
+        () => [...document.body.querySelectorAll("*")].filter((el) => [...el.childNodes].some((n) => n.nodeType === 3 && /\d/.test(n.textContent ?? ""))).length,
+      );
+      expect(counted, `${d} ${s} has numbers`).toBeGreaterThan(0);
+      expect(plain, `${d} ${s}`).toEqual([]);
+    }
 });
