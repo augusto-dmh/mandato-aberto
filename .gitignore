@@ -23,3 +23,8 @@ site/.cache/
 
 # Per-agent git worktrees (Houston panes)
 .worktrees/
+
+# Laravel app (v2): dependencies and build output
+app/vendor/
+app/public/build/
+app/bootstrap/ssr/
