@@ -165,24 +165,24 @@ The Senate directory is a self-contained contract-v3 directory.
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Verification profile | `standard`, as `etl-camara` and contract-v3 | the indicators and the ruleset are what a senator can contest; `light` would not notice an unproven map member | n |
-| `NA` (Dispositivo não citado) | `notVoting` with `official: "NA"` | meaning undocumented; 31 entries in 2023-2026, all where no vote was recorded | n |
-| Roll call `at` | `dataSessao` at `T00:00:00` | `/votacao` publishes no time, and the exercise ranges are whole days; the orientation feed's time exists only for joined roll calls | n |
-| Records with `sequencialVotacao: null` and no twin | kept, with no orientation | a join by date and tally matched 3 of 4 in 2023 but is not a key; it removes at most 4 roll calls from the government base | n |
-| `requirementsCount` types | `RQS`, `REQ`, `INS` | closest to the Câmara's `REQ`, `RIC`, `INC`; `R.S` and `RQN` stay out until their meaning is checked | n |
-| Roll-call source link | the API query by `codigoSessao` | it carries each senator's entry, which is the proof; the session's HTML page lists no votes per senator in a checkable form | n |
-| `lastPresentationDescription` | `null` for the Senate | the Senate has no field like the Câmara's `ultimaApresentacaoProposicao_descricao` | n |
-| Raw cache content | Senate responses kept verbatim in `data/raw/` (no CPF in any of them); personal fields are dropped at read (door 1) | the Câmara cache follows the same rule and keeps everything but the CPF; `data/raw/` is never published | n |
-| First signer for multi-author bills | one `/processo/{id}` call each, cached | the list's text matched the ordered authors in 6 of 6 samples, but it carries names, not codes | n |
+| Verification profile | `standard`, as `etl-camara` and contract-v3 | the indicators and the ruleset are what a senator can contest; `light` would not notice an unproven map member | y |
+| `NA` (Dispositivo não citado) | `notVoting` with `official: "NA"` | meaning undocumented; 31 entries in 2023-2026, all where no vote was recorded | y |
+| Roll call `at` | `dataSessao` at `T00:00:00` | `/votacao` publishes no time, and the exercise ranges are whole days; the orientation feed's time exists only for joined roll calls | y |
+| Records with `sequencialVotacao: null` and no twin | kept, with no orientation | a join by date and tally matched 3 of 4 in 2023 but is not a key; it removes at most 4 roll calls from the government base | y |
+| `requirementsCount` types | `RQS`, `REQ`, `INS` | closest to the Câmara's `REQ`, `RIC`, `INC`; `R.S` and `RQN` stay out until their meaning is checked | y |
+| Roll-call source link | the API query by `codigoSessao` | it carries each senator's entry, which is the proof; the session's HTML page lists no votes per senator in a checkable form | y |
+| `lastPresentationDescription` | `null` for the Senate | the Senate has no field like the Câmara's `ultimaApresentacaoProposicao_descricao` | y |
+| Raw cache content | Senate responses kept verbatim in `data/raw/` (no CPF in any of them); personal fields are dropped at read (door 1) | the Câmara cache follows the same rule and keeps everything but the CPF; `data/raw/` is never published | y |
+| First signer for multi-author bills | one `/processo/{id}` call each, cached | the list's text matched the ordered authors in 6 of 6 samples, but it carries names, not codes | y |
 
-**Open questions:**
+**Open questions:** none - resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`research/decisions-log.md`):
 
-| # | Kind | Question | Until answered |
-| --- | --- | --- | --- |
-| 1 | blocks | Contract-v3 requires `symbolicMerit` and `coverage.rollCalls.symbolic` as counts. The Senate publishes no symbolic roll-call record, so `0` would say "none happened" when the truth is "not published". Recommended: the contract-v3 owner allows `null` for both when a house publishes no symbolic records | AC 30 cannot be written as a check; the field is provisional |
-| 2 | blocks go-live | Contract-v3 door 7 keeps `official` verbatim, so `LS` (health leave) is published per senator per roll call. That is health data under LGPD art. 5, II (research section 8). Keep it verbatim, or bump the contract to publish `LS`, `LP` and `LAP` as one leave code? Recommended: maintainer decision before the first public Senate profile | the first public Senate profile and the method page |
-| 3 | open | Should the Senate directory carry contract-v3 door 8 full texts for ai-summaries? | no `full-texts/` under `data/v3/senado/`; ai-summaries covers the Câmara only |
-| 4 | open | Should a later schema version carry the seat (titular or alternate, with the titular's id) and the exercise end reason? | the profile cannot say "1st alternate sitting for X"; both are in the raw cache |
+1. `symbolicMerit` and the symbolic coverage count are nullable in contract v3; `null` means the house publishes no symbolic records. The Senate writes `null` (AC 30), the Câmara keeps counts. Passed to the contract-v3 builder as a door 4 amendment.
+2. Health and private-life absence codes are generalised: `LS`, `LP` and `LAP` are published as `official: "Licença"`, position `notVoting`; the verbatim code stays only in the unpublished raw cache (LGPD art. 5 II and 11). Contract-v3 door 7 is amended to allow a per-house sensitive map, recorded as AD-018. Door 3 of this plan follows that map, overriding the "verbatim" wording of its literal shape.
+3. Full texts of Senate bills are out of this feature; AI summaries cover the Câmara first, and a later feature adds the Senate's texts.
+4. Seat (titular or suplente) and the end reason of an exercise stay out of v3; a later contract version can add them if the profile needs them.
+
+**Approval:** approved by the orchestrator under the maintainer's delegation on 2026-10-02, every assumption confirmed. Build starts after contract-v3 lands with both amendments.
 
 ## Observable
 
