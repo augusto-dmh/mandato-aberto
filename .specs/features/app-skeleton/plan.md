@@ -193,25 +193,22 @@ The skeleton ships the gates every later feature inherits.
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Local development | Sail is the supported path; native PHP is not documented | door 11: native 8.4.5 lacks `intl` and PostgreSQL, and fixing that needs `sudo` | n |
-| PHP runtime vs floor | runtime 8.5 (latest stable, 8.5.11) in Sail and CI; floor `^8.4` in `composer.json` | Pest 5 needs 8.4; the floor lets the maintainer run tools natively if they install `intl` | n |
-| Frontend language | JavaScript `<script setup>`, no TypeScript | matches `design/`, which the pages import; TypeScript 7 is two months old and `vue-tsc` support is a later choice | n |
-| Larastan level | 6 | strict enough to catch nullable misuse on Eloquent without fighting magic properties on day one; raising it is a later commit | n |
-| Trailing slash | both forms answer 200, canonical always with slash; no redirect middleware | the canonical tag settles duplicates; a redirect layer adds a behaviour to prove for no reader-visible gain | n |
-| Test data | importer and page tests use `site/tests/fixtures/out` read in place | the `etl` CI job already validates it against the contract; a copy would drift | n |
-| Forbidden-terms list | a PHP copy in `app/config/forbidden-terms.php`, plus a Pest test that it contains every term parsed from `site/src/lib/forbidden-terms.ts` while that file exists | the app cannot import TypeScript; the parity test stops the copies drifting until `site/` retires | n |
-| Source of votes | votes come from `deputies/{id}.json` (they carry `partyMajority`); the roll-call files supply roll-call fields only | one source per row; the ETL's `standard` verification already proves the two lists agree | n |
-| Scope of the sweep | the scope of a v2 contract is (`camara`, 57); a v3 contract declares its scopes and each is swept independently | matches the contract-v3 direction (house and legislature dimensions) without assuming its field names | n |
-| Methodology and correction links | point to the live MVP (`https://augusto-dmh.github.io/mandato-aberto/metodologia/#...`), as `design/scripts/contract.mjs` does | the app has no Metodologia page yet; every number still carries its note (P1) | n |
-| `twitter:card` without image | `summary` until the card feature ships `og:image` | `summary_large_image` without an image renders worse than `summary` | n |
-| Queue and cache drivers | Laravel 13 defaults (`database`); no Redis | nothing in this feature queues; Redis is a deploy decision | n |
+| Local development | Sail is the supported path; native PHP is not documented | door 11: native 8.4.5 lacks `intl` and PostgreSQL, and fixing that needs `sudo` | y |
+| PHP runtime vs floor | runtime 8.5 (latest stable, 8.5.11) in Sail and CI; floor `^8.4` in `composer.json` | Pest 5 needs 8.4; the floor lets the maintainer run tools natively if they install `intl` | y |
+| Frontend language | JavaScript `<script setup>`, no TypeScript | matches `design/`, which the pages import; TypeScript 7 is two months old and `vue-tsc` support is a later choice | y |
+| Larastan level | 6 | strict enough to catch nullable misuse on Eloquent without fighting magic properties on day one; raising it is a later commit | y |
+| Trailing slash | both forms answer 200, canonical always with slash; no redirect middleware | the canonical tag settles duplicates; a redirect layer adds a behaviour to prove for no reader-visible gain | y |
+| Test data | importer and page tests use `site/tests/fixtures/out` read in place | the `etl` CI job already validates it against the contract; a copy would drift | y |
+| Forbidden-terms list | a PHP copy in `app/config/forbidden-terms.php`, plus a Pest test that it contains every term parsed from `site/src/lib/forbidden-terms.ts` while that file exists | the app cannot import TypeScript; the parity test stops the copies drifting until `site/` retires | y |
+| Source of votes | votes come from `deputies/{id}.json` (they carry `partyMajority`); the roll-call files supply roll-call fields only | one source per row; the ETL's `standard` verification already proves the two lists agree | y |
+| Scope of the sweep | the scope of a v2 contract is (`camara`, 57); a v3 contract declares its scopes and each is swept independently | matches the contract-v3 direction (house and legislature dimensions) without assuming its field names | y |
+| Methodology and correction links | point to the live MVP (`https://augusto-dmh.github.io/mandato-aberto/metodologia/#...`), as `design/scripts/contract.mjs` does | the app has no Metodologia page yet; every number still carries its note (P1) | y |
+| `twitter:card` without image | `summary` until the card feature ships `og:image` | `summary_large_image` without an image renders worse than `summary` | y |
+| Queue and cache drivers | Laravel 13 defaults (`database`); no Redis | nothing in this feature queues; Redis is a deploy decision | y |
 
-**Open questions:**
+**Open questions:** none - resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`research/decisions-log.md`): (1) build for schema_version 2 with door 5 as the seam; the v3 reader is added when the contract-v3 plan is approved; (2) no hotlink: the initials frame until a photo-cache feature serves the official photo from the app's origin.
 
-| # | Kind | Question | Until answered |
-| --- | --- | --- | --- |
-| 1 | open | The contract-v3 plan (`.worktrees/contract-v3/.specs/features/contract-v3/plan.md`) did not exist when this plan was written; which field names carry house and legislature in v3? | AC 1 to 11 are written for v2; door 5 and the sweep assumption are the seam. When v3 lands, a v3 reader and one criterion per new scope are added before the import accepts `schema_version` 3 |
-| 2 | open | Should the profile hotlink the official photo from camara.leg.br until the photo cache exists? | AC 16 renders the initials frame; the privacy page stays true |
+**Approval:** approved by the orchestrator under the maintainer's delegation on 2026-10-02, every assumption confirmed as written.
 
 ## Observable
 
