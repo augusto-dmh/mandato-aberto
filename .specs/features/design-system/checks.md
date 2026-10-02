@@ -11,8 +11,8 @@ All commands run from `design/`. `npx vitest run <file> -t "<name>"` for unit an
 
 ### S1 - one token source, contrast by construction · ~8 files · ~30 KB · ~8k
 
-**C1** - `npm run build` writes `dist/tokens.css` with four blocks, `diario` light, `diario` dark, `plenario` light, `plenario` dark, and each block defines every colour token of its direction as `--ma-color-<name>`; every non-colour token of `base.json` and the direction file is defined as `--ma-<group>-<name>` (AC 1)
-Proof: `npx vitest run tests/tokens.test.ts -t "defines every token in four blocks"`
+**C1** - `npm run build` writes `dist/tokens.css` with four blocks, `diario` light, `diario` dark, `plenario` light, `plenario` dark, and each block defines every colour token of its direction as `--ma-color-<name>`; every non-colour token of `base.json` and the direction file is defined as `--ma-<group>-<name>` (AC 1) - after AD-015 (2026-10-02) the set is the `plenario` light and dark blocks
+Proof: `npx vitest run tests/tokens.test.ts -t "defines every token in a light and a dark block per direction"`
 
 **C2** - Every declared pair meets its floor in all four blocks: text pairs at least 4.5:1, graphic and focus pairs at least 3:1, computed with the WCAG 2.2 relative-luminance formula from the OKLCH value (AC 2)
 Proof: `npx vitest run tests/tokens.test.ts -t "every declared pair meets its floor"`
@@ -81,7 +81,7 @@ Proof: `npx vitest run tests/prototype.test.ts -t "no forbidden term in rendered
 
 ### S3 - a real profile, roll call and card in both directions · ~8 files · ~30 KB · ~8k
 
-**C20** - `npm run prototype` over the contract fixture writes `profile.html`, `roll-call.html` and `card.html` under `dist/prototype/diario/` and `dist/prototype/plenario/`, each naming the chosen deputy or roll call (AC 18)
+**C20** - `npm run prototype` over the contract fixture writes `profile.html`, `roll-call.html` and `card.html` under `dist/prototype/diario/` and `dist/prototype/plenario/`, each naming the chosen deputy or roll call (AC 18) - after AD-015 only `dist/prototype/plenario/` is written
 Proof: `npx vitest run tests/prototype.test.ts -t "writes three screens per direction"`
 
 **C21** - A contract whose `meta.json` declares `schema_version: 1` makes the prototype exit non-zero with "schema_version 1" in stderr (AC 19)
@@ -153,6 +153,7 @@ Proof: `npx playwright test e2e/screens.spec.ts -g "card composition"`
 **C41** - The score section's note links the deputy's `sourceUrl` and reads "dados de 27/09/2026" for the fixture, and each of the 3 statistics carries a marker to a note linking the same source (AC 39)
 Proof: `npx vitest run tests/prototype.test.ts -t "score and stats carry source notes"`
 Proof (after round 3): `npx vitest run tests/components.test.ts -t "SourceNote dates the collection in Brasília"`
+Proof (after round 4): `npx vitest run tests/prototype.test.ts -t "footers date the collection in Brasília"`
 
 **C42** - With `exercisePeriods` emptied for deputy 101, neither the profile nor the card contains "desde" followed by a date (AC 40)
 Proof: `npx vitest run tests/prototype.test.ts -t "no start date without an exercise period"`
@@ -164,17 +165,17 @@ Proof: `npx vitest run tests/tokens.test.ts -t "accent marks only interaction"`
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
-| token blocks (4) | `diario` light C1 · `diario` dark C1 · `plenario` light C1 · `plenario` dark C1 | - |
-| declared contrast pairs (24) | C2, table-driven over all 24 (3 text colours × 2 surfaces × 2 themes × 2 directions); C3 proves the list is complete for text | - |
+| token blocks (2) | after AD-015:  `plenario` light C1 · `plenario` dark C1 | - |
+| declared contrast pairs (12) | after AD-015:  C2, table-driven over all 12 (3 text colours × 2 surfaces × 2 themes); C3 proves the list is complete for text | - |
 | vote cases, doors 5 and 6 (7) | `Sim` C12 · `Não` C12 · `Abstenção` C12 · `Obstrução` C12 · `Artigo 17` C12 · empty, not secret C12 · empty, secret C12; table-driven, plus unknown value C12 | - |
 | components, door 4 (7) | `NDeM` C9 · `SourceNote` C11 · `VoteMark` C12 · `MandateScore` C13 · `OfficialPhoto` C14 · `TallyBar` C16 · `AiSummaryFrame` C17 | - |
 | component empty states (6) | `NDeM` total 0 C10 · `OfficialPhoto` no photo C15 · `AiSummaryFrame` unreviewed C18 · `SourceNote` no method C11 · `MandateScore` no votes C13 · `TallyBar` zero counts C16 | - |
 | screen empty states (3) | profile lede total 0 C29 · card figure total 0 C29 · roll call without votes C31 | - |
 | roll-call group order (7) | `Sim` C30 · `Não` C30 · `Abstenção` C30 · `Obstrução` C30 · `Artigo 17` C30 · empty C30 · other value C30 | - |
 | proof environments (2) | local `design/` with the site installed C19 · CI job `design`, which installs `../site` (`.github/workflows/ci.yml`) C19 | - |
-| page background per theme (12) | profile×diario×light C26 · profile×diario×dark C26 · roll-call×diario×light C26 · roll-call×diario×dark C26 · card×diario×light C26 · card×diario×dark C26 · profile×plenario×light C26 · profile×plenario×dark C26 · roll-call×plenario×light C26 · roll-call×plenario×dark C26 · card×plenario×light C26 · card×plenario×dark C26 | - |
-| pages at 360 px (8) | profile×diario×light C24 · profile×diario×dark C24 · profile×plenario×light C24 · profile×plenario×dark C24 · roll-call×diario×light C24 · roll-call×diario×dark C24 · roll-call×plenario×light C24 · roll-call×plenario×dark C24 | - |
-| pages under reduced motion (6) | diario profile C23 · diario roll-call C23 · diario card C23 · plenario profile C23 · plenario roll-call C23 · plenario card C23 | - |
+| page background per theme (6) | after AD-015:  profile×plenario×light C26 · profile×plenario×dark C26 · roll-call×plenario×light C26 · roll-call×plenario×dark C26 · card×plenario×light C26 · card×plenario×dark C26 | - |
+| pages at 360 px (4) | after AD-015:  profile×plenario×light C24 · profile×plenario×dark C24 · roll-call×plenario×light C24 · roll-call×plenario×dark C24 | - |
+| pages under reduced motion (3) | after AD-015:  plenario profile C23 · plenario roll-call C23 · plenario card C23 | - |
 | contract `schema_version` (2) | `2` accepted C20 · other rejected C21 | - |
 | Landing doors (6) | 1 package C28 · 2 token format C1 · 3 Playwright C14, C23-C26 · 4 names C28 · 5 vote encoding C12 · 6 extra vote values C12 | - |
 
@@ -219,3 +220,4 @@ Evidence: the repo's closest analogue is `site/tests/`, where `format.test.ts` p
 - **Settled mid-build (round 3):** the roll call now shows the AI frame before the result, as research a1 section 6.2 orders it. A deputy with no exercise period shows no start date; it used to fall back to the collection date. `SourceNote` gained an optional `collectedAt`. The assumptions table had lost two rows to a failed edit and carried a malformed cell; both are repaired, and the score-layout deviation is now recorded there
 - **After round 3:** collection dates now render as the calendar day in Brasília, like the MVP's `brasiliaLocal`; the plan's assumptions table lost its malformed cells and lists the four open questions for the maintainer
 - **C27 (2026-10-02):** the maintainer chose Plenário. `tokens/diario.json`, Newsreader and Inter are removed; the tests that enumerated both directions or the four font packages now enumerate the one direction and its two packages, so no assertion lost a member that still exists
+- **After round 4:** a prototype run with `generatedAt` at 02:00Z proves both footers show the Brasília day (it fails with the card footer back on the UTC day, the surviving fault of round 4); the set rows and C1, C20 now name the single direction

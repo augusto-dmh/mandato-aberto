@@ -29,7 +29,7 @@ function block(marker: string): string {
 }
 
 describe("tokens", () => {
-  it("defines every token in four blocks", () => {
+  it("defines every token in a light and a dark block per direction", () => {
     expect(errors).toEqual([]);
     // AD-015: Plenário is the only direction
     expect(Object.keys(directions).sort()).toEqual(["plenario"]);

@@ -57,7 +57,7 @@ The two directions exist as tokens that pass the accessibility floor in light an
 
 **Acceptance Criteria**
 
-1. WHEN `npm run build` runs in `design/` THEN the system SHALL write `design/dist/tokens.css` defining every token of `design/tokens/*.json` as a `--ma-*` custom property, in four blocks: `diario` light, `diario` dark, `plenario` light, `plenario` dark
+1. WHEN `npm run build` runs in `design/` THEN the system SHALL write `design/dist/tokens.css` defining every token of `design/tokens/*.json` as a `--ma-*` custom property, in four blocks: `diario` light, `diario` dark, `plenario` light, `plenario` dark (after AD-015, on 2026-10-02, only the `plenario` light and dark blocks remain, per AC 25)
 2. The system SHALL give every text colour token, against each surface token it is declared for, a WCAG 2.2 contrast ratio of at least 4.5:1, and every graphic and focus token at least 3:1, in all four blocks
 3. IF a declared pair falls below its floor THEN the token build SHALL exit non-zero and print the pair and its ratio
 4. The system SHALL define exactly one accent colour per direction and no colour token named after a vote option, a party or a valence (`yes`, `no`, `good`, `bad`, `success`, `danger`, `warning`, any party acronym)

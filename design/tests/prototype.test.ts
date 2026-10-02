@@ -195,6 +195,25 @@ describe("prototype", () => {
     }
   });
 
+  it("footers date the collection in Brasília", () => {
+    const out = join(OUT, "late-night");
+    const data = mkdtempSync(join(tmpdir(), "mandato-latenight-"));
+    cpSync(FIXTURE, data, { recursive: true });
+    const meta = JSON.parse(readFileSync(join(data, "meta.json"), "utf8"));
+    // 02:00 UTC on 28/09 is still 27/09 in Brasília
+    writeFileSync(join(data, "meta.json"), JSON.stringify({ ...meta, generatedAt: "2026-09-28T02:00:00Z" }));
+    expect(prototype(data, out, ["--deputy", "101"]).status).toBe(0);
+    for (const dir of DIRECTIONS) {
+      const card = parse(readFileSync(join(out, dir, "card.html"), "utf8"));
+      expect(card.querySelector(".ma-card__foot")!.textContent!.replace(/\s+/g, " ")).toContain("dados de 27/09/2026");
+      for (const screen of ["profile", "roll-call"]) {
+        const footer = parse(readFileSync(join(out, dir, `${screen}.html`), "utf8")).querySelector("footer.ma-footer")!;
+        expect(footer.textContent!.replace(/\s+/g, " "), `${dir} ${screen}`).toContain("coletados em 27/09/2026");
+        expect(footer.textContent).not.toContain("28/09/2026");
+      }
+    }
+  });
+
   it("every card shares one template", () => {
     const shape = (html: string) =>
       [...parse(html).querySelectorAll(".ma-card *")]
