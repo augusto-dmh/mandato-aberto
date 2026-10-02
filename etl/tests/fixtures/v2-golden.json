@@ -1,0 +1,33 @@
+{
+ "plain": {
+  "deputies.json": "5df76a5588759d3c83199ffb86fc09f70506b713e0c5ed546ba698f7c0237c6a",
+  "deputies/101.json": "ae8ae73b95e5ab0144ccd246c84a93e5e9572804f76f347e30d59a43b3926bae",
+  "deputies/102.json": "ed55277ccb2b43cd8ed5cee120e73ff23d79fc974bfd8427dd08b35a6ef152be",
+  "deputies/103.json": "4169ae3e45f2e6856734ce18d223448f6cffb80d13756fc5a504b06b9680010a",
+  "meta.json": "c5891e1bf2e6a457951b078f846ea669d3a8be8773cb21e6a9b3ee2f0e46fee8",
+  "roll-calls.json": "e0bb66a6cd42914a0f00bee06aa03d05d8a96ef9cf0c2cf9550ce6e549648c42",
+  "roll-calls/100-1.json": "95004493859ff9a3d2838ca3fb01dfb8663f2233d484317f0623341e648a0852",
+  "roll-calls/100-2.json": "ab95564a305a5e00ec1ed59d14ef64fbe015d0b9422574cf0de69e4ea60076b3",
+  "roll-calls/100-3.json": "62b2af0156ca53b483f9aa7e04f3088ab67a01eb8054ebadde26d356c593ef79",
+  "roll-calls/100-4.json": "2020a56d1acd871b43ffbd9d920439e9000cda17402bf72b299f7f2768d860b9",
+  "roll-calls/200-1.json": "1a7c67a4c837ebbfa6a1ec6528e2ee9bca73cc01aa004a0d13f5e46967fca8ee",
+  "roll-calls/200-2.json": "957740cbb16d0662b84d8be24de23be641bff7b54721f4429ce5970d1b7c9439",
+  "roll-calls/200-3.json": "5d7dfbcd834e9df090360268538ebb97f39a3f49e2da69a9b7d604fe8fddd657"
+ },
+ "secret": {
+  "deputies.json": "dc3e18cbb6f6f8a882f3edd0b1d5d5de1dc6840531f898a508af98520e75acdf",
+  "deputies/101.json": "e5d23d45b70c2fa43f3ba8119c7033c65bdb741a7afd7b90f60883773eac3eea",
+  "deputies/102.json": "43abc1253725c005df1559906ad7927ef5159373df2f5fd978ccff5f3f4cad9b",
+  "deputies/103.json": "a4a276c246fcfbdfd0da087388a0139e75ec7b75665181b6387721cba2e52ac7",
+  "meta.json": "9a3cadf793386aad9bbd3f01640dcb0d1707acf095b3099504c83be5f90b5efd",
+  "roll-calls.json": "bbe30cc4f43bc7648a3dfb9f25b033c16ea054d62e14e6053fa932000c87c3ec",
+  "roll-calls/100-1.json": "95004493859ff9a3d2838ca3fb01dfb8663f2233d484317f0623341e648a0852",
+  "roll-calls/100-2.json": "ab95564a305a5e00ec1ed59d14ef64fbe015d0b9422574cf0de69e4ea60076b3",
+  "roll-calls/100-3.json": "62b2af0156ca53b483f9aa7e04f3088ab67a01eb8054ebadde26d356c593ef79",
+  "roll-calls/100-4.json": "2020a56d1acd871b43ffbd9d920439e9000cda17402bf72b299f7f2768d860b9",
+  "roll-calls/100-6.json": "ef2bd1e955503cbb5bedd65e8a154576d98e4fbf5a672bba5c0273020ab9a450",
+  "roll-calls/200-1.json": "1a7c67a4c837ebbfa6a1ec6528e2ee9bca73cc01aa004a0d13f5e46967fca8ee",
+  "roll-calls/200-2.json": "957740cbb16d0662b84d8be24de23be641bff7b54721f4429ce5970d1b7c9439",
+  "roll-calls/200-3.json": "5d7dfbcd834e9df090360268538ebb97f39a3f49e2da69a9b7d604fe8fddd657"
+ }
+}
