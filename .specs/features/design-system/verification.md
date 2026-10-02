@@ -2,109 +2,135 @@
 
 **Verdict**: FAIL
 **Profile**: ui
-**Diff range**: c9b1a4a..83f5eb606217a4fcb94901a8f714ef53c1ae1671
-**Round**: 1 - full
+**Diff range**: c9b1a4a..d9d3b903e906dc551b49df5dd1b65892db7bc782
+**Round**: 2 - scoped
 **Verifier**: independent sub-agent (author != verifier)
 
-Verified at 83f5eb6. Proofs: `npm run build` exit 0; `npx vitest run tests/ --reporter=verbose` 24 passed, 0 failed, each named test listed individually; `npx playwright test --reporter=list` 7 passed, 0 failed. FAIL comes from: C27 open (expected), C15 and C12 with unproven clauses (surviving mutants), a C4 boundary survivor, unproven coverage members, two unmet Test policy rows, and elements and arrangements the binding sources decide that no check covers. Two of the uncovered items are real defects shown on the rendered output (empty base on the profile lede and the card; numbers without tabular figures).
+Scope: the fix `83f5eb6..d9d3b90` (17 files: plan S5 and Out of scope rows, checks C29-C38 and round-2 proofs, `MandateScore`, `NDeM`, `OfficialPhoto`, the three screens, `components.css`, both direction token files, `e2e/setup.ts`, three test files) plus every round-1 verdict that was not PASS (C12, C15, C27, the C4 survivor, every Uncovered and Unproven cell, the Test policy rows). Round 1 is committed at 22774f9. Proofs re-ran in full at d9d3b90: `npm run build` exit 0; `npx vitest run tests/ --reporter=verbose` 36 passed, 0 failed, each named test listed individually; `npx playwright test --reporter=list` 11 passed, 0 failed.
+
+The fix closes most of round 1. FAIL remains for four reasons:
+- C27 is open, as expected.
+- The plan's assumption row for the per-year score rows, cited by `checks.md` Handoff and by the brief, does not exist in `plan.md` at d9d3b90.
+- Two arrangements the binding sources decide still have no check: the roll-call top and the card content.
+- In a CI-equivalent tree the design job cannot load `tests/prototype.test.ts`.
 
 ## Binding sources
 
+verified at d9d3b90 (re-judged only where the fix touched a screen or the plan; unchanged sources carried from 83f5eb6)
+
 | Source | Opened | Contradiction | Uncovered |
 | --- | --- | --- | --- |
-| `research/05-grilling-escopo-v2.md` decision 10 (lines 12-25) | yes - read in full | none: plan builds tokens, type, components and three screens (profile, roll-call, card) before Laravel | publishing in an artifact for validation (decision 10 "validadas em artifact") is plan Flow step 5 with no check; only C27 waits for the choice - process step, low rank |
-| `research/06-pesquisa-design-e-concorrentes.md` section 3 (principles 1-15) | yes - lines 38-58 | none in the checks | P1 "todo número carrega a sua nota": C11 narrows it to `NDeM`; profile lede numbers (`screens/Profile.vue:33-37`) and stat figures (`Profile.vue:44-56`, one shared note with no marker) and the roll-call tally/result (`screens/RollCall.vue:31-38`) carry no note and no check · P11 "tabela, fontes e download": download absent, no check, not in Out of scope · P2 "fonte dentro do enquadramento": the partitura section (`Profile.vue:60-69`) has no source footer inside its frame, no check · P4 "algarismos tabulares em todo número": C7 covers three components only; `screens/Card.vue:34` and `components/MandateScore.vue:64` render counts without `.ma-num` (computed `font-variant-numeric: normal` in Chromium, measured) |
-| `research/06-...` section 4 (traps) | yes - lines 60-71 | none in the checks | "Parecer site oficial. Nada de azul gov.br": no check; Plenário accent `oklch(0.47 0.21 264)` = `#184ace` (`tokens/plenario.json:270`) sits next to gov.br blues `#1351B4` (oklch 0.460 0.169 260.1) and `#155BCB` (oklch 0.500 0.187 260.2), measured with the repo's own `toHex` and an independent sRGB->OKLab conversion |
-| `research/06-...` section 5 (directions) | yes - lines 73-83 | none: Diário = Newsreader + Inter with the partitura, Plenário = Archivo + Source Serif 4, MVP red dropped - matches plan Assumptions | - |
-| `research/design-anexos/a1-referencias-de-design.md` section 3 (P1-P15 full) | yes - lines 162-195 | none in the checks | P9 "no modo escuro, o passe-partout fica claro": no check, and the code darkens it - `.ma-photo__mat` uses `--ma-color-raised` (`styles/components.css:258-259`), computed `oklch(0.245 0.008 70)` Diário dark and `oklch(0.2 0 0)` Plenário dark · P5 "Perfil: barra de unidades em que cada célula é uma votação": not drawn on the profile, no check, not in Out of scope · P7 accent lights "apenas o deputado buscado": C5 counts accent tokens only; where the accent is used is unchecked |
-| `a1` section 4 (traps table) | yes - lines 198-219 | none | "Nunca no card": comparison, percentile, own colour, AI sentence, share counts - no check asserts their absence on `card.html` (C19 catches only vocabulary) |
-| `a1` section 5 (three directions) | yes - lines 221-257 | none | - |
-| `a1` section 6.1 profile hero | yes - lines 261-267 | none | **Arrangement:** photo left / name right / metadata line / template sentence / n de m / partitura full width below - no check on the hero's regions or their order (C24 only measures overflow; C22 only reads one count). Measured at 1280: photo at x 124-278, name at x 337, so the code follows the source but nothing guards it · partitura drawn as one row per year with year labels (`MandateScore.vue:18-27`) where the source draws one full-width strip with a month axis - a different composition with no check either way · hover/focus "data, proposição e voto" (`MandateScore.vue:53` `<title>`) unchecked · "citar este perfil" absent, no check, not excluded |
-| `a1` section 6.2 roll-call page | yes - lines 269-276 | none in the checks | **The screen's main region has no check:** the list of every deputy grouped by vote option, alphabetical within each group, with per-row label "Nome, PARTIDO-UF, votou X" (`RollCall.vue:49-67`, `scripts/contract.mjs:82-90`) - C12 tests `VoteMark` alone; no proof reads the groups, their order, their counts or completeness on `roll-call.html` · ementa at top, AI frame placement, result line - unchecked · party orientation table ("seguiram 45 de 48") absent, no check, not excluded · utilities "Baixar CSV/JSON", "Citar" absent; "Link permanente" and source link present but unchecked · P1 "placar com nota para a página oficial da votação": no note · quorum marker: excluded in plan Out of scope (fine) |
-| `a1` section 6.3 share card | yes - lines 278-285 | none in the checks | card content (photo, name, partido-UF, up to four n de m, mini partitura, "Fonte: Câmara dos Deputados · dados de DD/MM/AAAA", short address) - no check reads any of it except the name (C20, C25); the footer prints "mandato aberto" (`Card.vue:38`) where the source names the short address (Handoff records the choice; no check) · three formats and verification code: excluded in Out of scope (fine) |
-| `etl/schema/*.json` (contract) | yes - `deputy`, `roll-call`, `meta` read; every field the prototype reads exists in the schema | none | `participation/governmentAlignment/partyAlignment.total` may be 0 (fixture deputy 103); the card (`Card.vue:28-31`) and the profile lede (`Profile.vue:33-37`) render "0 de 0" instead of `NO_BASE` - reproduced with `--deputy 103` (lede "Registrou voto em 0 de 0 votações nominais", card "0 de 0 votações nominais ..."). AC 8 holds only inside `NDeM`; the plan's Observable row "screen profile · empty state -> AC 8" is not met by the screen. On 01/02/2027 every deputy starts at total 0 |
-| `site/src/lib/format.ts` (MVP copy) | yes - lines 1-80 | none: `NO_BASE`, `voteLabel` cases, `resultLabel`, `byName` mirrored in `components/format.js`, `components/vote.js:6-18`, `scripts/contract.mjs:23-24,91` | the MVP's `formatCount` pairs every count with `NO_BASE` at total 0; the design screens bypass it (row above) |
+| `research/05-grilling-escopo-v2.md` decision 10 | carried from 83f5eb6 - yes | none | publishing the prototype as an artifact (Flow step 5) still has no check; process step, low rank |
+| `research/06-...` section 3 / a1 section 3, P1 "todo número carrega a sua nota" | yes, re-read against the fix | none | resolved for the lede (C36) and the roll-call result (C36). Still open: the three profile stats (`design/screens/Profile.vue:44-57`) share one `SourceNote` with no marker, and no check reads that note |
+| P2 "a fonte fica dentro do enquadramento" | yes | none | not touched by the fix: the partitura section (`Profile.vue` score section) carries no source and collection-date footer inside its frame, and no check exists. No Out of scope row covers it |
+| P4 tabular figures | yes | none | resolved: C35, every digit-bearing element on the six pages (`e2e/screens.spec.ts:209-210`), via `.ma-page` `font-variant-numeric` (`styles/components.css:77`) |
+| P5 unit bar / P11 download | yes | none | resolved by new Out of scope rows (`plan.md:146-148`); the table half of P11 is C13 |
+| P7 accent single role | yes | none | still no check on where the accent is used (code uses it only on links, focus and the table `summary`); low rank |
+| P9 passe-partout light in dark | yes | none | resolved: `mat` token plus C33 (`tests/tokens.test.ts:143-144`, `e2e/screens.spec.ts:190`) |
+| `06` section 4 / a1 section 4, "nada de azul gov.br" | yes | none | resolved: Plenário accent now `oklch(0.46 0.2 300)` / dark `oklch(0.78 0.11 305)`, C34. Verifier recomputed with the published OKLab matrix: minimum distance 0.128 (Diário light to `#1351B4`), all eight ≥ 0.1 |
+| a1 section 4 / 6.3 "nunca no card" | yes | none | resolved enough: C38 asserts no "%", no other deputy's name and no AI frame, and one shared template |
+| a1 section 6.1 profile hero | yes | none | hero arrangement resolved (C32: photo left of name at 1280, regions hero, lede, indicators, score top to bottom, photo above name at 360). Month axis resolved as ticks (C37). **Still open:** the partitura is one row per year (`design/components/MandateScore.vue:18-27`) where a1 6.1 draws one full-width strip. The brief and `checks.md` Handoff ("The score row deviation ... is an assumption row in the plan") say a plan assumption records this. `plan.md` Assumptions at d9d3b90 holds six rows and none mentions the score rows (`grep -n "6.1\|year" plan.md` matches only lines 118 and 146). The deviation is neither checked nor recorded |
+| a1 section 6.2 roll-call page | yes | none | grouped list resolved (C30); empty roll call resolved (C31); tally note resolved (C36); per-party orientation, "Citar" and download excluded (`plan.md:146-147`, the orientation reason confirmed: `etl/schema/roll-call.schema.json:52-57` carries only `governmentOrientation`). **Still open, arrangement:** the top of the screen - eyebrow, title, ementa, then AI frame, result, utilities "no topo, não no rodapé" (`design/screens/RollCall.vue:22-50`) - has no structure check; C32 covers the profile only |
+| a1 section 6.3 share card | yes | none | short address excluded (`plan.md:149`). **Still open, arrangement and content:** no check reads that the card holds the photo, name, partido-UF, the "n de m" figures, the mini partitura and the line "Fonte: Câmara dos Deputados, dados de DD/MM/AAAA" (`design/screens/Card.vue:20-43`). C38 proves two cards are the same shape, not that the shape is the one the source draws |
+| `etl/schema/*.json` | yes | none | empty bases resolved (C29). Not raised in round 1 and still open: `exercisePeriods` may be empty (fixture deputy 103: `[]`), and `scripts/contract.mjs:53` falls back to `meta.generatedAt`. Deputy 103's card then reads "desde 27/09/2026", a mandate start date the record does not hold. No check; low rank |
+| `site/src/lib/format.ts` | carried from 83f5eb6 - yes | none | `NO_BASE` now honoured on every screen (C29) |
 
-Per-screen enumeration summary (what a selector reaches -> check):
-
-- **profile**: photo C14 · no-photo C15 · n de m C9/C10/C11 · partitura order/links/table C13 · 360 px C24 · motion C23 · theme C26 · no JS C22 — uncovered: hero arrangement (regions and order), partitura row-per-year arrangement and missing month axis, lede/stat notes, unit bar, download, cite link, dark mat, empty base in the lede.
-- **roll-call**: tally C16 (component only) · AI frame C17/C18 (component only) · 360 px C24 · motion C23 — uncovered: the grouped name list (order, grouping, counts, completeness), header order (eyebrow, title, ementa), result line, utilities, tally note, orientation table, empty roll call (Observable row claims AC 8 but the screen uses no `NDeM`), theme (C26 proves profile only).
-- **card**: 1200 × 630 and no overflow C25 · photo C14 · motion C23 — uncovered: content set and order, "never on card" absences, empty base ("0 de 0"), non-tabular count `Card.vue:34`, theme (C26 proves profile only).
+Plan changes made by the builder in the fix (S5 AC 27-36 and four Out of scope rows) are accepted here as resolving their gaps. They were added after the human-reviewed plan, so the maintainer still has to confirm them.
 
 ## Checks
 
+C1-C3, C5, C6, C8, C10, C14, C17, C18, C19-C25, C28 carried from 83f5eb6 for evidence; their proofs re-ran green at d9d3b90. Every other row verified at d9d3b90.
+
 | Check | Claim | Proof run | Evidence | Result |
 | --- | --- | --- | --- | --- |
-| C1 | four blocks, every token as `--ma-*` | `npx vitest run tests/` - "defines every token in four blocks" ✓ | `design/tests/tokens.test.ts:36` `expect(root).toContain(\`--ma-${path.join("-")}:\`)`; `:44` `expect(light).toContain(v)`; `:47` `expect(dark.split(v).length - 1).toBe(2)` | PASS |
-| C2 | every declared pair meets its floor, WCAG from OKLCH | same run - "every declared pair meets its floor" ✓ | `tokens.test.ts:57` `expect(p.ratio, ...).toBeGreaterThanOrEqual(p.min)`; `:58` `expect([4.5, 3]).toContain(p.min)`. OKLab matrices in `scripts/color.mjs:133-140` checked against Ottosson's published values; 24 pairs recomputed (lowest 6.06:1) | PASS |
-| C3 | every text token paired with every surface | same run - "every text token is paired with every surface" ✓ | `tokens.test.ts:75` `expect(actual.sort()).toEqual(expected.sort())` | PASS |
-| C4 | pair below floor -> non-zero exit, pair and ratio with two decimals | same run - "fails the build on a pair below its floor" ✓ | `tokens.test.ts:89` `expect(run.status).not.toBe(0)`; `:90` `toMatch(/diario dark muted on paper: \d+\.\d{2}:1 is below 4\.5:1/)`. Precision gap: the injected pair is 1.33:1, so a floor shifted by up to 3.17 survives (fault F1) | PASS |
-| C5 | one accent, no valence or party names | same run - "one accent and no valence names" ✓ | `tokens.test.ts:99` `toHaveLength(1)`; `:100` `expect(n.split("-")).not.toContain(word)`. Precision gap: party list read from the 3-deputy fixture, not the contract; actual names (paper, raised, ink, muted, accent, rule) checked by hand against it | PASS |
-| C6 | at most 10 type sizes | same run - "at most ten type sizes" ✓ | `tokens.test.ts:108` `expect(sizes.length).toBeLessThanOrEqual(10)` (8 per direction) | PASS |
-| C7 | `.ma-num` sets tabular lining; numbers of NDeM, TallyBar, MandateScore table inside it | same run - "numeric class sets tabular lining figures" ✓, "numbers carry the numeric class" ✓ | `tokens.test.ts:116` `toMatch(/font-variant-numeric:\s*tabular-nums lining-nums/)`; `components.test.ts:61` `expect(el.closest(".ma-num"), el.outerHTML).not.toBeNull()`. As written PASS; AC 5 "every style used for a number" is wider - see Coverage | PASS |
-| C8 | fonts local OFL files, no third-party host | same run - "fonts are local OFL files" ✓; playwright "no third-party request" ✓ | `prototype.test.ts:83` `toMatch(/^\.\/files\/[\w.-]+\.woff2$/)`; `:87-88` licence files `toContain("SIL Open Font License")`; `e2e/screens.spec.ts:20` `expect([...hosts]).toEqual([new URL(baseURL!).host])` | PASS |
-| C9 | 412 in display el., "de 450" in body el., computed `align-items: baseline`, no % | vitest "NDeM renders n de m" ✓; playwright "n de m shares a baseline" ✓ | `components.test.ts:27` `.toBe("412")`; `:28` `.toBe("de 450")`; `:30` `not.toContain("%")`; `e2e/screens.spec.ts:29` `.toBe("baseline")`. Precision gap: "display" vs "body" style is a class name, no size asserted | PASS |
-| C10 | total 0 -> NO_BASE, no digit | vitest "NDeM with an empty base" ✓ | `components.test.ts:36` `toContain("Sem base de cálculo no período")`; `:38` `not.toMatch(/\d/)` (note index excluded, as Handoff records) | PASS |
-| C11 | NDeM marker -> note with sourceUrl and method anchor | vitest "NDeM carries its source note" ✓ | `components.test.ts:47` `expect(links).toEqual([note.sourceUrl, note.methodUrl])` | PASS |
-| C12 | seven vote cases: shape, position, label; only currentColor | vitest "VoteMark encodes every vote case" ✓ | `components.test.ts:108` class per kind; `:110` `aria-label` per case; `:115` fill/stroke in `["currentColor","none"]`; `:69`, `:74`, `:80-81`, `:90` positions for yes, no, abstention, article-17. **Obstruction position is never asserted** (`:84-87` checks only fill none and a path) - fault F2 moved it above the baseline and the test passed | FAIL |
-| C13 | chronological, each column -> `/votacoes/<id>/`, table date/proposition/vote | vitest "MandateScore is chronological and linked" ✓ | `components.test.ts:127` hrefs `toEqual(expected.map(...))`; `:131-136` rows; `:138` table links | PASS |
-| C14 | photo 3:4, ≤ 354 × 472, no filter/blend/transform, fit ≠ cover, credit | playwright "official photo is untouched" ✓ | `e2e/screens.spec.ts:43-45` box and ratio; `:50-53` `filter "none"`, `blend "normal"`, `transform "none"`, `fit not "cover"`; `:54` `toHaveText("Foto: Câmara dos Deputados")` | PASS |
-| C15 | no photo -> initials "LB" in a frame **of the same size**, no `<img>` | vitest "OfficialPhoto without a photo" ✓ | `components.test.ts:143` `img` null; `:145` `toBe("LB")`; `:146` inside `.ma-photo__mat`. "Same size" has no assertion and no browser proof (level gap) - fault F5 made the frame square and both suites stayed green | FAIL |
-| C16 | 19 cells yes, no, others; counts as text | vitest "TallyBar renders one cell per vote" ✓ | `components.test.ts:152` cells `toEqual([...12 yes, ...5 no, ...2 others])`; `:153` `toEqual(["12","5","2"])` | PASS |
-| C17 | label with 30/09/2026, official and report links | vitest "AiSummaryFrame is labelled" ✓ | `components.test.ts:164` `toBe("Resumo gerado por IA a partir do texto oficial, revisado em 30/09/2026")`; `:166-169` links | PASS |
-| C18 | no `reviewedAt` -> no element | vitest "AiSummaryFrame without review renders nothing" ✓ | `components.test.ts:174` `toBe("")` | PASS |
-| C19 | no forbidden term in dist/prototype or component source | vitest "no forbidden term in rendered output" ✓ | `prototype.test.ts:104` `expect(hits).toEqual([])`; `:106` self-check. Precision gap: rendered pages are scanned as body `textContent` (attributes and `<head>` skipped); verifier scanned raw HTML of `dist/prototype/*/*.html` and `dist/e2e/*/*.html`: 0 hits | PASS |
-| C20 | three screens per direction, naming the chosen deputy and roll call | vitest "writes three screens per direction" ✓ | `prototype.test.ts:47` file list; `:48-49` h1 `toBe(deputy.name)`; `:51-52` roll-call title and anchor | PASS |
-| C21 | schema_version 1 -> non-zero, "schema_version 1" on stderr | vitest "rejects another schema version" ✓ | `prototype.test.ts:62` `not.toBe(0)`; `:63` `toContain("schema_version 1")`; `:64` nothing written | PASS |
-| C22 | no `<script>`, participation count/total in HTML | vitest "screens read without javascript" ✓ | `prototype.test.ts:70` `not.toMatch(/<script/i)`; `:73-74` count and "de total" | PASS |
-| C23 | reduced motion -> 0s on every element of six pages | playwright "reduced motion" ✓ | `e2e/screens.spec.ts:72` `expect(moving, ...).toEqual([])` | PASS |
-| C24 | 360 px: profile and roll-call scrollWidth ≤ 360, both directions, both themes | playwright "no horizontal scroll at 360" ✓ | `e2e/screens.spec.ts:85` `toBeLessThanOrEqual(360)` | PASS |
-| C25 | card 1200 × 630 with the longest name, nothing overflows | playwright "card fits the longest name" ✓ | `e2e/screens.spec.ts:94` name; `:97` `toEqual([1200, 630])`; `:110` `overflowing toEqual([])`. Longest in-exercise name in `data/out/deputies.json` confirmed as this one (35 chars, 643 records) | PASS |
-| C26 | dark -> dark `paper`, light -> light `paper` | playwright "theme follows the system" ✓ | `e2e/screens.spec.ts:128` `expect(body, ...).toBe(probe)` - profile only; see Coverage | PASS |
-| C27 | tokens hold base + chosen; AD-015 in STATE.md | `ls tokens` -> `base.json diario.json plenario.json`; `grep -c '^\| AD-015 \|' ../.specs/STATE.md` -> 0, exit 1 | no evidence - open by design, waits for the maintainer to choose diario or plenario (blocks go-live per checks.md) | FAIL |
-| C28 | README section per component with inputs/empty state/principle; package name, private, exports | vitest "readme documents every component" ✓, "package exports tokens and components" ✓ | `package.test.ts:15` section defined; `:16-18` Inputs / Empty-or-Missing state / Principle; `:24-27` name, private, two exports; `:29` component files equal door 4 | PASS |
+| C1 | four blocks, every token as `--ma-*` | vitest "defines every token in four blocks" ✓ | `design/tests/tokens.test.ts:36`, `:44`, `:47` (carried; `mat` included by the same loop) | PASS |
+| C2 | every declared pair meets its floor | vitest "every declared pair meets its floor" ✓ | `tokens.test.ts:57` `toBeGreaterThanOrEqual(p.min)`; `:58` | PASS |
+| C3 | every text token paired with every surface | vitest ✓ | `tokens.test.ts:75` | PASS |
+| C4 | pair below floor -> non-zero, pair and ratio with two decimals | vitest "fails the build on a pair below its floor" ✓ | `tokens.test.ts:89` `run.status not 0`; `:91` `toContain("diario dark muted on raised: 4.11:1 is below 4.5:1")`; `:92` `not.toContain("muted on paper")`. The boundary is now 0.39 below the floor (F1 killed) | PASS |
+| C5 | one accent, no valence or party names | vitest ✓ | `tokens.test.ts:99` 23 contract parties added; `:100`-`:103` assertions (carried shape) | PASS |
+| C6 | at most 10 type sizes | vitest ✓ | `tokens.test.ts` "at most ten type sizes" `toBeLessThanOrEqual(10)` | PASS |
+| C7 | `.ma-num` tabular; component numbers inside it; round 2: every digit tabular | vitest ✓ ×2; playwright "every digit is tabular" ✓ | `components.test.ts:61` (carried); `e2e/screens.spec.ts:210` `expect(plain, ...).toEqual([])` | PASS |
+| C8 | local OFL fonts, no third-party host | vitest ✓; playwright ✓ | `prototype.test.ts` fonts test (carried); `e2e/screens.spec.ts:20` | PASS |
+| C9 | n de m on one baseline, no % | vitest ✓; playwright ✓ | `components.test.ts:33` `toBe("412 de 450")`; `e2e/screens.spec.ts:35` `expect(n).toBeGreaterThanOrEqual(2 * m)` closes the round-1 display-vs-body precision gap | PASS |
+| C10 | total 0 -> NO_BASE | vitest ✓ | carried | PASS |
+| C11 | NDeM note links; round 2 SourceNote alone | vitest ✓ ×3 | `components.test.ts:155-158` `[["Câmara dos Deputados", note.sourceUrl], ["Como calculamos", note.methodUrl]]`; `:163` `toEqual([note.sourceUrl])`; `:164` | PASS |
+| C12 | seven vote cases: shape, position, label | vitest "VoteMark encodes every vote case" ✓ | obstruction now `components.test.ts:90-91` straddles y 12, `:93-94` hatch inside the square; unknown value `:110` `cy "12"`. F2 killed | PASS |
+| C13 | chronological, linked, table; round 2 no votes | vitest ✓ ×2 | `components.test.ts:169-170` rows and table rows `toHaveLength(0)` | PASS |
+| C14 | official photo untouched | playwright ✓ | carried | PASS |
+| C15 | initials "LB" in a same-size frame, no `<img>` | vitest ✓; playwright "initials frame matches the photo frame" ✓ | `e2e/screens.spec.ts:147` `img` count 0; `:149` `toHaveText("LB")`; `:151-152` mat width and height within 1 px of the photo mat, profile 1280/360 and card, both directions. F5 killed | PASS |
+| C16 | 19 cells; round 2 zero counts | vitest ✓ ×2 | `components.test.ts:183` cells 0; `:184` `["0","0","0"]` | PASS |
+| C17 | AI frame label and links | vitest ✓ | carried | PASS |
+| C18 | no review -> nothing | vitest ✓ | carried | PASS |
+| C19 | no forbidden term | vitest ✓ | carried; but see Coverage, assemblies | PASS |
+| C20 | three screens per direction | vitest ✓ | carried | PASS |
+| C21 | schema_version 1 rejected | vitest ✓ | carried | PASS |
+| C22 | no script, count in HTML | vitest ✓ | carried (NDeM now inserts a literal space between spans; assertion unchanged and green) | PASS |
+| C23 | reduced motion 0s | playwright ✓ | carried | PASS |
+| C24 | no scroll at 360 | playwright ✓ | carried | PASS |
+| C25 | card 1200 × 630, longest name | playwright ✓ | carried | PASS |
+| C26 | theme on each of the three screens | playwright "theme follows the system" ✓ | `e2e/screens.spec.ts:133` `expect(body, \`${d} ${s} ${theme}\`).toBe(probe)` inside the screens loop | PASS |
+| C27 | tokens hold base + chosen; AD-015 recorded | `ls tokens` -> `base.json diario.json plenario.json`; no `\| AD-015 \|` row | no evidence - open by design, waits for the maintainer to choose diario or plenario | FAIL |
+| C28 | README and package exports | vitest ✓ ×2 | carried | PASS |
+| C29 | deputy 103: lede and card figures 1, 3 read NO_BASE, figure 2 "0 de 1", no "0 de 0" | vitest "empty bases never read 0 de 0" ✓ | `prototype.test.ts:85-86`, `:90-93`. F6 killed | PASS |
+| C30 | groups Sim, Não, Abstenção, Obstrução, Art. 17, Registro sem voto, other; counts; pt-BR order; row labels | vitest "roll call groups deputies by vote" ✓ | `prototype.test.ts:124-131` full `toEqual` over 7 groups, "Davi Rocha" before "Érico Alves" | PASS |
+| C31 | roll call without votes | vitest ✓ | `prototype.test.ts:145` message; `:146` `.ma-group` length 0 | PASS |
+| C32 | profile arrangement at 1280 and 360 | playwright "profile arrangement" ✓ | `e2e/screens.spec.ts:166` photo right edge ≤ name x; `:168` tops sorted; `:173` photo above name at 360 | PASS |
+| C33 | mat light in dark | vitest ✓; playwright ✓ | `tokens.test.ts:143-144`; `e2e/screens.spec.ts:190` `expect(mat, ...).toBe(probe)` on profile and card | PASS |
+| C34 | accents ≥ 0.1 OKLab from gov.br blues | vitest ✓ | `tokens.test.ts:134` `toBeGreaterThanOrEqual(0.1)`. Precision nit: `:120` uses `0.808885698` where Ottosson's matrix reads `0.8086757660`; verifier's recompute with the published value gives minimum 0.128, same verdict | PASS |
+| C35 | every digit tabular on six pages | playwright ✓ | `e2e/screens.spec.ts:209` non-empty set; `:210` `toEqual([])`. F7 killed | PASS |
+| C36 | lede and result markers -> notes with sourceUrl | vitest ✓ | `prototype.test.ts:155` `toBe(DEPUTY.sourceUrl)`; `:159` note inside `.ma-result`; `:160` `toBe(ROLL_CALL.sourceUrl)` | PASS |
+| C37 | month ticks at x 0.5, 4.5 / 0.5 | vitest ✓ | `components.test.ts:178` `toEqual([[0.5, 4.5], [0.5]])` | PASS |
+| C38 | one card template; no %, other name, AI frame | vitest ✓ | `prototype.test.ts:176` `toBe(shape(hb))`; `:179-181`. Precision: `Card.vue:25` adds `ma-card__name--long` above 40 characters, so the shared sequence holds only for names up to 40 (the longest real name has 35) | PASS |
 
 ## Coverage
 
+verified at d9d3b90 for every row the fix touched; token blocks, contrast pairs, components door 4, 360 px, reduced motion and schema_version carried from 83f5eb6 (their proofs re-ran green)
+
 | Set (size) | Recomputed from | Member -> proof | Unproven |
 | --- | --- | --- | --- |
-| token blocks (4) | `dist/tokens.css` markers | diario light/dark, plenario light/dark -> C1 | - |
-| declared contrast pairs (24) | `pairs()` over the token files, ratios recomputed by verifier | 24 text pairs -> C2; no graphic or focus tokens exist (focus uses `accent`, role text, 4.5) | - |
-| vote cases, doors 5 and 6 (7 + unknown) | contract data `data/out/roll-calls/*` distinct values: Sim, Não, Artigo 17, Abstenção, Obstrução, "" (all 887 on secret ballots) + non-secret empty from door 6 | kind and label all 8 -> C12; position: yes, no, abstention, article-17 -> C12 | obstruction position, unknown-value position |
-| components, door 4 (7) | plan Landing door 4 | 7 -> C9, C11, C12, C13, C14, C16, C17 | - |
-| component empty states (7) | `design/README.md` (the AC 26 document declares one per component) | NDeM C10 · OfficialPhoto C15 (size unproven) · AiSummaryFrame C18 · VoteMark gap C12 | SourceNote without `methodUrl`, MandateScore with no votes, TallyBar with zero counts, OfficialPhoto frame size |
-| screen empty states (3) | plan Observable rows | none | profile (lede renders "0 de 0", `Profile.vue:33-37`), roll-call with no recorded votes (Observable maps it to AC 8 but the screen has no `NDeM`), card ("0 de 0", `Card.vue:28-31`) |
-| pages at 360 px (8) | 2 screens × 2 directions × 2 themes | all 8 -> C24 (loop at `e2e/screens.spec.ts:78-86`) | - |
-| pages under reduced motion (6) | 3 screens × 2 directions | all 6 -> C23 | - |
-| pages under theme (12) | AC 24 applies to every screen: 3 screens × 2 directions × 2 themes; no row in checks.md | profile × 2 × 2 -> C26 | roll-call × 2 directions × 2 themes, card × 2 directions × 2 themes (8) |
-| numbers with tabular figures (AC 5) | every digit-bearing count on the six pages, measured in Chromium | NDeM, TallyBar, MandateScore table -> C7 | `Card.vue:34` "N votações nominais com registro", `MandateScore.vue:64` "Ver as N votações como tabela" (computed `normal`); lede, stats and group counts carry `.ma-num` but no proof |
-| contract `schema_version` (2) | `contract.mjs:18` | 2 accepted C20 · other rejected C21 | - |
-| Landing doors (6) | plan Landing | 1 C28 · 2 C1 · 3 C14, C23-C26 · 4 C28 · 5 C12 · 6 C12 | door 5 obstruction "on the baseline" (see vote cases) |
+| token blocks (4) | carried from 83f5eb6 | C1 | - |
+| declared contrast pairs (24) | `pairs()` at d9d3b90: `mat` is role `decor`, so the count is unchanged | C2 | - |
+| vote cases, doors 5 and 6 (7 + unknown) | contract values in `data/out/roll-calls/*` | kind, label and position for all 8 -> C12 | - |
+| components, door 4 (7) | carried from 83f5eb6 | C9, C11, C12, C13, C14, C16, C17 | - |
+| component empty states (7) | `design/README.md` | NDeM C10 · SourceNote C11 · VoteMark gap C12 · MandateScore C13 · OfficialPhoto C15 · TallyBar C16 · AiSummaryFrame C18 | - |
+| screen empty states (3) | plan Observable | profile C29 · card C29 · roll-call C31 | - |
+| roll-call group order (7) | AC 28 | C30 | - |
+| page background per theme (12) | 3 screens × 2 directions × 2 themes | C26 | - |
+| digit-bearing elements (6 pages) | Chromium walk over every element | C35 | - |
+| pages at 360 px (8) | carried from 83f5eb6 | C24 | - |
+| pages under reduced motion (6) | carried from 83f5eb6 | C23 | - |
+| contract `schema_version` (2) | carried from 83f5eb6 | C20, C21 | - |
+| screen arrangements (3) | a1 sections 6.1-6.3 | profile C32 | roll-call top region order, card content composition |
+| assemblies that run the proofs (2) | the real tree, and the CI `design` job (`.github/workflows/ci.yml`, `npm ci` in `design/` only) | real tree: 36 + 11 green | CI-equivalent tree: `tests/prototype.test.ts` fails to load. It imports `site/src/lib/forbidden-terms.ts`, whose `site/tsconfig.json` extends `astro/tsconfigs/strict`, and `site/node_modules` is absent there. Reproduced in a fresh worktree with only `design/` installed: `[TSCONFIG_ERROR] Failed to load tsconfig 'astro/tsconfigs/strict'`, 0 tests. With `site/node_modules` linked the file passes 10/10. The proofs of C8, C19-C22, C29-C31, C36 and C38 would be red on the PR |
 
 ## Test policy rows
 
+verified at d9d3b90
+
 | Row | Files it classifies | Required proof | Expectation met |
 | --- | --- | --- | --- |
-| Token build | `scripts/build-tokens.mjs`, `scripts/color.mjs`, `tokens/*.json` | own layer: `tests/tokens.test.ts` | partly - every declared pair yes (C2); one failing case yes, but it sits at 1.33:1 so the floor boundary is untested (F1 survived) -> no |
-| Vote option mapping | `components/vote.js` | own layer: C12 | no - "one asserted case per row": obstruction row asserts no position (F2 survived), unknown-value row asserts no position |
-| Components | `components/*.vue` | one render test per component, each empty state and normal case | no - SourceNote has no own render test and its empty state is untested; MandateScore and TallyBar empty states (declared in README) untested; OfficialPhoto empty state size unproven (F5 survived) |
-| Layout and computed style | `styles/components.css`, `screens/*.vue` | one browser test, every member listed in Coverage | yes for the members checks.md lists (360 px, reduced motion); the theme set it never listed is reported under Coverage |
-| Prototype script | `scripts/prototype.mjs`, `scripts/contract.mjs` | own layer, child process, accepted and rejected version | yes - `prototype.test.ts:22-27` spawns the script; C20 accepted with defaults, C21 rejected |
+| Token build | `scripts/build-tokens.mjs`, `scripts/color.mjs`, `tokens/*.json` | own layer | yes - every pair (C2), and the failing case sits at 4.11:1 against a 4.5 floor (F1 killed) |
+| Vote option mapping | `components/vote.js` | own layer | yes - every row, obstruction and unknown included, asserts kind, label and position (F2 killed) |
+| Components | `components/*.vue` | one render test per component, empty state and normal case | yes - SourceNote has its own two tests; MandateScore, TallyBar empty states tested; OfficialPhoto frame size in the browser (F5 killed) |
+| Layout and computed style | `styles/components.css`, `screens/*.vue` | one browser test per listed member | yes - 360 px, reduced motion, theme (12), photo mat, digits, profile arrangement |
+| Prototype script | `scripts/prototype.mjs`, `scripts/contract.mjs` | own layer, child process | yes locally (`prototype.test.ts:22-27`); the CI gap is recorded under Coverage |
 
-Swept rows resolving to existing, read in code: C3/C4 build exit `scripts/build-tokens.mjs:110-112`; C21 `scripts/contract.mjs:18-19` and `scripts/prototype.mjs:88-90`; C15 initials branch `components/OfficialPhoto.vue:16`; C8 local fonts `scripts/prototype.mjs:24-40`; C27 transition not yet happened. All present.
+Swept rows resolving to existing, re-read at d9d3b90: `scripts/build-tokens.mjs:110-112`, `scripts/contract.mjs:18-19`, `scripts/prototype.mjs:88-90`, `components/OfficialPhoto.vue:16`; C34's constraint exists at `tokens.test.ts:134`. All present.
 
 ## Faults injected
 
-Scratch: `git worktree add --detach <scratchpad>/wt HEAD`, own `npm ci`. Real tree `git status --porcelain` empty before the first worktree and empty after it was removed; the session dropped after F4, the leftover worktree was removed with `git worktree remove --force`, recreated at the same HEAD for F5, then removed; porcelain empty before and after, HEAD 83f5eb6 throughout.
+verified at d9d3b90
+
+Fresh scratch worktree: `git worktree add --detach <scratchpad>/wt2 HEAD`, own `npm ci` in `design/`. `site/node_modules` was symlinked into the scratch only, so `prototype.test.ts` could load (see Coverage). Real tree `git status --porcelain` was empty before. After `git worktree remove --force` it was empty, and the real `site/node_modules` was intact.
 
 | Mutation | Location | Killed |
 | --- | --- | --- |
-| F1 floor check `p.ratio < p.min` -> `p.ratio < p.min - 2` (build accepts text pairs down to 2.5:1) | `design/scripts/build-tokens.mjs:92`; ran "fails the build on a pair below its floor" | no - injected pair is 1.33:1 |
-| F2 obstruction mark moved above the baseline (rect y 9.5 -> 1.5, hatch path shifted) | `design/components/vote.js:39-40`; ran "VoteMark encodes every vote case" | no |
-| F3 MandateScore order reversed (`? -1 : 1` -> `? 1 : -1`) | `design/components/MandateScore.vue:16`; ran "MandateScore is chronological and linked" | yes - hrefs `toEqual` failed |
-| F4 photo `object-fit: contain` -> `cover` | `design/styles/components.css:269`; ran playwright "official photo is untouched" | yes - `Expected: not "cover"` |
-| F5 initials frame `aspect-ratio: 3 / 4` -> `1 / 1` | `design/styles/components.css` `.ma-photo__initials`; ran "OfficialPhoto without a photo" and the full playwright suite | no - 1 passed unit, 7 passed browser |
+| F1 floor check `p.ratio < p.min` -> `p.ratio < p.min - 0.5` | `design/scripts/build-tokens.mjs:92`; "fails the build on a pair below its floor" | yes - `expected +0 not to be +0` |
+| F2 obstruction square and hatch moved above the baseline | `design/components/vote.js:39-40`; "VoteMark encodes every vote case" | yes - `expected 6.5 to be greater than 12` |
+| F5 initials frame `aspect-ratio: 3 / 4` -> `1 / 1` | `design/styles/components.css` `.ma-photo__initials`; playwright "initials frame matches the photo frame" | yes - height difference 51.25 px |
+| F6 card empty-base branch `f.total > 0` -> `f.total >= 0` | `design/screens/Card.vue:29`; "empty bases never read 0 de 0" | yes - `'0 de 0 votações nominais ...' to contain 'Sem base de cálculo no período'` |
+| F7 page-wide `font-variant-numeric` removed | `design/styles/components.css:77`; playwright "every digit is tabular" | yes - 1 failed |
 
 ## Gate
 
-`npm run build` exit 0 · `npx vitest run tests/ --reporter=verbose` - 24 passed, 0 failed · `npx playwright test --reporter=list` - 7 passed, 0 failed · `python3 /home/augusto/.claude/skills/tlc-spec-lean/scripts/validate_verification.py design-system` - exit 1: "verdict is FAIL - route the ranked gaps back as fixes, then re-verify" (1 error, 0 warnings; no row contradicts the verdict)
+`npm run build` exit 0 · `npx vitest run tests/ --reporter=verbose` - 36 passed, 0 failed · `npx playwright test --reporter=list` - 11 passed, 0 failed · `python3 /home/augusto/.claude/skills/tlc-spec-lean/scripts/validate_verification.py design-system` - exit 1: "verdict is FAIL - route the ranked gaps back as fixes, then re-verify" (1 error, 0 warnings; no row contradicts the verdict)
