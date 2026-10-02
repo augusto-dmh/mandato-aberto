@@ -45,6 +45,8 @@ Cada registro traz `IdentificacaoParlamentar` (`CodigoParlamentar`, `NomeParlame
 
 E da suplente que assumiu a cadeira (Ana Paula Lobato, 6358): exercício de `2023-02-02` a `2024-01-31` com causa `RET` ("Retorno do titular") e de `2024-02-21` a `2026-07-30` com `LCS` ("Licença com convocação de suplente (superior a 120 dias)") [V]. `DataFim` é o último dia em exercício (o titular volta no dia seguinte) e um exercício em curso não tem `DataFim` [V, inferido dos pares acima]. **Uma única chamada por legislatura dá os períodos de exercício de todos**, sem o equivalente às 513 chamadas de `/deputados/{id}/historico` da Câmara.
 
+**Causas de fim de exercício** na 57ª legislatura (`exercicio=S`, 126 mandatos) [V]: sem causa (exercício em curso) 82; `RET` Retorno do titular 49; `LCS` Licença com convocação de suplente 27; `AFO` Afastamento do exercício 23; `REN` Renúncia 6; `LP` Licença Particular 4; `FAL` Falecimento 2; `TER` Término do mandato 1; `CAS` Cassação de registro/diploma pela Justiça Eleitoral 1; `LS` Licença saúde 1. O texto de `LCS` muda entre serviços: "(sup 120 dias)" na lista por legislatura e "(superior a 120 dias)" em `/senador/afastados` [V]; a sigla é o que é estável. `Exercicio` veio sempre como lista nesta chamada [V].
+
 **Afastados agora.** `GET /senador/afastados` → `301` para `/dadosabertos/dados/AfastamentoAtual.json` → 200, 56 KB, mesma forma com `Exercicios` e causas [V]. Útil para "em exercício hoje", junto de `GET /senador/lista/atual` (200, 129 KB, 81 em exercício) [V].
 
 **Licenças curtas.** `GET /senador/5672/licencas?dataInicio=20230201` → 200 com `Licenca[]` (`DataInicio`, `DataFim`, `SiglaTipoAfastamento`, ex. `LICENCA_ATIVIDADE_PARLAMENTAR`, "Missão política ou cultural de interesse parlamentar") [V]. Uma chamada por senador; desnecessária para os indicadores, porque o mesmo motivo já vem em cada registro de votação (seção 4).
@@ -94,7 +96,7 @@ Não há `Obstrução` nos votos individuais (o campo `qtdObstrucoes` existe na 
 
 **Duplicatas.** Agrupando por sessão e vetor de votos, 9 grupos de 2023 a 2025 têm dois registros. Em 6 deles o mesmo ato de votação aparece duas vezes: um registro com `sequencialVotacao` preenchido e a matéria do requerimento (`RQS 1039/2023`, `informeLegislativo` sem colegiado) e outro com `sequencialVotacao: null`, mesma sessão, **vetor de votos idêntico** e a matéria principal (`PEC 8/2021`) [V]. Os 6 pares: 6779/6780, 6796/6799, 6834/6835, 6950/6953, 7031/7034, 7045/7046. Os outros 3 grupos, com vetor igual e **ambos** com `sequencialVotacao` (6773/6777 PEC 45/2019; 6781/6782 PEC 8/2021 em dois turnos; 6995/6996 duas mensagens secretas) são votações distintas que coincidem; não são duplicatas. Quatro registros de 2023 têm `sequencialVotacao: null` sem par (6704, 6717, 6761, 6768); três deles correspondem, por data e placar, às votações 4038, 4082 e 4089 da orientação (seção 5), que não aparecem em `/votacao` com o sequencial [V]. Regra que os dados sustentam: **descartar o registro sem sequencial quando há, na mesma sessão, um com sequencial e o mesmo vetor de votos**; manter os demais.
 
-**Fonte para link.** Não há página HTML por votação no padrão do serviço. O link mais estável é a própria consulta: `https://legis.senado.leg.br/dadosabertos/votacao?codigoSessao={codigoSessao}` [D para o filtro; não chamado] ou a página do processo `https://www25.senado.leg.br/web/atividade/materias/-/materia/{codigoMateria}` [NV].
+**Fonte para link.** Não há página HTML por votação isolada. Três links respondem 200 [V]: a consulta da API por sessão `https://legis.senado.leg.br/dadosabertos/votacao?codigoSessao=461394` (JSON, 57 KB, todas as votações da sessão), a página pública da sessão `https://www25.senado.leg.br/web/atividade/sessao-plenaria/-/pauta/461394` (HTML) e a página da matéria `https://www25.senado.leg.br/web/atividade/materias/-/materia/167958` (HTML). A página do senador é `https://www25.senado.leg.br/web/senadores/senador/-/perfil/5672` (200) [V]; a API devolve o mesmo endereço com `http://`.
 
 ## 5. Orientação de bancada e do Governo
 
@@ -123,7 +125,9 @@ Campos [V]: `id`, `codigoMateria`, `identificacao` (`PL 2036/2023`), `tipoDocume
 
 **Primeiro signatário.** A lista não marca a ordem. O detalhe `GET /processo/{id}` traz `autoriaIniciativa[]` com `ordem` e `codigoParlamentar` [V]. Em 6 de 6 processos sorteados (PEC 35/2023, PEC 41/2024, PLP 165/2026, PL 6383/2025, PEC 33/2025, PL 2036/2023) o primeiro nome do texto `autoria` era o autor de `ordem: 1` [V]; a amostra é pequena e o texto não traz código.
 
-Página pública do processo: `https://www25.senado.leg.br/web/atividade/materias/-/materia/{codigoMateria}` [NV: padrão conhecido do portal, não chamado].
+Página pública do processo: `https://www25.senado.leg.br/web/atividade/materias/-/materia/{codigoMateria}` (200 para 167958) [V].
+
+**Autoria que não é do senador.** A consulta por autor também devolve emendas e substitutivos da Câmara a projetos do senador, como processos próprios com sufixo e autoria "Câmara dos Deputados": `PL 2434/2019 (Substitutivo-CD)`, `PL 1770/2024 (Emenda-CD)` (4 de 111 projetos de Paim; 1 de 112 de Alan Rick) [V]. Só contam como autoria do senador os processos cuja `identificacao` é exatamente `<sigla> <número>/<ano>` e cujo texto `autoria` começa por "Senador" ou "Senadora". Dos projetos dos tipos `PL`, `PLP`, `PEC`, `PDL` e `PRS`, 43 de 111 (Paim) e 78 de 112 (Alan Rick) têm mais de um autor, e só esses precisam do detalhe para saber o primeiro signatário [V].
 
 ## 7. Fotos
 
