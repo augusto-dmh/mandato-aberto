@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\ContractImport;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -104,7 +105,7 @@ test('public routes use the cookie-free group', function () {
         $middleware = Route::getRoutes()->getByName($name)->gatherMiddleware();
         expect($middleware)->toContain('public')->not->toContain('web');
     }
-    expect(app(Illuminate\Contracts\Http\Kernel::class)->getMiddlewareGroups()['public'])->toBe([SubstituteBindings::class, HandleInertiaRequests::class]);
+    expect(app(Kernel::class)->getMiddlewareGroups()['public'])->toBe([SubstituteBindings::class, HandleInertiaRequests::class]);
 });
 
 test('keeps the mvp url shapes', function () {

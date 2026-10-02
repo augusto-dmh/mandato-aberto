@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * One successful run of `mandato:import` (AD-005 provenance).

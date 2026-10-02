@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\House;
 use App\Models\Member;
-use App\Models\Membership;
 use App\Models\Vote;
 use Inertia\Inertia;
 use Inertia\Response;

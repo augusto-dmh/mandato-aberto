@@ -3,8 +3,10 @@
 use App\Contract\ContractReaders;
 use App\Contract\V2Reader;
 use App\Import\Importer;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 // Checks C1-C13, C15, C16 of .specs/features/app-skeleton/checks.md.
 
@@ -72,7 +74,7 @@ test('reports and records the import', function () {
     expect($rows)->toHaveCount(1);
     $row = $rows[0];
     expect($row->schema_version)->toBe(2)
-        ->and(Illuminate\Support\Carbon::parse($row->generated_at)->utc()->toIso8601ZuluString())->toBe('2026-09-27T12:00:00Z')
+        ->and(Carbon::parse($row->generated_at)->utc()->toIso8601ZuluString())->toBe('2026-09-27T12:00:00Z')
         ->and($row->meta_sha256)->toBe(hash_file('sha256', fixtureDir().'/meta.json'))
         ->and([$row->members_count, $row->roll_calls_count, $row->votes_count, $row->propositions_count])->toBe([3, 8, 16, 7]);
 });
@@ -289,7 +291,7 @@ test('persists no candidacy field and no cpf', function () {
     runImport(['dir' => fixtureDir()]);
 
     foreach (MANDATE_TABLES as $table) {
-        foreach (Illuminate\Support\Facades\Schema::getColumnListing($table) as $column) {
+        foreach (Schema::getColumnListing($table) as $column) {
             expect($column)->not->toMatch('/cpf|candidacy|office|ballot|situation/i');
         }
     }

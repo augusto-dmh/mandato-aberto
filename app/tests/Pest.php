@@ -1,5 +1,7 @@
 <?php
 
+use Dom\Element;
+use Dom\HTMLDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -92,13 +94,13 @@ function requireSsr(): void
     }
 }
 
-function html(TestResponse $response): Dom\HTMLDocument
+function html(TestResponse $response): HTMLDocument
 {
-    return Dom\HTMLDocument::createFromString((string) $response->getContent(), LIBXML_NOERROR);
+    return HTMLDocument::createFromString((string) $response->getContent(), LIBXML_NOERROR);
 }
 
 /** Text of an element with whitespace collapsed, leaving out footnote markers. */
-function textOf(?Dom\Element $element): string
+function textOf(?Element $element): string
 {
     if ($element === null) {
         return '';
@@ -116,7 +118,7 @@ function textOf(?Dom\Element $element): string
  *
  * @return array<string, list<string>>
  */
-function headTags(Dom\HTMLDocument $doc): array
+function headTags(HTMLDocument $doc): array
 {
     $tags = ['title' => array_map(fn ($t) => (string) $t->textContent, iterator_to_array($doc->querySelectorAll('head title')))];
     foreach (['description', 'twitter:card'] as $name) {
