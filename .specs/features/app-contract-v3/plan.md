@@ -250,25 +250,28 @@ Shared links still get a complete, cookie-free page.
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Verification profile | `ui` | three new screens and a reworded profile, where the risk is copy and arrangement (descriptive bases, no ranking), plus the importer; `ui` enumerates copy per screen, which `standard` does not | n |
-| Fate of the v2 reader | dropped in this feature (door 1); the ETL keeps emitting v2 for `site/` only | nothing reads a v2 import in the app, and keeping it would make every new column nullable and every page branch on a row's origin | n |
-| Senate roll-call path | `/senado/votacoes/{id}/` (door 4) | the house is readable in a shared link, and a future `/votacoes/` list keeps meaning the Câmara's | n |
-| Legislature paths | `/deputados/{id}/legislatura/{n}/`; the bare path shows the latest mandate | each legislature gets a shareable canonical URL, and links shared before 2027-02-01 keep a stable 57th URL | n |
-| Default mandate | the highest legislature number the member holds; the app reads no clock to decide | the ETL lists the 58th only once its start has passed (contract-v3 AC 9), so the 58th appears on 2027-02-01 with no app change | n |
-| Base order and names | `merit` first as `nas votações sobre propostas e emendas`, `all` second as `em todas as votações nominais do plenário`; no "mérito" and no "importantes" in copy | names say what the base contains instead of judging it; merit first matches meus-eleitos' default scope `merit` | n |
-| Eyebrow | `{house name} · {n}ª legislatura · {party} · {uf}` for both houses, replacing the skeleton's `Deputado federal · ...` | the contract carries no gender (etl-senado door 1 never reads it), so a gendered title would be wrong for some members; the legislature has to be visible | n |
-| Senate absence labels | the Senate's own description of each code (door 5), `Licença` for LS, LP and LAP | the official wording, not ours; AD-018 already generalised the sensitive codes | n |
-| Pages for symbolic roll calls | rendered (AC 44) | the Câmara publishes them as roll calls and the contract carries them; a 404 would hide a decision that exists | n |
-| Authorship attachment | the membership of the legislature containing `presentedAt`; otherwise no row (AC 4) | the mandate counts already come from the contract, and authorship rows feed only later pages | n |
-| Migration empties the contract tables | yes (door 3) | they are a derived copy of the contract; no production database exists and nothing references `members` yet | n |
-| Test data | app-owned v3 fixtures `app/tests/fixtures/v3/{camara,senado}/`, each validated by the importer itself, plus one test importing `etl/tests/fixtures/v3/senado/` in place | the Câmara v3 output exists only as Python-built test data; the importer's schema validation stops the app fixtures drifting, and the in-place Senate test proves the ETL's own shape loads | n |
+| Verification profile | `ui` | three new screens and a reworded profile, where the risk is copy and arrangement (descriptive bases, no ranking), plus the importer; `ui` enumerates copy per screen, which `standard` does not | y |
+| Fate of the v2 reader | dropped in this feature (door 1); the ETL keeps emitting v2 for `site/` only | nothing reads a v2 import in the app, and keeping it would make every new column nullable and every page branch on a row's origin | y |
+| Senate roll-call path | `/senado/votacoes/{id}/` (door 4) | the house is readable in a shared link, and a future `/votacoes/` list keeps meaning the Câmara's | y |
+| Legislature paths | `/deputados/{id}/legislatura/{n}/`; the bare path shows the latest mandate | each legislature gets a shareable canonical URL, and links shared before 2027-02-01 keep a stable 57th URL | y |
+| Default mandate | the highest legislature number the member holds; the app reads no clock to decide | the ETL lists the 58th only once its start has passed (contract-v3 AC 9), so the 58th appears on 2027-02-01 with no app change | y |
+| Base order and names | `merit` first as `nas votações sobre propostas e emendas`, `all` second as `em todas as votações nominais do plenário`; no "mérito" and no "importantes" in copy | names say what the base contains instead of judging it; merit first matches meus-eleitos' default scope `merit` | y |
+| Eyebrow | `{house name} · {n}ª legislatura · {party} · {uf}` for both houses, replacing the skeleton's `Deputado federal · ...` | the contract carries no gender (etl-senado door 1 never reads it), so a gendered title would be wrong for some members; the legislature has to be visible | y |
+| Senate absence labels | the Senate's own description of each code (door 5), `Licença` for LS, LP and LAP | the official wording, not ours; AD-018 already generalised the sensitive codes | y |
+| Pages for symbolic roll calls | rendered (AC 44) | the Câmara publishes them as roll calls and the contract carries them; a 404 would hide a decision that exists | y |
+| Authorship attachment | the membership of the legislature containing `presentedAt`; otherwise no row (AC 4) | the mandate counts already come from the contract, and authorship rows feed only later pages | y |
+| Migration empties the contract tables | yes (door 3) | they are a derived copy of the contract; no production database exists and nothing references `members` yet | y |
+| Test data | app-owned v3 fixtures `app/tests/fixtures/v3/{camara,senado}/`, each validated by the importer itself, plus one test importing `etl/tests/fixtures/v3/senado/` in place | the Câmara v3 output exists only as Python-built test data; the importer's schema validation stops the app fixtures drifting, and the in-place Senate test proves the ETL's own shape loads | y |
 
 **Open questions:**
 
 | # | Kind | Question | Until answered |
 | --- | --- | --- | --- |
 | 1 | blocks go-live | Inherited from contract-v3 open question 2: has the maintainer reviewed the pt-BR `description` of each classification rule? The methodology page publishes them verbatim | `/metodologia/` is built and tested, but it goes public only with the app (deploy feature), after that review |
-| 2 | open | The Senate's own label `NCom` "Não Compareceu" appears per person on roll-call pages. It is the official wording, and AGENTS.md forbids only "faltou". Should it be shown verbatim? | door 5 writes `Sem voto: Não compareceu`; changing it is one label in `vote.js` |
+
+Resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`research/decisions-log.md`): (2) the Senate's official label (`NCom` "Não Compareceu" and the other non-vote codes AD-018 does not generalise) appears only on the Senate roll-call page, next to the senator's row, prefixed "Registro do Senado:" in the muted style; profiles, indicators, cards and e-mails say "não registrou voto". Reason: the official wording is a fact the page can carry with its source, but repeated out of context on a person's profile it reads as an accusation (research 06, section 6, on "ausências não justificadas").
+
+**Approval:** approved by the orchestrator under the maintainer's delegation on 2026-10-02, every assumption confirmed. Build starts after app-skeleton and contract-v3 land.
 
 ## Observable
 
