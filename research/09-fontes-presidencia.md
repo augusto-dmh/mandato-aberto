@@ -133,11 +133,23 @@ O voto em sessão conjunta não traz `deputado_id` nem `CodigoParlamentar`. Casa
 - Senado: mesma chave contra `GET /dadosabertos/senador/lista/legislatura/57` (245 senadores), com a UF dos `Mandatos`: 72 de 72. A lista do Senado tem **uma chave ambígua**: "Fernando Carvalho"/SE corresponde aos códigos 5980 e 6384 [V]. O desempate precisa do período em exercício na data da sessão.
 - O AD-003 proíbe CPF; nome + UF é o mesmo tipo de chave que o AD-003 já prevê para cruzar fontes.
 
-O resultado do casamento nos 1.201 dispositivos com código e voto está na seção 4.5.
+O resultado do casamento nos 1.201 dispositivos com código e voto está na seção 4.5: na Câmara, 100%; no Senado, 4 nomes escritos de outro jeito.
 
 ### 4.5 Volume dos votos por dispositivo
 
-Coleta dos 1.201 dispositivos em andamento nesta sessão; os números entram na próxima revisão deste documento.
+Os 1.201 dispositivos com `Codigo` e `PossuiVotos: "Sim"` foram baixados nesta sessão (1.201 de 1.201 → 200) [V]:
+
+| Medida | Valor |
+|---|---|
+| Votos individuais | 518.796 (Câmara 491.240, Senado 27.556) |
+| `TipoVoto` | `Sim` 283.727, `Não` 231.307, `Branco` 2.616, `Abstenção` 1.046, `Art. 17` 100. Nenhum outro valor |
+| Casamento Câmara, (nome, UF) contra os 879 deputados da 57ª | 491.240 de 491.240 com um único id; nenhum ambíguo |
+| Casamento Senado, (nome, UF) contra os 245 senadores da 57ª | 27.301 de 27.556; **255 votos sem par, de 4 nomes** que o voto em sessão conjunta escreve diferente da lista do Senado: `Márcio Bitar`/AC (100; lista: "Marcio Bittar", 285), `Janaina Carla Farias`/CE (63; nome civil; lista: "Janaína Farias", 6351), `Astr. Marcos Pontes`/SP (46; "Astronauta Marcos Pontes", 6009), `Prof. Dorinha Seabra`/TO (46; "Professora Dorinha Seabra", 5386) |
+| Vetores de votos distintos (sessão + conjunto de pares nome/voto) | 344 para 1.201 dispositivos: o mesmo vetor se repete entre dispositivos da mesma sessão |
+| Tamanho bruto | 54,5 MB de JSON |
+| Falhas | 5 respostas com corpo vazio durante a coleta (43550, 44111, 44170, 46083, 46098); todas devolveram 200 com o JSON completo na segunda tentativa |
+
+Consequências: a chave nome + UF basta na Câmara; no Senado precisa de uma tabela explícita de apelidos para os 4 nomes, revisável em PR, em vez de casamento aproximado. O ETL precisa tratar corpo vazio como falha temporária e tentar de novo.
 
 ### 4.6 O que conta como uma decisão
 
@@ -192,7 +204,7 @@ Arquivos `proposicoesAutores-{ano}.csv` × `proposicoes-{ano}.csv`, autor "Poder
 
 ## 8. Confiabilidade
 
-- Nenhuma chamada às APIs da Câmara e do Senado falhou nesta sessão, exceto o Planalto (exit 56) e o documento do Senado atrás de verificação de segurança [V].
+- Nenhuma chamada às APIs da Câmara e do Senado falhou de vez nesta sessão; 5 de 1.201 chamadas de voto por dispositivo vieram com corpo vazio e deram certo na segunda tentativa. Falharam o Planalto (exit 56) e o documento do Senado atrás de verificação de segurança [V].
 - As listas de MP das duas Casas batem em 241 de 241 [V]. O destino tem uma fonte confiável (Congresso) e uma que diverge de si mesma (Câmara, arquivo × API) [V].
 - A lista de vetos é um arquivo estático gerado pelo Senado com data de versão (`10/09/2026 10:20:21`); o resultado por veto é gerado na hora (`Versao: 02/10/2026 20:15:09`) [V]. O ETL deve preferir o resultado por veto ao `EmTramitacao` da lista quando divergirem; nesta sessão não divergiram (111 = 111) [V].
 - O Senado está migrando serviços (`07-fontes-senado.md` seção 9). Os serviços de veto usados aqui não estão marcados como depreciados na OpenAPI de 02/10/2026 [V, `deprecated` ausente em `/plenario/resultado/veto/*` e `/materia/vetos/{ano}`]; `/materia/vetos/{ano}` responde com 301 para um arquivo, o mesmo padrão dos serviços migrados.
