@@ -302,23 +302,23 @@ The forms that send e-mail are bounded per address, per network and in total.
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Following without an account | following IS the account: an address with double opt-in and consent, no profile, no password; the account area is reached only by an e-mailed link | the least data that still lets the person manage, export and delete what is stored | n |
-| Address normalisation | lowercase and trim only; dots and `+tags` kept | rewriting an address the person typed could mail someone else | n |
-| Consent copy's legal reading | art. 11 I for the follow list, art. 7 I for the address, one consent covering both, one purpose; withdrawal deletes immediately (art. 8 §5, art. 15 III, art. 16) | the art. 11 bases other than consent (legal obligation, public policy, research, rights, life, health, fraud) do not fit a voluntary alert | n |
-| Default scope | `merit` (kinds `final` and `amendment`); `all` adds `procedural` and `unclassified` | 570 of 1,123 Câmara nominal plenary roll calls are procedural (contract-v3 Problem); the rule is the published table, so no person picks | n |
-| Secret ballots | included; the member line reads the `vote.js` label `Votação secreta` | the house records that the member took part; the label already exists and says no more | n |
-| Default cadence and send time | daily at 08:00 America/Sao_Paulo; weekly on Mondays at 08:00 | the ETL runs daily (v2 grilling assumption); morning delivery after the night's import | n |
-| Follow cap | 50 per subscriber | a UF bench reaches 70 deputies (SP) plus 3 senators, but following a whole bench is a different product (a UF digest); 50 bounds e-mail size and abuse | n |
-| Unsubscribe page | GET renders a single button and POST acts; the header gives the true one click | link scanners GET every link; a GET that deletes would erase lists silently | n |
-| A roll call swept and re-imported | gets a new `first_import_id` and may be sent again | the sweep only happens on an ETL correction (app-skeleton door 6); a second e-mail about corrected data is acceptable | n |
+| Following without an account | following IS the account: an address with double opt-in and consent, no profile, no password; the account area is reached only by an e-mailed link | the least data that still lets the person manage, export and delete what is stored | y |
+| Address normalisation | lowercase and trim only; dots and `+tags` kept | rewriting an address the person typed could mail someone else | y |
+| Consent copy's legal reading | art. 11 I for the follow list, art. 7 I for the address, one consent covering both, one purpose; withdrawal deletes immediately (art. 8 §5, art. 15 III, art. 16) | the art. 11 bases other than consent (legal obligation, public policy, research, rights, life, health, fraud) do not fit a voluntary alert | y |
+| Default scope | `merit` (kinds `final` and `amendment`); `all` adds `procedural` and `unclassified` | 570 of 1,123 Câmara nominal plenary roll calls are procedural (contract-v3 Problem); the rule is the published table, so no person picks | y |
+| Secret ballots | included; the member line reads the `vote.js` label `Votação secreta` | the house records that the member took part; the label already exists and says no more | y |
+| Default cadence and send time | daily at 08:00 America/Sao_Paulo; weekly on Mondays at 08:00 | the ETL runs daily (v2 grilling assumption); morning delivery after the night's import | y |
+| Follow cap | 50 per subscriber | a UF bench reaches 70 deputies (SP) plus 3 senators, but following a whole bench is a different product (a UF digest); 50 bounds e-mail size and abuse | y |
+| Unsubscribe page | GET renders a single button and POST acts; the header gives the true one click | link scanners GET every link; a GET that deletes would erase lists silently | y |
+| A roll call swept and re-imported | gets a new `first_import_id` and may be sent again | the sweep only happens on an ETL correction (app-skeleton door 6); a second e-mail about corrected data is acceptable | y |
 | E-mail format | HTML with a plain-text alternative carrying the same text and links | readers that block HTML and screen readers get the same content; no image means nothing is lost |  n |
-| Corrections after sending | an e-mail is a snapshot with its collection date; the linked page is always current; no correction e-mail | AD-005 provenance; a correction mail would be a second campaign-like send about a person | n |
-| Rate-limit figures | 10 form posts per IP hash per hour, 3 mails per address per 24 h, 300 mails per hour in total | small enough to stop a script, large enough for a household behind one IP; costed against no provider yet | n |
-| IP in the rate limiter | key is SHA-256 of IP + `APP_KEY`, in the cache only, expiring with the window; never logged | the limiter needs a network identity; the hash keeps the cache free of addresses | n |
-| Retention figures | pending: nothing stored (door 2); login tokens 30 min; digests 30 days; no-follow subscribers 30 days; reconfirmation every 12 months with 30 days to answer; suppression 12 months | short enough to call it minimal (art. 6 III), long enough for the export to show recent sends | n |
-| Campaign periods | alerts keep running during campaigns, with the AC 40 vocabulary rule and the AC 42 election-day blackout; no paid promotion of the sign-up, no imported lists, no referral incentive | a vote is an act of the mandate (Lei 9.504, art. 36-A, IV); research 01 section 2.3 forbids paid boosting and election-day newsletters naming candidates | n |
-| Controller in the consent copy | read from config, so the natural persons today and the association later are a config change | identity is outside the orchestrator's delegation (`research/decisions-log.md`, 2026-10-02) | n |
-| Build order | this feature starts after the app imports contract v3 (Senado members, `ballot`, `kind`, vote `position`) | criteria 29 and 35 read those fields; the skeleton imports v2 only | n |
+| Corrections after sending | an e-mail is a snapshot with its collection date; the linked page is always current; no correction e-mail | AD-005 provenance; a correction mail would be a second campaign-like send about a person | y |
+| Rate-limit figures | 10 form posts per IP hash per hour, 3 mails per address per 24 h, 300 mails per hour in total | small enough to stop a script, large enough for a household behind one IP; costed against no provider yet | y |
+| IP in the rate limiter | key is SHA-256 of IP + `APP_KEY`, in the cache only, expiring with the window; never logged | the limiter needs a network identity; the hash keeps the cache free of addresses | y |
+| Retention figures | pending: nothing stored (door 2); login tokens 30 min; digests 30 days; no-follow subscribers 30 days; reconfirmation every 12 months with 30 days to answer; suppression 12 months | short enough to call it minimal (art. 6 III), long enough for the export to show recent sends | y |
+| Campaign periods | alerts keep running during campaigns, with the AC 40 vocabulary rule and the AC 42 election-day blackout; no paid promotion of the sign-up, no imported lists, no referral incentive | a vote is an act of the mandate (Lei 9.504, art. 36-A, IV); research 01 section 2.3 forbids paid boosting and election-day newsletters naming candidates | y |
+| Controller in the consent copy | read from config, so the natural persons today and the association later are a config change | identity is outside the orchestrator's delegation (`research/decisions-log.md`, 2026-10-02) | y |
+| Build order | this feature starts after the app imports contract v3 (Senado members, `ballot`, `kind`, vote `position`) | criteria 29 and 35 read those fields; the skeleton imports v2 only | y |
 
 **Open questions:**
 
@@ -327,7 +327,10 @@ The forms that send e-mail are bounded per address, per network and in total.
 | 1 | blocks go-live | Which e-mail provider, at what monthly cost, and in which country does it process data? The digest body names the members a person follows, so the provider receives sensitive data; a provider abroad is an international transfer (LGPD art. 33) that needs ANPD standard clauses or the consent copy's specific mention | `meus_eleitos.sending_enabled` stays false (AC 43); `{provedor}` and `{país do provedor}` in AC 49 have no value; no `DeliveryEventSource` exists (AC 54) |
 | 2 | blocks go-live | Who is named as controller in the consent copy: the identified natural persons or the association? | AC 49 and AC 37 cannot render a real controller; identity is outside the delegation |
 | 3 | blocks go-live | Legal review of the consent copy and of `research/07`. Does processing sensitive data take the project out of the small-agent regime of Resolução CD/ANPD 2/2022 (I could not confirm the text of its high-risk criteria), which would require a named encarregado and a RIPD? | the feature is built and tested, but the account area is not linked from public pages (the profile link of AC 15 stays behind `meus_eleitos.sending_enabled`) |
-| 4 | blocks | Which feature adds the contract-v3 reader to the app, and does it store `ballot`, `kind` and vote `position`? | AC 29 (scope filter, ballot filter) and AC 35 (secret label, Senate members) cannot be satisfied on the v2 import |
+
+Resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`research/decisions-log.md`): (4) a separate feature, `app-contract-v3`, adds the app's v3 reader and Senate member pages after app-skeleton and contract-v3 land; this feature builds on it. Questions 1 to 3 (e-mail provider and its cost, controller identity, legal review) are outside the delegation and stay with the maintainer; sending stays off until they are answered.
+
+**Approval:** approved by the orchestrator under the maintainer's delegation on 2026-10-02, every assumption confirmed. Build starts after `app-contract-v3`.
 
 ## Observable
 
