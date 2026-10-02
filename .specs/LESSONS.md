@@ -140,6 +140,36 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: AC 1 / C1 (specs/criteria)
 - last seen: 2026-09-27T23:23:29Z
 
+### L-022 - Every screen that prints n de m outside the NDeM component needs its own empty-base check; a component-level empty state does not cover screens that format the numbers themselves.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `design/screens` · harmful: 0
+- features: design-system
+- evidence: verification round 1: design/screens/Card.vue, design/screens/Profile.vue (design/screens)
+- last seen: 2026-10-02T22:16:41Z
+
+### L-023 - Prove timezone conversion with a fixture timestamp where the UTC and Brasília days differ (00:00-03:00 UTC); a midday fixture lets a UTC-day bug pass every suite.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `design/tests` · harmful: 0
+- features: design-system
+- evidence: verification round 4 H6: design/screens/Card.vue:40 (design/tests)
+- last seen: 2026-10-02T22:16:41Z
+
+### L-024 - Assert textContent of adjacent inline spans in Vue templates; whitespace condensing glues numbers to their base ('0de 1votos') for screen readers and copy while the layout still looks spaced.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `design/components` · harmful: 0
+- features: design-system
+- evidence: round 2 fix: design/screens/Card.vue, design/components/NDeM.vue (design/components)
+- last seen: 2026-10-02T22:16:41Z
+
+### L-025 - A test that imports a module from another package needs that package installed in its CI job; reproduce the job in a fresh worktree before claiming CI green.
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `ci` · harmful: 0
+- features: design-system
+- evidence: verification round 2: .github/workflows/ci.yml design job (ci)
+- last seen: 2026-10-02T22:16:42Z
+
+### L-026 - Assert that each scripted edit to a spec artifact matched its anchor; a silent no-op replace dropped an assumption row the handoff claimed was recorded.
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `.specs` · harmful: 0
+- features: design-system
+- evidence: verification round 2: plan.md Assumptions (.specs)
+- last seen: 2026-10-02T22:16:42Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

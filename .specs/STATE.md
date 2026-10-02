@@ -22,12 +22,12 @@
 
 ## Handoff
 
-**Feature**: github-pages (live) and launch (round 2 open on one check)
-**Where**: site live at `https://augusto-dmh.github.io/mandato-aberto/` since 2026-09-28 00:19 UTC (`publish.yml` run 36359746320, after a rerun: the first attempt could not connect to the Câmara for 27 min); verification round 2 against the live site: github-pages PASS (C16 to C19), launch FAIL on C68 only (`/quem-somos/` renders `[a definir]`), C65 and C66 n/a
+**Feature**: design-system (v2), done: verification round 5 PASS at `f385c4a`, profile `ui`, 43 of 43 checks
+**Where**: `design/` holds the token source (`tokens/base.json`, `tokens/plenario.json`, AD-015), the vote encoding, seven Vue components and a prototype of profile, roll call and card rendered from the ETL contract; CI job `design` runs 41 unit and 13 browser tests. The comparison page was republished under the current claude.ai account at `https://claude.ai/artifact/Pyk7h7DBPBjYe7WXYu93X2` (it still shows both directions); the first link stopped working when the session moved accounts
 **In progress**: none
-**Next step**: the maintainer decides the names on Quem somos (github-pages plan question 1): with names, fill `MAINTAINERS` in `site/src/lib/site.ts` and the controllers in `research/03-teste-de-balanceamento-lgpd.md`, merge, and re-run launch C68 against the live site (scoped round 3); without names, record the anonymous launch as a decision that contradicts the legal research. Then: the TSE file for the badge (`--export-candidacy`, commit the JSON, delete the CSV); the browser check of `/votacoes/2645346-18/` and `/votacoes/2576389-4/`; watch the daily run at 09:00 UTC
-**Blockers**: launch C68 until the names are decided; nothing else
-**Open for the maintainer**: (1) names and city on Quem somos; (2) the TSE file; (3) browser check of the two secret ballots; (4) the daily run depends on the Câmara being reachable from GitHub runners - one 27-minute connection failure happened on 2026-09-27 23:45 UTC and a rerun succeeded; if it repeats, consider a retry with longer delays or a later cron
-**Merged**: PR #6 (`site`), PR #7 (`secret-ballots`), PR #8 (`launch`) and PR #9 (`github-pages`) into `main` on 2026-09-27
+**Next step**: open the PRs when the maintainer asks: `docs/go-live-round-2`, then `docs/v2-direction` and `feat/design-system`, which are stacked on it. Then plan the next v2 feature, the Laravel skeleton in `app/`, which depends on `design/` through `"mandato-design": "file:../design"` (design-system plan, door 1)
+**Blockers**: none for the v2. The live MVP still waits on the names for Quem somos (launch C68)
+**Open for the maintainer**: (1) names and city on Quem somos (launch C68); (2) the TSE file for the candidacy badge; (3) the association before AI goes live (v2 grilling decision 7); (4) the research decisions in `research/06-pesquisa-design-e-concorrentes.md` section 8, starting with the "Gastos" block
+**Merged**: PR #6 to #9 into `main` on 2026-09-27; nothing since
 **Uncommitted**: none
-**Branch**: `docs/go-live-round-2` from `main` at `1bede0c`
+**Branch**: `feat/design-system` on top of `docs/v2-direction`, which sits on `docs/go-live-round-2` (`fcbc869`, not merged)
