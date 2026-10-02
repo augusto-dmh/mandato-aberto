@@ -20,3 +20,6 @@ CLAUDE.local.md
 
 # Site photo cache (official photos, never committed)
 site/.cache/
+
+# Per-agent git worktrees (Houston panes)
+.worktrees/
