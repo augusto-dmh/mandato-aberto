@@ -1,0 +1,204 @@
+[
+  {
+    "house": "senado",
+    "id": 9101,
+    "mandates": [
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-02-01T00:00:00",
+            "start": "2023-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 57,
+        "participation": {
+          "all": {
+            "count": 1,
+            "total": 1
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "PT",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "SP"
+      },
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-03-01T09:00:00",
+            "start": "2027-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 58,
+        "participation": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "PT",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "SP"
+      }
+    ],
+    "name": "Senadora Exemplo Um",
+    "party": "PT",
+    "photoUrl": "https://www.senado.leg.br/senadores/img/fotos-oficiais/senador9101.jpg",
+    "sourceUrl": "https://www25.senado.leg.br/web/senadores/senador/-/perfil/9101",
+    "uf": "SP"
+  },
+  {
+    "house": "senado",
+    "id": 9102,
+    "mandates": [
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-02-01T00:00:00",
+            "start": "2023-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 57,
+        "participation": {
+          "all": {
+            "count": 1,
+            "total": 1
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "PL",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "SP"
+      },
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-03-01T09:00:00",
+            "start": "2027-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 58,
+        "participation": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "PL",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "SP"
+      }
+    ],
+    "name": "Senador Exemplo Dois",
+    "party": "PL",
+    "photoUrl": "https://www.senado.leg.br/senadores/img/fotos-oficiais/senador9102.jpg",
+    "sourceUrl": "https://www25.senado.leg.br/web/senadores/senador/-/perfil/9102",
+    "uf": "SP"
+  }
+]
