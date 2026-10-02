@@ -1,0 +1,29 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=24"
+    },
+    "scripts": {
+        "build": "vite build && vite build --ssr",
+        "dev": "vite"
+    },
+    "dependencies": {
+        "@fontsource-variable/archivo": "^5.3.0",
+        "@fontsource-variable/source-serif-4": "^5.3.0",
+        "@inertiajs/vue3": "^3.8",
+        "mandato-design": "file:../design",
+        "vue": "^3.5.43"
+    },
+    "devDependencies": {
+        "@inertiajs/vite": "^3.8",
+        "@vitejs/plugin-vue": "^6.0.9",
+        "concurrently": "^10.0.3",
+        "laravel-vite-plugin": "^3.2",
+        "vite": "^8.3"
+    },
+    "optionalDependencies": {
+        "@laravel/multiplex": "^0.4.1"
+    }
+}

@@ -7,7 +7,8 @@
   },
   "exports": {
     "./tokens.css": "./dist/tokens.css",
-    "./components/*": "./components/*"
+    "./components/*": "./components/*",
+    "./styles/*": "./styles/*"
   },
   "scripts": {
     "build": "node scripts/build-tokens.mjs",
