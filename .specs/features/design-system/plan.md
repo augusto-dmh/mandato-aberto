@@ -163,18 +163,11 @@ Added on 2026-10-02 from `verification.md` round 1; each line closes a gap the b
 | Sample AI summary in the prototype | one hand-written sample marked "exemplo" in the prototype only | no AI runs before the association exists; the frame still needs content to be judged | y |
 | Verification profile | `ui` for this feature, declared in `AGENTS.md` next to the `etl-camara` line | the whole deliverable is screens; `light` would not open the binding sources nor enumerate copy per screen | y |
 | Package manager and runtime | npm and Node 24, as `site/` | one toolchain in the repository | y |
-| Which pages AC 22 covers | `profile` and `roll-call`; the card is a fixed 1200 × 630 image template governed by AC 23 | a share image is not read in a 360 px browser | n |
-| Score layout | one row per year, oldest first, with month ticks (AC 35), instead of the single full-width strip of research a1 section 6.1 | at 1120 px a single strip gives 979 votes about 1 px each, too thin to read or to target; per-year rows keep about 4 px per vote | n |
-| Out of scope rows added in round 2 (download, citar, per-party orientation, unit bar, card short address) | excluded from this feature as listed | written by the builder after the plan review; each needs the app, a domain or data the contract lacks | n |
+| Which pages AC 22 covers | `profile` and `roll-call`; the card is a fixed 1200 × 630 image template governed by AC 23 | a share image is not read in a 360 px browser | y |
+| Score layout | one row per year, oldest first, with month ticks (AC 35), instead of the single full-width strip of research a1 section 6.1 | at 1120 px a single strip gives 979 votes about 1 px each, too thin to read or to target; per-year rows keep about 4 px per vote | y |
+| Out of scope rows added in round 2 (download, citar, per-party orientation, unit bar, card short address) | excluded from this feature as listed | written by the builder after the plan review; each needs the app, a domain or data the contract lacks | y |
 
-**Open questions:**
-
-| # | Kind | Question | Until answered |
-| --- | --- | --- | --- |
-| 1 | blocks go-live | Which direction, Diário or Plenário, becomes the system? | AC 25 (C27) cannot be satisfied; both token files stay |
-| 2 | open | Confirm the per-year score rows instead of the single strip of research a1 section 6.1 | the score is built as rows with month ticks |
-| 3 | open | Confirm the Out of scope rows added in round 2 | those capabilities stay out of this feature |
-| 4 | open | Confirm that AC 22 leaves the card out of the 360 px check | the card is checked only at 1200 × 630 |
+**Open questions:** none - the maintainer answered all four on 2026-10-02: Plenário (AD-015), per-year score rows, the round-2 Out of scope rows, and the card outside the 360 px check.
 
 ## Observable
 

@@ -105,7 +105,7 @@ Proof: `npx playwright test e2e/screens.spec.ts -g "theme follows the system"`
 ### S4 - one direction chosen and recorded · 3 files · ~10 KB · ~3k
 
 **C27** - After the maintainer's choice, `design/tokens/` holds exactly `base.json` and the chosen direction's file, and `.specs/STATE.md` holds a row starting `| AD-015 |` (AC 25) - blocks go-live: waits for the maintainer
-Proof: `test "$(ls tokens | sort | tr '\n' ' ')" = "base.json $CHOSEN.json " && grep -q '^| AD-015 |' ../.specs/STATE.md`
+Proof: `test "$(ls tokens | sort | tr '\n' ' ')" = "base.json plenario.json " && grep -q '^| AD-015 |' ../.specs/STATE.md` (the maintainer chose `plenario` on 2026-10-02)
 
 **C28** - `design/README.md` has one section per component of door 4, each naming its inputs, its empty or missing-data state and the research principle it implements; `package.json` is named `mandato-design`, is private and exports `./tokens.css` and `./components/*` (AC 26, doors 1 and 4)
 Proof: `npx vitest run tests/package.test.ts -t "readme documents every component"`
@@ -218,3 +218,4 @@ Evidence: the repo's closest analogue is `site/tests/`, where `format.test.ts` p
 - **Boundary (round 3):** C39-C43 added and green; the CI job installs the site's dependencies because the prototype tests read the site's forbidden-terms module; C27 still open
 - **Settled mid-build (round 3):** the roll call now shows the AI frame before the result, as research a1 section 6.2 orders it. A deputy with no exercise period shows no start date; it used to fall back to the collection date. `SourceNote` gained an optional `collectedAt`. The assumptions table had lost two rows to a failed edit and carried a malformed cell; both are repaired, and the score-layout deviation is now recorded there
 - **After round 3:** collection dates now render as the calendar day in Brasília, like the MVP's `brasiliaLocal`; the plan's assumptions table lost its malformed cells and lists the four open questions for the maintainer
+- **C27 (2026-10-02):** the maintainer chose Plenário. `tokens/diario.json`, Newsreader and Inter are removed; the tests that enumerated both directions or the four font packages now enumerate the one direction and its two packages, so no assertion lost a member that still exists

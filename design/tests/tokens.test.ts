@@ -31,8 +31,9 @@ function block(marker: string): string {
 describe("tokens", () => {
   it("defines every token in four blocks", () => {
     expect(errors).toEqual([]);
-    expect(Object.keys(directions).sort()).toEqual(["diario", "plenario"]);
-    const root = css.slice(css.indexOf(":root"), css.indexOf("/* diario light */"));
+    // AD-015: Plenário is the only direction
+    expect(Object.keys(directions).sort()).toEqual(["plenario"]);
+    const root = css.slice(css.indexOf(":root"), css.indexOf("/* plenario light */"));
     for (const path of leaves(base as Tree)) expect(root).toContain(`--ma-${path.join("-")}:`);
     for (const [name, direction] of Object.entries(directions)) {
       const all = leaves(direction as Tree);
@@ -79,16 +80,16 @@ describe("tokens", () => {
   it("fails the build on a pair below its floor", () => {
     const dir = mkdtempSync(join(tmpdir(), "mandato-tokens-"));
     cpSync(TOKENS, dir, { recursive: true });
-    const file = join(dir, "diario.json");
+    const file = join(dir, "plenario.json");
     const tokens = JSON.parse(readFileSync(file, "utf8"));
-    // just under the floor on one surface only: 4.11:1 against raised, 4.58:1 against paper
-    tokens.color.muted.$extensions.mandato.dark = "oklch(0.6 0.01 70)";
+    // just under the floor on one surface only: 4.40:1 against raised, 4.84:1 against paper
+    tokens.color.muted.$extensions.mandato.dark = "oklch(0.59 0 0)";
     writeFileSync(file, JSON.stringify(tokens));
     const run = spawnSync("node", [join(ROOT, "scripts", "build-tokens.mjs"), dir, join(dir, "out.css")], {
       encoding: "utf8",
     });
     expect(run.status).not.toBe(0);
-    expect(run.stderr).toContain("diario dark muted on raised: 4.11:1 is below 4.5:1");
+    expect(run.stderr).toContain("plenario dark muted on raised: 4.40:1 is below 4.5:1");
     expect(run.stderr).not.toContain("muted on paper");
   });
 

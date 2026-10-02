@@ -7,7 +7,7 @@ import Profile from "../screens/Profile.vue";
 import RollCall from "../screens/RollCall.vue";
 
 const SCREENS = { profile: Profile, "roll-call": RollCall, card: Card };
-const TITLES = { diario: "Diário", plenario: "Plenário" };
+const TITLES = { plenario: "Plenário" };
 
 export async function renderPage(screen, direction, props) {
   const body = await renderToString(

@@ -10,7 +10,7 @@ import { FORBIDDEN_TERMS, termPattern } from "../../site/src/lib/forbidden-terms
 const ROOT = resolve(__dirname, "..");
 const FIXTURE = resolve(ROOT, "..", "site", "tests", "fixtures", "out");
 const OUT = mkdtempSync(join(tmpdir(), "mandato-prototype-"));
-const DIRECTIONS = ["diario", "plenario"];
+const DIRECTIONS = ["plenario"]; // AD-015
 const SCREENS = ["profile", "roll-call", "card"];
 const deputies = JSON.parse(readFileSync(join(FIXTURE, "deputies.json"), "utf8"));
 const rollCalls = JSON.parse(readFileSync(join(FIXTURE, "roll-calls.json"), "utf8"));
@@ -116,7 +116,7 @@ describe("prototype", () => {
     writeFileSync(join(data, "roll-calls", "100-1.json"), JSON.stringify(rc));
     const run = prototype(data, out, ["--roll-call", "100-1", "--deputy", "101"]);
     expect(run.status, run.stderr).toBe(0);
-    const doc = parse(readFileSync(join(out, "diario", "roll-call.html"), "utf8"));
+    const doc = parse(readFileSync(join(out, "plenario", "roll-call.html"), "utf8"));
     const groups = [...doc.querySelectorAll(".ma-group")].map((g) => ({
       head: g.querySelector(".ma-group__head")!.textContent!.replace(/\s+/g, " ").trim(),
       rows: [...g.querySelectorAll("li")].map((li) => li.querySelector("svg")!.getAttribute("aria-label")),
@@ -220,13 +220,13 @@ describe("prototype", () => {
   it("fonts are local OFL files", () => {
     const css = readFileSync(join(OUT, "fonts", "fonts.css"), "utf8");
     const urls = [...css.matchAll(/url\(([^)]+)\)/g)].map((m) => m[1]);
-    expect(urls.length).toBeGreaterThanOrEqual(8);
+    expect(urls.length).toBeGreaterThanOrEqual(4);
     for (const url of urls) {
       expect(url).toMatch(/^\.\/files\/[\w.-]+\.woff2$/);
       expect(existsSync(join(OUT, "fonts", url))).toBe(true);
     }
     const licences = readdirSync(join(OUT, "fonts")).filter((f) => f.startsWith("LICENSE-"));
-    expect(licences.sort()).toEqual(["LICENSE-archivo.txt", "LICENSE-inter.txt", "LICENSE-newsreader.txt", "LICENSE-source-serif-4.txt"]);
+    expect(licences.sort()).toEqual(["LICENSE-archivo.txt", "LICENSE-source-serif-4.txt"]);
     for (const l of licences) expect(readFileSync(join(OUT, "fonts", l), "utf8")).toContain("SIL Open Font License");
     for (const d of DIRECTIONS) {
       const links = [...parse(page(d, "profile")).querySelectorAll("link[rel=stylesheet]")].map((l) => l.getAttribute("href"));

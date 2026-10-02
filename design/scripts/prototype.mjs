@@ -14,8 +14,6 @@ const DIRECTIONS = readdirSync(join(ROOT, "tokens"))
   .map((f) => f.replace(/\.json$/, ""))
   .sort();
 const FONTS = [
-  ["inter", "opsz.css"],
-  ["newsreader", "opsz.css"],
   ["archivo", "wdth.css"],
   ["source-serif-4", "opsz.css"],
 ];

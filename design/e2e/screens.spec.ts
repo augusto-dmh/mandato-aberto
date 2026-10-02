@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { LONGEST, ROOT } from "./setup";
 
-const DIRECTIONS = ["diario", "plenario"] as const;
+const DIRECTIONS = ["plenario"] as const; // AD-015
 const SCREENS = ["profile", "roll-call", "card"] as const;
 const THEMES = ["light", "dark"] as const;
 

@@ -14,6 +14,9 @@ Pages set `data-direction="<direction>"` on `<html>` and load `tokens.css`, `sty
 
 ## Tokens
 
+The system has one direction, **Plenário** (`.specs/STATE.md` AD-015): Archivo with its width axis for display and interface, Source Serif 4 for long text, achromatic neutrals and one violet accent. Never set a deputy's name in capitals, and never use an extreme weight in a sentence about a person.
+
+
 `tokens/base.json` holds spacing, layout, motion and the photo's native size; each other file is one direction (W3C Design Tokens format). A colour token carries its dark value and its role in `$extensions.mandato`: `surface`, `text` (4.5:1 against every surface), `graphic` (3:1) or `decor` (no information, no floor). CSS names are `--ma-<group>-<name>`. Never add a colour named after a vote option, a party or a valence.
 
 ## Vote encoding
