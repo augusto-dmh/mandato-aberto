@@ -249,19 +249,19 @@ The maintainer decides the spend, and every cent of it is accounted for.
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Model | `claude-opus-5-5` at effort `medium`, Batch API: about US$58 per full pass of the 57th Câmara, about US$88 with a 1.5x regeneration margin. `claude-sonnet-5-5` would cost about US$29 | the claude-api skill's default model (cached table 2026-09-25: Opus 5.5 US$4/US$20 per MTok, Sonnet 5.5 US$2/US$10, batch 50% off every token). The arithmetic is in Sources | n |
-| Token arithmetic | 3 characters per token. Proposition: 8k in / 2k out. Roll call: 3k in / 1.5k out. Neutrality: 2.5k in / 0.8k out. Volumes 411 + 1,125 | measured sizes (median about 10k characters, maximum 126k). Thinking cannot be disabled on Opus 5.5, so the output figures include it. `count_tokens` needs a key, so it is not run here | n |
-| Refusal fallback | no server-side `fallbacks`; a refusal is `failed` (AC 8) and visible in the queue | the label and art. 9-I need the exact model that wrote the text, and the fallback beta's behaviour inside batches is not documented in the skill | n |
-| Where generation runs | Laravel queued commands on the VPS, scheduled every 10 minutes; ETL only extracts text | Flow, four reasons | n |
-| Review UI | this feature adds Filament (door 11), as in the grilling's unconfirmed default | grilling 05, "Painel de correções"; the approved app-skeleton plan adds no auth and no admin | n |
-| Reviewers | e-mails listed in `AI_SUMMARIES_REVIEWERS`; initially the maintainers, as identified natural persons | a reviewer is accountable for the text, and a list in `.env` is auditable without a roles system | n |
-| Where the proposition summary shows before a proposition page exists | nowhere public; it is generated and reviewed, and the roll-call page shows only the roll-call summary | app-skeleton ships only `/deputados/{id}/` and `/votacoes/{id}/`; reusing the proposition text on the roll-call page would mix two reviewed objects in one frame | n |
-| Prompt version change | does not stale an approved summary; new generations use the new version; a re-run is a manual command | an approved text stays valid for its unchanged source | n |
-| Edited summary and the critic | an edit reruns the deterministic checks only, not the neutrality batch | the editor is a human, and a rerun would spend money on every keystroke saved | n |
-| Evidence strings on the public page | not shown (AC 37) | they can carry names from official text (for example the rapporteur in roll-call fields); the reviewer sees them | n |
-| Forbidden-terms single source | `policy/forbidden-terms.json`, imported by `site/src/lib/forbidden-terms.ts` and read by the app | one list, two readers, no drift | n |
-| Verification profile | `standard`, above the AGENTS.md `light` default | the checks are the part a parliamentarian can contest, as with etl-camara | n |
-| Initial evaluative lexicon | seed list in `evaluative-terms/v1`: polêmico, controverso, histórico, absurdo, infelizmente, felizmente, benéfico, prejudicial, retrocesso, avanço, ataque, golpe, privilégio, mamata, jabuti, pauta-bomba, deveria, recomendamos, vale a pena, vote | the minimum Plenarwatch-style list; extended in the diff with tests | n |
+| Model | `claude-opus-5-5` at effort `medium`, Batch API: about US$58 per full pass of the 57th Câmara, about US$88 with a 1.5x regeneration margin. `claude-sonnet-5-5` would cost about US$29 | the claude-api skill's default model (cached table 2026-09-25: Opus 5.5 US$4/US$20 per MTok, Sonnet 5.5 US$2/US$10, batch 50% off every token). The arithmetic is in Sources | y |
+| Token arithmetic | 3 characters per token. Proposition: 8k in / 2k out. Roll call: 3k in / 1.5k out. Neutrality: 2.5k in / 0.8k out. Volumes 411 + 1,125 | measured sizes (median about 10k characters, maximum 126k). Thinking cannot be disabled on Opus 5.5, so the output figures include it. `count_tokens` needs a key, so it is not run here | y |
+| Refusal fallback | no server-side `fallbacks`; a refusal is `failed` (AC 8) and visible in the queue | the label and art. 9-I need the exact model that wrote the text, and the fallback beta's behaviour inside batches is not documented in the skill | y |
+| Where generation runs | Laravel queued commands on the VPS, scheduled every 10 minutes; ETL only extracts text | Flow, four reasons | y |
+| Review UI | this feature adds Filament (door 11), as in the grilling's unconfirmed default | grilling 05, "Painel de correções"; the approved app-skeleton plan adds no auth and no admin | y |
+| Reviewers | e-mails listed in `AI_SUMMARIES_REVIEWERS`; initially the maintainers, as identified natural persons | a reviewer is accountable for the text, and a list in `.env` is auditable without a roles system | y |
+| Where the proposition summary shows before a proposition page exists | nowhere public; it is generated and reviewed, and the roll-call page shows only the roll-call summary | app-skeleton ships only `/deputados/{id}/` and `/votacoes/{id}/`; reusing the proposition text on the roll-call page would mix two reviewed objects in one frame | y |
+| Prompt version change | does not stale an approved summary; new generations use the new version; a re-run is a manual command | an approved text stays valid for its unchanged source | y |
+| Edited summary and the critic | an edit reruns the deterministic checks only, not the neutrality batch | the editor is a human, and a rerun would spend money on every keystroke saved | y |
+| Evidence strings on the public page | not shown (AC 37) | they can carry names from official text (for example the rapporteur in roll-call fields); the reviewer sees them | y |
+| Forbidden-terms single source | reuse app-skeleton's `app/config/forbidden-terms.php` and its parity test against `site/src/lib/forbidden-terms.ts`; no new `policy/` file and no change to `site/` | changed by the orchestrator at approval: app-skeleton already builds that copy and its parity test, and the live MVP stays untouched | y |
+| Verification profile | `standard`, above the AGENTS.md `light` default | the checks are the part a parliamentarian can contest, as with etl-camara | y |
+| Initial evaluative lexicon | seed list in `evaluative-terms/v1`: polêmico, controverso, histórico, absurdo, infelizmente, felizmente, benéfico, prejudicial, retrocesso, avanço, ataque, golpe, privilégio, mamata, jabuti, pauta-bomba, deveria, recomendamos, vale a pena, vote | the minimum Plenarwatch-style list; extended in the diff with tests | y |
 
 **Open questions:**
 
@@ -270,9 +270,10 @@ The maintainer decides the spend, and every cent of it is accounted for.
 | 1 | blocks go-live | Has the non-profit association been constituted, and which AD records it? | `ai_summaries.publish` stays false and `publish_decision` empty (AC 33, 34) |
 | 2 | blocks go-live | Will the maintainer issue an Anthropic key and set a monthly cap? | `generate` prints "geração desligada" (AC 38); the dry run still estimates |
 | 3 | blocks go-live | Which named persons review? | no `review-ai-summaries` holder, so nothing can be approved |
-| 4 | open | May drafts be generated and reviewed before the association exists, with nothing published? | recommended yes, so the review backlog is ready by 2027-02-01; meanwhile generation waits for the cap the maintainer sets (question 2) |
-| 5 | open | Does door 6 land in contract-v3's schema version, or as an additive bump after it? | the door's literal shape is fixed here; whichever feature ships second rebases onto the other |
-| 6 | open | Who runs the scheduler and queue worker in production? The approved app-skeleton plan leaves the scheduler to the deploy feature | `generate` and `collect` run by hand (`php artisan ai-summaries:generate`); S1 to S5 are built and tested on top of app-skeleton's `mandato:import`, `RollCall` and `/votacoes/{id}/` |
+
+Resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`research/decisions-log.md`): (4) yes, drafts may be generated and reviewed before the association exists, with nothing published, but only once question 2 is answered, since generation spends money; (5) door 6 lands inside contract-v3's schema version 3, not as a later bump; (6) `generate` and `collect` run by hand until the deploy feature schedules them. Questions 1 to 3 are outside the delegation (legal identity, spending, named persons) and stay with the maintainer.
+
+**Approval:** approved by the orchestrator under the maintainer's delegation on 2026-10-02. Build starts after app-skeleton lands (models, `mandato:import`) and after contract-v3 carries door 6.
 
 ## Observable
 
