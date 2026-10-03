@@ -159,11 +159,13 @@ def validate_dir(out: Path) -> str | None:
     for required in required:
         if not (out / required).exists():
             return f"{required}: missing"
-    return _dangling_member(out) if version == 3 else None
+    if version == 2 or scope == PRESIDENCY:
+        return None
+    return _dangling_member(out)
 
 
 def _dangling_member(out: Path) -> str | None:
-    """The first vote or authorship of a v3 directory whose member id is not in its own `members.json`."""
+    """The first vote or authorship of a v3 or v4 house directory whose member id is not in its own `members.json`."""
     known = {m["id"] for m in json.loads((out / "members.json").read_text())}
     for path in sorted((out / "roll-calls").glob("*.json")):
         doc = json.loads(path.read_text())

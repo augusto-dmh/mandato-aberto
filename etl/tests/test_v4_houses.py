@@ -1,6 +1,8 @@
 """etl-presidencia S1 - v4 beside v3: house directories at schema_version 4, flags, validation (C1-C5, C7)."""
 
 import json
+import shutil
+from pathlib import Path
 
 import presidencia_data as pd
 import pytest
@@ -9,6 +11,24 @@ from conftest import build, legislature
 from v3data import build3, indicators, out3, serve, snapshot
 
 from mandato_etl import cli, schema
+
+
+SENADO_V3 = Path(__file__).parent / "fixtures" / "v3" / "senado"
+DANGLING = [
+    ("roll-calls/6923.json", lambda d: d["votes"].append({**d["votes"][0], "memberId": 9999}), ("6923", "9999")),
+    ("propositions.json", lambda d: d[0]["authors"].append({"memberId": 9998, "firstSigner": True}),
+     ("160000", "9998")),
+]
+
+
+def _v4_house_with_dangling(path, relative, mutate):
+    """The v3 Senate fixture relabelled as a v4 house directory (door 1: same shape), with one dangling `memberId`."""
+    shutil.copytree(SENADO_V3, path)
+    meta = path / "meta.json"
+    meta.write_text(json.dumps({**json.loads(meta.read_text()), "schema_version": 4}))
+    doc = json.loads((path / relative).read_text())
+    mutate(doc)
+    (path / relative).write_text(json.dumps(doc))
 
 
 def _v4_camara(fake, out):
@@ -111,6 +131,38 @@ def test_validate_picks_the_v4_set_by_scope(sen, con, capsys):
     v3meta = out3(con) / "meta.json"
     v3meta.write_text(json.dumps({**json.loads(v3meta.read_text()), "schema_version": 2}))
     assert cli.main(["validate", str(out3(con))]) == 1
+
+
+def test_v4_fixture_house_validates(tmp_path):
+    path = tmp_path / "senado"
+    shutil.copytree(SENADO_V3, path)
+    meta = path / "meta.json"
+    meta.write_text(json.dumps({**json.loads(meta.read_text()), "schema_version": 4}))
+    assert cli.main(["validate", str(path)]) == 0
+
+
+@pytest.mark.parametrize("relative, mutate, named", DANGLING, ids=["vote", "author"])
+def test_validate_refuses_a_dangling_member_id_in_a_v4_house(tmp_path, capsys, relative, mutate, named):
+    path = tmp_path / "senado"
+    _v4_house_with_dangling(path, relative, mutate)
+    assert cli.main(["validate", str(path)]) == 1
+    err = capsys.readouterr().err
+    assert relative in err and all(token in err for token in named) and "members.json" in err
+
+
+@pytest.mark.parametrize("relative, mutate, named", DANGLING, ids=["vote", "author"])
+def test_presidency_build_refuses_a_dangling_house_directory(con, capsys, relative, mutate, named):
+    data = pd.recorded()
+    pd.serve(con, data)
+    senado = pd.v4(con) / "senado"
+    shutil.rmtree(senado)
+    _v4_house_with_dangling(senado, relative, mutate)
+    capsys.readouterr()
+    assert pd.build4(con, data, "--quiet") == 1
+    err = capsys.readouterr().err
+    assert f"senado/{relative}" in err and all(token in err for token in named)
+    assert pd.congress_requests(con) == []
+    assert not pd.out(con).exists()
 
 
 HOUSE_KINDS = ("meta", "members", "roll-calls", "roll-call", "propositions", "classification-rules", "full-text")
