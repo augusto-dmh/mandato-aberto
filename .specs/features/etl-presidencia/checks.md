@@ -3,7 +3,7 @@
 Profile: standard
 Plan: `.specs/features/etl-presidencia/plan.md`
 
-60 checks in 7 slices · 7 one-way doors in the plan, none added while deriving checks · 0 open questions that block the build (open question 3 blocks go-live only)
+63 checks in 7 slices · 7 one-way doors in the plan, none added while deriving checks · 0 open questions that block the build (open question 3 blocks go-live only)
 
 All proofs run from the repository root. `P` below abbreviates `uv run --directory etl pytest`.
 The feature base is `91323e8` (the plan's approval). Congress fixtures are served by the existing
@@ -270,6 +270,16 @@ Proof: `grep -q 'A feature `etl-presidencia` roda em `standard`' AGENTS.md`
 **C60** - With the presidency `--out` default, the build reads the house directories from `<data>/v4/camara` and `<data>/v4/senado` (siblings of the output), so an explicit `--out <dir>/presidencia` reads `<dir>/camara` and `<dir>/senado` (Flow hop 2, startup config)
 Proof: `P tests/test_presidencia_sources.py::test_house_directories_are_siblings_of_out`
 
+**C61** - Each of five conditions makes the presidency build exit `1` with a message naming the record: a veto result with no device (`vet-91-2025`), a device with votes whose status is neither `kept` nor `overridden` (`90.25.003`, `Prejudicado`), a `TipoVotacao` that is not `Cédula` or `Painel` (`90.25.002`, `Eletrônica`), an alias pointing at a member absent from the house's `members.json` (`Prof. Dorinha Seabra/TO`, member `5386`), and an act issued outside every known term (`mpv-1290-2025` on `2027-02-10`, at the 2026 clock) (verification round 1, gap 2; AD-017, AD-020)
+Proof: `P tests/test_presidencia_guards.py::test_guards_stop_the_build_naming_the_record`
+
+**C62** - `mandato-etl validate` on a v4 house directory exits `1` when a roll call's vote or a proposition's author names a `memberId` absent from that directory's `members.json`, printing the file, the roll call or proposition id and the `memberId`, the same as on v3 (C45 of etl-senado); the v3 Senate fixture relabelled `schema_version` 4, with its voters in `members.json`, exits `0` (verification round 1, gap 3; door 1: house shapes identical to v3)
+Proof: `P tests/test_v4_houses.py::test_validate_refuses_a_dangling_member_id_in_a_v4_house`
+Proof: `P tests/test_v4_houses.py::test_v4_fixture_house_validates`
+
+**C63** - The presidency build reads only validated house directories: a `senado` directory beside `--out` with a dangling vote or author `memberId` makes the build exit `1` naming `senado/<file>` and the `memberId`, before any Congress request, and writes no output (verification round 1, gap 3; AC 38)
+Proof: `P tests/test_v4_houses.py::test_presidency_build_refuses_a_dangling_house_directory`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -298,15 +308,17 @@ Proof: `P tests/test_presidencia_sources.py::test_house_directories_are_siblings
 | A house with no published votes on a device (1) | `Senado: null` C38 (zero tallies), C45 (outside that house's base: senators' totals 3, not 4) | - |
 | Resolution outcomes (6) | exact normalised match C35, C39 · alias C41 · zero matches C39, C42 · several matches C39, C42 · homonyms split by exercise C40 · date on a period edge C39 | - |
 | Alias entries (4) | `Márcio Bitar`/AC C41 (unit and R build) · `Janaina Carla Farias`/CE C41 (unit) · `Astr. Marcos Pontes`/SP C41 (unit) · `Prof. Dorinha Seabra`/TO C41 (unit and H build) | - |
+| Builder-added stop-the-build guards (5) | veto with no device C61 · voted device not kept or overridden C61 · `TipoVotacao` outside the map C61 · alias to an absent member C61 · act outside every known term C61 | - |
+| Dangling `memberId` cases in a house directory (4) | vote in a v3 directory C45 of etl-senado · author in a v3 directory C45 of etl-senado · vote in a v4 house directory C62, C63 · author in a v4 house directory C62, C63 | - |
 | Unmatched case (1) | unmatched name fails closed C42 | - |
 | Member count indicators (4) | `participation` C44, C45, C46 · `keepAll` C44, C45 · `overrideAll` C44, C45 · `mixed` C44, C45, C46 | - |
 | Member count base cases (4) | in exercise whole time C45 · out of office on one session date C44 (7104), C45 (7004) · in exercise, never voted C44 (7105), C45 (7006) · no session in exercise (no entry) C45 (7007) | - |
 | Coverage counters (6) | `terms` C47 · `unmatchedVotes` C42, C51 · `excludedBeforeFirstTerm` C16, C51 · `missingCamaraStage` C29, C51 · `approvedWithoutLaw` C25, C51 · `jointRollCallsWithoutVotes` C37, C51 | - |
 | Stage cases (4) | MP both houses C29 · MP without Câmara C29 · bill both houses C30 · bill without Senate (empty list, non-`SF` record) C30 | - |
 | Act `sourceUrl` forms (3) | MP C52 · veto C52 · bill C52 | - |
-| `build --contract 4` exit codes (3) | `0` C1, C8 · `1` C4, C13, C21, C36, C42, C43, C50 · `2` C11 | - |
+| `build --contract 4` exit codes (3) | `0` C1, C8 · `1` C4, C13, C21, C36, C42, C43, C50, C61, C63 · `2` C11 | - |
 | `build` flags (6) | `--contract` C1, C4 · `--house` C1, C2, C4 · `--out` C3, C60 · `--years` C8 · `--refresh` C9 · `--quiet` C55 | - |
-| stderr messages (7) | usage C4 · unknown status value C21 · unknown vote C36 · unmatched vote C42 · failing URL C11 · house directory C13 · schema C50 · summary C55 | - |
+| stderr messages (10) | usage C4 · unknown status value C21 · unknown vote C36 · unmatched vote C42 · failing URL C11 · house directory C13 · schema C50 · summary C55 · stop-the-build guards C61 · dangling member id C62, C63 | - |
 | Congress source files (6) | `processo-mpv-<year>` C8 · `vetos-<year>` C8, C11 · `veto-<codigo>` C8 · `dispositivo-<codigo>` C8, C9 · `processo-<sigla>-<numero>-<ano>` C8 · manifest C8, C51 | - |
 | Retryable responses (4) | `503` C11 · `429` C11 · empty `200` C11 · non-JSON `200` C11 | - |
 | v4 schema files (13) | `meta` C7, C1 · `members` C7, C1 · `roll-calls` C7, C1 · `roll-call` C7, C1 · `propositions` C7, C1 · `classification-rules` C7, C1 · `full-text` C7, C1 · `presidency-meta` C49, C51 · `acts` C49 · `status-rules` C49, C27 · `joint-roll-calls` C49, C50 · `joint-roll-call` C49, C35 · `member-veto-counts` C49, C44 | - |
@@ -315,7 +327,7 @@ Proof: `P tests/test_presidencia_sources.py::test_house_directories_are_siblings
 | entities in `Relations` (10) | Term C17 · Act C14, C43 · Stage C29, C30 · HouseRollCall C32 · VetoDevice C20, C28 · JointRollCall C33 · JointVote C35, C43 · HouseMember C39, C13 · MemberVetoCount C44 · StatusRule C27 | - |
 | startup config: Congress base and output root (2 assemblies) | CLI defaults `data/v4/presidencia`, siblings for the houses C3, C60 · test harness `--out` and `API_URL` C8 | - |
 
-- Claims naming an exit code or stderr content: C4, C5, C11, C13, C21, C36, C42, C43, C50, C55 - each proof runs `cli.main` with argv and asserts the return code and captured stderr
+- Claims naming an exit code or stderr content: C4, C5, C11, C13, C21, C36, C42, C43, C50, C55, C61, C62, C63 - each proof runs `cli.main` with argv and asserts the return code and captured stderr
 - Claims about HTTP behaviour: C8-C12 - each proof crosses a real socket to the local fake server
 - Decision tables proven at their own layer and at the CLI: MP rules (C18 unit, C20 build), device rules (C19 unit, C20 build), veto status (C22 unit and build), bill precedence (C23 unit, C24 build), positions (C34 unit, C35, C38 build), resolution (C39 unit, C40-C42 build), counts (C44-C46 build over hand numbers)
 
@@ -335,7 +347,7 @@ Evidence:
 - `presidency.py` (new): MP rules (9 rows + 4 rejects), device rules (4 + 3), veto status (2), bill precedence (6 rules, 4 precedence pairs), term by date (3 outcomes), stages (4 cases), position map (6 + 3), resolution (6 outcomes), counts (4 indicators, 4 base cases) -> decides, reached across the CLI: C18, C19, C22, C23, C34, C39 at its layer; C20, C24, C35-C46 through builds
 - `sources/congresso.py` (new): cache reuse for decided devices, retry on four response kinds, throttle -> decides, across HTTP: C8-C12
 - `cli.py`: `--contract`/`--house` guard, default outputs, house-directory gate -> decides, at the CLI: C3, C4, C13, C60
-- `schema.py` and `publish.py`: schema-set choice by version and scope (5 cases) -> decides, at the CLI: C5, C49, C50
+- `schema.py` and `publish.py`: schema-set choice by version and scope (5 cases), referential check of house directories -> decides, at the CLI: C5, C49, C50, C62, C63
 - `contract_v3.py` house build with the version as a parameter: forwards one value -> instrumentation, proven by its consumer (C1, C2)
 - closest analogue: etl-senado `tests/test_senado_indicators.py` with `senado_data.py`, numbers on paper next to the rows
 
@@ -344,8 +356,8 @@ resolution rule would be proven only by the paths the recorded build happens to 
 
 ## Swept
 
-- validation: C12-C13 (house directories), C18, C19, C21 (status values), C34, C36 (vote values), C43 (duplicates), C49, C50 (schemas)
-- failure modes: C11, C13, C21, C36, C42, C43, C50 (each exits non-zero and keeps the previous output)
+- validation: C12-C13, C62, C63 (house directories), C61 (guards), C18, C19, C21 (status values), C34, C36 (vote values), C43 (duplicates), C49, C50 (schemas)
+- failure modes: C11, C13, C21, C36, C42, C43, C50, C61, C63 (each exits non-zero and keeps the previous output)
 - idempotency: C9, C54 (cache reuse, byte-identical rebuild), C56 (committed fixture equals a fresh build)
 - authorization: n/a - no route, no user; the ETL reads public data and writes local files
 - concurrency: C10 - one Congress request at a time, at least 0.45 s apart; the manifest is written from one thread
@@ -370,3 +382,6 @@ for the publication feature.
 - **Settled mid-build:** nobody answered questions (orchestrator delegation); decided by the builder and reviewable in the diff: (1) three earlier tests encoded "4 is unknown": contract-v3's `test_bad_contract_or_house_exits_1[contract-4]` and `test_validate_picks_schema_by_version` now use 5 with the same assertions, and `test_contract_layout` lists `v4` beside `v3` in `etl/schema/` (door 1 makes 4 a known version; same precedent as etl-senado's settled item 1). (2) Landing row 8 records the shape details C20, C28, C47 and C60 pinned before the code (device `officialStatus`/`statusRule`, veto `officialStatus: null`, `statusAt` per kind, the 21-rule table, the coverage row nesting, house directories beside `--out`); it was appended after the code, not before. (3) Fail-closed guards beyond the ACs: a veto result with no device, a voted device whose status is not kept/overridden, a `TipoVotacao` other than Cédula/Painel, an alias pointing at a member absent from `members.json`, and a repeated act id or (house, name, UF) in one device each exit 1 naming the record. (4) The PEC 9103/2026 hand row is presented `2026-01-05`, so C54's listed order holds; no check was edited. (5) `jointRollCallId` in `acts.json` has no pattern (the joint roll call `id` keeps it), so C50's bad identifier fails in `joint-roll-calls.json`. (6) Finding for the orchestrator, built as the plan says: door 6 counts a veto in a senator's `participation.total` when only the Câmara's cédula was published (`Senado: null` in 43265 and 43828, so the Senate tally was not taken); C45 shows senators at 3/4 where the fourth veto had no Senate tally. A base of joint roll calls where the member's house has votes would avoid reading as an absence. (7) The 2027-01-05 inauguration date is pinned by constants only; no reachable official source returned the new art. 82 text on 2026-10-02 (go-live item, `## Out of scope`)
 - **Abandoned:** recording every voted device (1,201) or full vote vectors for the build fixtures (55 KB each; the trimmed vectors keep the named members and one untrimmed device proves the counting); extracting total-veto votes from PDFs (resolved open question 1). One test run before a fixture fix sent the Senate v3 build of `test_validate_picks_the_v4_set_by_scope` to the live Senate API for about 20 s (the `sen` fixture was missing); fixed in the same commit, no live call remains in the suite
 - **Amended after the build (orchestrator, 2026-10-02):** door 6 and AC 32 limit a member's veto base to joint roll calls holding at least one vote of the member's house, closing settled item (6). C45 was edited first (senators 4 -> 3 in `participation.total`; Câmara rows unchanged) with a new unit proof `test_base_needs_the_members_house_votes`; both failed on `abc5d71` (senators read `x/4`, and a senator in exercise only on a Câmara-only date got a `0/1` row) and pass after the `member_counts` change; the committed R fixture was regenerated (only `member-veto-counts.json`, only those seven totals). `uv run --directory etl pytest`: 449 passed; `mandato-etl validate tests/fixtures/v4/presidencia` exits 0. **Deferred:** a per-house count of vetoes with no published votes for that house is not in `meta.coverage`: the `presidency-meta` coverage object has `additionalProperties: false` and AC 39 lists its keys, so adding one is a schema change that waits for the next `schema_version` bump
+- **Verification round 1, gap 2 (guards):** C61 and `tests/test_presidencia_guards.py`, one parametrized case per guard, each built from the hand dataset H with one edit. Each guard was removed in turn (`if False and ...` at `presidency.py` `raw_devices`, `status not in RESULTS`, `method is None`, `alias not in self.ids`, `found is None`) and only its own case failed (1 failed, 4 passed each time); restored with `git checkout -- etl/src/mandato_etl/presidency.py`
+- **Verification round 1, gap 3 (member ids in v4 houses):** `validate_dir` now runs `_dangling_member` on every v3 and v4 house directory (`schema.py`, skipped for v2 and the presidency scope); the presidency build already validates its house directories through `validate_dir`, so it gets the check without a change of its own. C62 and C63 added; with `schema.py` restored to the previous commit the 4 new dangling cases failed (vote and author, validate and presidency build) and with the change they pass. The v3 Senate fixture relabelled 4 stands in for a v4 house directory (door 1)
+- **Verification round 1, gap 4 (C52 precision):** `test_source_urls` compares every veto `sourceUrl` with `…/veto/detalhe/<Codigo>` from the served list entry (7 vetoes across R and H) and asserts the set of vetoes seen; with `VETO_URL` fed `"0"` for the vetoes numbered 3 the new test fails and the previous one still passed
