@@ -3,7 +3,7 @@
 Profile: ui
 Plan: `.specs/features/share-cards/plan.md`
 
-72 checks in 7 slices plus shape checks · 9 one-way doors · 1 open, blocking go-live only (plan open question 1: the public domain; cards print the host of `APP_URL`)
+74 checks in 7 slices plus shape checks and the batch 2 amendments · 9 one-way doors · 1 open, blocking go-live only (plan open question 1: the public domain; cards print the host of `APP_URL`)
 
 All commands run from `app/` with this worktree's Sail project up: `app/.env` sets `COMPOSE_PROJECT_NAME=mandato-cards`, `APP_PORT=8094`, `FORWARD_DB_PORT=54344`, `VITE_PORT=5184`; `sail` is `./vendor/bin/sail`, and the image is built from the published `app/docker/8.5/Dockerfile` (door 3). Pest proofs are `sail artisan test --filter="<test name>"`; page proofs read server-rendered HTML, so they need `sail npm run build` and the SSR server (`sail exec -d -u sail laravel.test php artisan inertia:start-ssr`), and fail, never skip, when SSR is down (skeleton `requireSsr`). Card proofs that say "real renderer" run `node bootstrap/cards/render.mjs` with the Chromium headless shell; the others replace it with `Process::fake`. Design proofs are `sail npm --prefix /var/www/design test -- <file> -t "<name>"` and `sail npm --prefix /var/www/design run test:e2e -- -g "<name>"`. `{APP_URL}` is `https://mandato.test` (`phpunit.xml`), so `{host}` is `mandato.test`.
 
@@ -250,6 +250,15 @@ Proof: `sail artisan test --filter="photo and card tables keep their constraints
 **C72** - `PublicUrl` builds `/fotos/{sha}.jpg`, `/deputados/101/legislatura/58/card/{code}/1200x630.png`, `/senadores/9101/legislatura/57/card/{code}/1080x1350.png`, `/votacoes/100-1/card/{code}/1080x1920.png`, `/senado/votacoes/7001/card/{code}/1200x630.png`, `/verificar/` and `/verificar/{code}/` (door 6)
 Proof: `sail artisan test --filter="public url builds photo card and verification paths"`
 
+### Amendments at batch 2 (plan, S4 and S5 amendments, decided by the orchestrator under the maintainer's delegation)
+
+**C73** - A count of exactly one is singular: `MemberCard` with one vote writes `1 votação nominal do plenário com registro, da mais antiga à mais recente` in each of the 3 formats; `MandateScore`'s table toggle reads `Ver a 1 votação como tabela` for one vote and `Ver as 4 votações como tabela` for four (plan S4 amendment)
+Proof: `sail npm --prefix /var/www/design test -- tests/cards.test.ts -t "member card names one vote in the singular"`
+Proof: `sail npm --prefix /var/www/design test -- tests/components.test.ts -t "MandateScore names one vote in the singular"`
+
+**C74** - After member 101 is deleted from the contract tables, `/verificar/{code}/` of a served 101/58 card answers 200 with `Este registro não está nos dados atuais.`, the payload's values as text (name, `PT · SP`, `1 de 1`) and no `<img>` in the body, while the same page before the deletion holds the card `<img>` (plan S5 amendment)
+Proof: `sail artisan test --filter="a verification page whose subject is gone shows no card image"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -278,7 +287,8 @@ Proof: `sail artisan test --filter="public url builds photo card and verificatio
 | render outcomes (5) | rendered C22 · exit non-zero C28 · timeout C29 · slots full C30 · same card in flight C31 | - |
 | render CLI exit codes (3) | 0 C35 · 1 C35 · 2 C35 | - |
 | verification code cases (8) | canonical stored C52 · lowercase C54 · spaces C54 · no hyphen C54 · `O` for `0` C54 · `I`/`L` for `1` C54 · well-formed unknown C55 · malformed C55 | - |
-| verification states of AC 37 (3) | equal C53 · changed C53 · subject gone C53 | - |
+| verification states of AC 37 (3) | equal C53 · changed C53 · subject gone C53, C74 | - |
+| singular counts of the S4 amendment (2) | card score label C73 · score table toggle C73 | - |
 | code inputs of AC 35 (8) | C50, table-driven over all 8 | - |
 | member card regions (9) | eyebrow C37 · photo C37 · name C37, C43 · party and UF C37 · basis line C37 · figures C37 · score label C37 · score C37 · footer C37, C41 | - |
 | member card empty states (2) | total 0 C39 · no vote C39 | - |

@@ -160,6 +160,8 @@ The `mandato:photos` and `mandato:cards:prune` commands (door 9) are called by t
 
 **Independent test:** in `design/`, render each component in each format in Playwright with the longest-name fixture and a Senate photo; in the app, render a deputy, a senator and a symbolic roll call and read the text of each card's HTML.
 
+**Amendment, decided at batch 2 by the orchestrator under the maintainer's delegation (2026-10-03), additive:** a count of exactly one is written in the singular. AC 25's label reads `1 votação nominal do plenário com registro, da mais antiga à mais recente` for a member with one vote, and the plural for any other count. The same rule reaches `design/components/MandateScore.vue`'s table toggle, which reads `Ver a 1 votação como tabela` for one vote and `Ver as {n} votações como tabela` otherwise. `template` stays `1` although door 5 raises it when a content rule changes: no card has been served publicly yet (the app is not deployed), so no printed code carries the plural, and C23 holds `template` 1.
+
 ### S5: Every code opens the data the card showed (P1)
 
 **Acceptance Criteria**
@@ -173,6 +175,8 @@ The `mandato:photos` and `mandato:cards:prune` commands (door 9) are called by t
 40. WHEN `GET /verificar/` is requested THEN the system SHALL respond 200 with a `GET` form whose field `codigo` is labelled `Código de verificação`, and WHEN `codigo` is given THEN it SHALL respond 302 to `/verificar/{normalised codigo}/`
 
 **Independent test:** serve a card, change one vote and re-import, open the old code (mismatch sentence) and the new one (match sentence), then a lowercase variant (301) and a random code (404).
+
+**Amendment, decided at batch 2 by the orchestrator under the maintainer's delegation (2026-10-03), additive:** in AC 37's third state (`Este registro não está nos dados atuais.`) the page renders the payload's values as text and no card image, so no `<img>` points at a card URL that AC 20 answers with 404 once the subject is gone. AC 20 and AC 45 are unchanged.
 
 ### S6: Links preview the card and readers can download it (P1)
 
