@@ -182,6 +182,50 @@ describe("share cards", () => {
     }
   });
 
+  it("no card carries a style of its own per subject", async () => {
+    // inline styles per card, once width declarations (the score's, the strip's) are removed: nothing left may differ
+    const styles = (doc: Document) => {
+      const out = new Map<string, Set<string>>();
+      let widths = 0;
+      for (const el of doc.querySelectorAll(".ma-card, .ma-card *")) {
+        const style = el.getAttribute("style");
+        if (style === null) continue;
+        const all = style.split(";").map((d) => d.trim()).filter((d) => d !== "");
+        const rest = all.filter((d) => !/^(?:min-|max-)?width\s*:/.test(d));
+        if (rest.length < all.length) widths++;
+        const key = `${el.tagName}.${el.getAttribute("class") ?? ""}`;
+        out.set(key, (out.get(key) ?? new Set()).add(rest.join(";")));
+      }
+      return { out, widths };
+    };
+    const members = (format: string) => [
+      { ...ANA, format },
+      {
+        ...ANA,
+        format,
+        house: "senado",
+        member: { name: "Luiz Philippe de Orleans e Bragança", party: "PL", uf: "SP" },
+        votes: Array.from({ length: 30 }, (_, i) => ({ rollCallId: `9-${i}`, date: `2025-01-${String(1 + i).padStart(2, "0")}`, position: ["yes", "no", "presiding"][i % 3], official: null })),
+        photo: null,
+      },
+    ];
+    const rollCalls = (format: string) => [
+      { ...ROLL_CALL, format },
+      { ...ROLL_CALL, format, house: "senado", heading: "PEC 7/2021", approved: false, tallies: { yes: 12, no: 61, others: 2 } },
+    ];
+    for (const format of FORMATS) {
+      for (const [component, pair] of [[MemberCard, members(format)], [RollCallCard, rollCalls(format)]] as const) {
+        const [a, b] = await Promise.all(pair.map((props) => render(component, props)));
+        const [sa, sb] = [styles(a.doc), styles(b.doc)];
+        for (const [key] of [...sa.out, ...sb.out]) {
+          const both = new Set([...(sa.out.get(key) ?? []), ...(sb.out.get(key) ?? [])]);
+          expect(both.size, `${format} ${component === MemberCard ? "member" : "roll call"} ${key} ${[...both]}`).toBe(1);
+        }
+        if (component === MemberCard) expect(sa.widths, `${format}: the width declarations this test strips exist`).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it("the prototype card is the member card", async () => {
     const { doc } = await render(Card, {
       generatedAt: "2026-09-27T12:00:00Z",

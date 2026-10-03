@@ -32,6 +32,24 @@ for (const format of Object.keys(FORMATS)) {
     kind: "member",
     props: { ...common, format, member: { name: LONGEST, party: "PL", uf: "SP" }, figures: LABELS.map((label) => ({ count: 0, total: 0, label })), photo: null },
   };
+  // a second member and a second roll call, with nothing in common but the template (C83)
+  pages[`other-${format}`] = {
+    kind: "member",
+    props: {
+      ...common,
+      format,
+      house: "senado",
+      legislature: 56,
+      votes: votes.slice(0, 37).map((v, i) => ({ ...v, position: POSITIONS[(i * 3 + 1) % POSITIONS.length] })),
+      member: { name: "Ana Souza", party: "PSB", uf: "RJ" },
+      figures: LABELS.map((label, i) => ({ count: 7 * i, total: 90 + i, label })),
+      photo: null,
+    },
+  };
+  pages[`rollcall2-${format}`] = {
+    kind: "roll_call",
+    props: { ...common, format, house: "senado", heading: "PEC 7/2021", date: "2021-11-09", ballot: "nominal", kind: "amendment", approved: false, tallies: { yes: 12, no: 61, others: 2 } },
+  };
   pages[`rollcall-${format}`] = {
     kind: "roll_call",
     props: { ...common, format, heading: HEADING_48, date: "2023-03-01", ballot: "nominal", kind: "final", approved: true, tallies: { yes: 400, no: 100, others: 13 } },

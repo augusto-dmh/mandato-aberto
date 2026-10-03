@@ -114,3 +114,50 @@ test("card photo is whole and untouched", async ({ page }) => {
     await expect(page.locator(".ma-card .ma-photo__credit")).toHaveText("Foto: Câmara dos Deputados");
   }
 });
+
+// C83: a card is one template; no colour belongs to a person (research/design-anexos/a1 6.3, "cor própria por pessoa").
+async function paint(page: Page, name: string) {
+  await open(page, name);
+  return page.locator(".ma-card").evaluate((root) => {
+    const read = (el: Element) => {
+      const c = getComputedStyle(el);
+      return { color: c.color, background: c.backgroundColor, border: c.borderColor, fill: c.fill, stroke: c.stroke };
+    };
+    const strip = root.querySelector(".ma-score__strip");
+    const ink = strip ? getComputedStyle(strip).color : null;
+    const inMark = (el: Element) => el.closest(".ma-score__col") !== null;
+    const tuples: [string, string][] = [...root.querySelectorAll("*"), root].map((el) => {
+      const { color, background, border, fill } = read(el);
+      return [`${el.tagName}.${el.getAttribute("class") ?? ""}`, JSON.stringify(inMark(el) ? { color, background, border } : { color, background, border, fill })];
+    });
+    // a mark draws with the strip's own colour or nothing, whichever shape its position has
+    const marks = [...root.querySelectorAll(".ma-score__col *")].flatMap((el) => {
+      const { fill, stroke } = read(el);
+      return [fill, stroke].filter((v) => v !== "none" && v !== ink);
+    });
+    return { tuples, marks, hasStrip: strip !== null };
+  });
+}
+
+test("no card draws a colour of its own per subject", async ({ page }) => {
+  const GROUPS = { member: ["member", "member48", "short", "nophoto", "other"], rollcall: ["rollcall", "rollcall2"] };
+  for (const format of NAMES) {
+    for (const [group, names] of Object.entries(GROUPS)) {
+      const seen = new Map<string, Map<string, string>>();
+      for (const name of names) {
+        const { tuples, marks, hasStrip } = await paint(page, `${name}-${format}`);
+        expect(hasStrip, `${name}-${format} has a score strip`).toBe(group === "member");
+        expect(marks, `${name}-${format} marks use the strip colour or none`).toEqual([]);
+        for (const [key, tuple] of tuples) {
+          if (!seen.has(key)) seen.set(key, new Map());
+          seen.get(key)!.set(name, tuple);
+        }
+      }
+      for (const [key, byPage] of seen) {
+        expect(new Set(byPage.values()).size, `${format} ${group} ${key}: ${JSON.stringify([...byPage])}`).toBe(1);
+      }
+      // the comparison compares something: the shared regions are drawn by more than one card
+      expect([...seen.values()].filter((byPage) => byPage.size === names.length).length, `${format} ${group} shared elements`).toBeGreaterThan(8);
+    }
+  }
+});
