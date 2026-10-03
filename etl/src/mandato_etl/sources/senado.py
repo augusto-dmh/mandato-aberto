@@ -6,6 +6,7 @@ Every response is kept verbatim under `data/raw/senado/` (it carries no CPF) and
 
 import http.client
 import json
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
@@ -17,13 +18,33 @@ API_URL = "https://legis.senado.leg.br/dadosabertos"
 WORKERS = camara.HISTORY_WORKERS
 
 
+class _DeprecationWarner(urllib.request.HTTPRedirectHandler):
+    """Warns once per URL that answers with `Deprecation` or `Sunset`, also when that answer is a redirect.
+
+    urllib follows a `301` silently, so the headers of a deprecated service that redirects (research 07 §2)
+    are only visible here, on the hop that carries them.
+    """
+
+    def __init__(self, warn):
+        self.warn, self.warned = warn, set()
+
+    def check(self, url, headers):
+        deprecation, sunset = headers.get("Deprecation"), headers.get("Sunset")
+        if (deprecation or sunset) and url not in self.warned:
+            self.warned.add(url)
+            self.warn(f"warning: {url} is deprecated (Deprecation: {deprecation or '-'}; Sunset: {sunset or '-'})")
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        self.check(req.full_url, headers)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
 def _download(url: str, dest: Path, now: datetime, warn) -> None:
     part = dest.with_name(dest.name + ".part")
+    warner = _DeprecationWarner(warn)
 
     def consume(response):
-        deprecation, sunset = response.headers.get("Deprecation"), response.headers.get("Sunset")
-        if deprecation or sunset:
-            warn(f"warning: {url} is deprecated (Deprecation: {deprecation or '-'}; Sunset: {sunset or '-'})")
+        warner.check(response.url, response.headers)
         size = 0
         with open(part, "wb") as f:
             while chunk := response.read(1 << 20):
@@ -33,7 +54,7 @@ def _download(url: str, dest: Path, now: datetime, warn) -> None:
             raise http.client.IncompleteRead(b"", int(expected) - size)
 
     try:
-        camara._get(url, consume, accept="application/json")
+        camara._get(url, consume, accept="application/json", opener=urllib.request.build_opener(warner))
     except BaseException:
         part.unlink(missing_ok=True)
         raise

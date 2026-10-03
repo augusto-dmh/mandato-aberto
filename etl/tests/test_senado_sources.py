@@ -28,9 +28,9 @@ def test_first_build_downloads_each_source_once(sen, monkeypatch):
     accepts = []
     real_get = camara._get
 
-    def spy(url, consume, accept=None):
+    def spy(url, consume, accept=None, **kwargs):
         accepts.append((url, accept))
-        return real_get(url, consume, accept)
+        return real_get(url, consume, accept, **kwargs)
 
     monkeypatch.setattr(camara, "_get", spy)
     sd.pin(monkeypatch, sd.CLOCK_2027)
@@ -127,6 +127,19 @@ def test_deprecation_header_warns_and_continues(sen, capsys):
     path = sd.PREFIX + "/senador/lista/atual"
     sen.headers[path] = {"Deprecation": "Tue, 18 Mar 2025", "Sunset": "Sun, 01 Feb 2026"}
     assert sd.build(sen, "--quiet") == 0
+    lines = [line for line in capsys.readouterr().err.splitlines() if sen.base + path in line]
+    assert len(lines) == 1
+    assert "warning" in lines[0] and "Sun, 01 Feb 2026" in lines[0]
+
+
+def test_deprecation_sent_as_a_redirect_warns_and_continues(sen, capsys):
+    sd.serve(sen, sd.indicators())
+    path = sd.PREFIX + "/senador/lista/atual"
+    moved = sd.PREFIX + "/v2/senador/lista/atual"
+    sen.routes[moved] = sen.routes.pop(path)
+    sen.redirects[path] = (moved, {"Deprecation": "Tue, 18 Mar 2025", "Sunset": "Sun, 01 Feb 2026"})
+    assert sd.build(sen, "--quiet") == 0
+    assert path in [p for p, _ in sen.requests] and moved in [p for p, _ in sen.requests]
     lines = [line for line in capsys.readouterr().err.splitlines() if sen.base + path in line]
     assert len(lines) == 1
     assert "warning" in lines[0] and "Sun, 01 Feb 2026" in lines[0]
