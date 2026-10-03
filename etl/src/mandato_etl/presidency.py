@@ -453,18 +453,25 @@ def _resolve_votes(joint: list[dict], resolver: Resolver) -> None:
 
 
 def member_counts(members: dict[str, list[dict]], joint: list[dict]) -> list[dict]:
-    """One row per (house, member, legislature) whose exercise holds a joint roll call with votes (door 6)."""
+    """One row per (house, member, legislature) whose exercise holds a joint roll call with votes (door 6).
+
+    The base holds only roll calls where the member's own house published per-member votes, so a house
+    the Congress published nothing for (`Senado: null`) does not read as an absence (door 6, amended).
+    """
     voted = [j for j in joint if j["votesAvailable"]]
     positions = defaultdict(lambda: defaultdict(list))  # (house, id, legislature) -> veto -> positions
+    published = defaultdict(list)  # house -> roll calls with at least one vote of that house
     for j in voted:
         for v in j["votes"]:
             positions[(v["house"], v["memberId"], j["legislature"])][j["actId"]].append(v["position"])
+        for house in {v["house"] for v in j["votes"]}:
+            published[house].append(j)
     rows = []
     for house in HOUSES:
         for m in members.get(house, []):
             for mandate in m["mandates"]:
                 legislature = mandate["legislature"]
-                base = {j["actId"] for j in voted if j["legislature"] == legislature
+                base = {j["actId"] for j in published[house] if j["legislature"] == legislature
                         and any(contains(p, j["date"]) for p in mandate["exercisePeriods"])}
                 if not base:
                     continue

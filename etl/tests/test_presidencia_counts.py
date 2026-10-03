@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 import presidencia_data as pd
 import pytest
 
-from mandato_etl import cli
+from mandato_etl import cli, presidency
 
 KEYS = ("participation", "keepAll", "overrideAll", "mixed")
 
@@ -49,15 +49,30 @@ def test_member_counts_recorded(con):
         ("camara", 7004): "2/2 1/2 0/2 1/2",
         ("camara", 7005): "3/4 0/3 1/3 2/3",
         ("camara", 7006): "0/4 0/0 0/0 0/0",
-        ("senado", 285): "1/4 0/1 1/1 0/1",
-        ("senado", 5386): "3/4 0/3 2/3 1/3",
-        ("senado", 8001): "3/4 1/3 2/3 0/3",
-        ("senado", 8002): "3/4 0/3 2/3 1/3",
-        ("senado", 8003): "3/4 0/3 2/3 1/3",
-        ("senado", 8004): "2/4 0/2 1/2 1/2",
-        ("senado", 8005): "3/4 0/3 2/3 1/3",
+        ("senado", 285): "1/3 0/1 1/1 0/1",
+        ("senado", 5386): "3/3 0/3 2/3 1/3",
+        ("senado", 8001): "3/3 1/3 2/3 0/3",
+        ("senado", 8002): "3/3 0/3 2/3 1/3",
+        ("senado", 8003): "3/3 0/3 2/3 1/3",
+        ("senado", 8004): "2/3 0/2 1/2 1/2",
+        ("senado", 8005): "3/3 0/3 2/3 1/3",
     }
     assert ("camara", 7007) not in rows(con)
+
+
+def test_base_needs_the_members_house_votes():
+    # vet-1 holds Senate votes, vet-2 only Câmara votes (Senado: null): no senator's base holds vet-2
+    def jrc(id, act, day, houses):
+        votes = [{"house": h, "memberId": m, "position": "yes"} for h, m in houses]
+        return {"id": id, "actId": act, "date": day, "legislature": 57, "votesAvailable": True, "votes": votes}
+
+    late = [{"start": "2025-01-01T00:00:00", "end": "2026-09-27T09:00:00"}]
+    members = {"camara": [pd.member(1, "A", "P", "SP")],
+               "senado": [pd.member(2, "B", "P", "SP"), pd.member(3, "C", "P", "SP", periods=late)]}
+    joint = [jrc("1.24.001", "vet-1", "2024-05-09", [("camara", 1), ("senado", 2)]),
+             jrc("2.25.001", "vet-2", "2025-06-17", [("camara", 1)])]
+    found = {(r["house"], r["memberId"]): r["participation"] for r in presidency.member_counts(members, joint)}
+    assert found == {("camara", 1): {"count": 2, "total": 2}, ("senado", 2): {"count": 1, "total": 1}}
 
 
 def test_veto_counted_once(con):
