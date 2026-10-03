@@ -1,6 +1,10 @@
 <?php
 
+use App\Cards\Payloads;
 use App\Console\Commands\FetchPhotos;
+use App\Models\House;
+use App\Models\Member;
+use App\Models\RollCall;
 use Dom\Element;
 use Dom\HTMLDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -225,4 +229,35 @@ function storeFixturePhotos(): void
 function requestedUrls(): array
 {
     return array_map(fn (array $pair) => $pair[0]->url(), Http::recorded()->all());
+}
+
+/** @return list<string> the directives of a Cache-Control header, sorted */
+function cacheDirectives(TestResponse $response): array
+{
+    $directives = array_map('trim', explode(',', (string) $response->headers->get('Cache-Control')));
+    sort($directives);
+
+    return $directives;
+}
+
+/** Fails, never skips, when the card renderer is not built: the card proofs run the real CLI. */
+function requireCardRenderer(): void
+{
+    if (! is_file(base_path('bootstrap/cards/render.mjs'))) {
+        test()->fail('The card renderer is not built: run `sail npm run build`.');
+    }
+}
+
+/** The current card payload of a member's mandate, as the card route computes it. */
+function memberPayload(House $house, string $id, int $legislature): array
+{
+    $member = Member::query()->where('house', $house)->where('source_id', $id)->sole();
+
+    return Payloads::member($house, $member, $member->memberships()->where('legislature_number', $legislature)->sole());
+}
+
+/** The current card payload of a roll call. */
+function rollCallPayload(House $house, string $id): array
+{
+    return Payloads::rollCall($house, RollCall::query()->where('house', $house)->where('source_id', $id)->sole());
 }

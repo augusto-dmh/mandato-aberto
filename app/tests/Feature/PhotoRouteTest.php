@@ -3,7 +3,6 @@
 use App\Models\PhotoVersion;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
-use Illuminate\Testing\TestResponse;
 
 // share-cards AC 9, AC 10, AC 13: the photo route (C15-C17).
 
@@ -11,15 +10,6 @@ beforeEach(function () {
     Storage::fake('media');
     Sleep::fake();
 });
-
-/** @return list<string> the directives of a Cache-Control header, sorted */
-function cacheDirectives(TestResponse $response): array
-{
-    $directives = array_map('trim', explode(',', (string) $response->headers->get('Cache-Control')));
-    sort($directives);
-
-    return $directives;
-}
 
 test('a stored photo is served with immutable headers', function () {
     storeFixturePhotos();

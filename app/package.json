@@ -6,7 +6,7 @@
         "node": ">=24"
     },
     "scripts": {
-        "build": "vite build && vite build --ssr",
+        "build": "vite build && vite build --ssr && vite build --config vite.cards.config.js",
         "dev": "vite"
     },
     "dependencies": {

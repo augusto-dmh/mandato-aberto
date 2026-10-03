@@ -16,7 +16,7 @@ alias sail=./vendor/bin/sail      # the commands below assume it
 sail artisan key:generate
 sail artisan migrate
 sail npm --prefix /var/www/design ci && sail npm --prefix /var/www/design run build   # the design tokens
-sail npm ci && sail npm run build  # client bundle in public/build, SSR bundle in bootstrap/ssr
+sail npm ci && sail npm run build  # client bundle in public/build, SSR bundle in bootstrap/ssr, card renderer in bootstrap/cards
 ```
 
 ## Import the contract
@@ -29,6 +29,17 @@ sail artisan mandato:import ../data/v3 --dry-run         # validate and count, w
 ```
 
 Every file is validated against `../etl/schema/v3` and every reference between files resolved before any write. Each house is imported in its own transaction: a snapshot of each legislature its `meta.json` lists (what the contract no longer has is removed; members and propositions stay), with its classification rules and full texts replaced as sets. It exits `0` when every house imported, `1` when any house was refused or failed (that house writes nothing; a house already imported stays), `2` when the directory does not exist.
+
+## Official photos and share cards
+
+```bash
+sail artisan mandato:photos                       # caches each member's official photo (new, or checked more than 7 days ago)
+sail artisan mandato:photos --house=senado --member=5012 --stale-after=0
+```
+
+Photos are fetched only from `www.camara.leg.br`, `www.senado.leg.br` and `legis.senado.leg.br`, kept byte for byte on the `media` disk (`storage/app/media/`) and served at `/fotos/{sha256}.jpg`. A member listed in `config/mandato.php` `photo_suppressed` as `camara:<id>` or `senado:<id>` shows initials, and their photo files answer 410.
+
+Member and roll-call pages link their card at `.../card/{code}/{1200x630,1080x1350,1080x1920}.png`. The first request of a card stores its snapshot and renders it with `node bootstrap/cards/render.mjs` (the design package's `MemberCard` or `RollCallCard` in headless Chromium, installed in the Sail image by `docker/8.5/Dockerfile`); later requests serve the stored PNG. Plan and checks in `.specs/features/share-cards/`.
 
 ## Run the SSR server
 

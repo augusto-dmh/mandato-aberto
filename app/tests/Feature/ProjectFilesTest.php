@@ -30,7 +30,8 @@ test('ci job app runs every gate', function () {
     }
     expect($job)->not->toHaveKey('continue-on-error')
         ->and(Yaml::parseFile(base_path('phpstan.neon'))['parameters']['level'])->toBe(6)
-        ->and(File::get(base_path('package.json')))->toContain('"build": "vite build && vite build --ssr"');
+        // the client and SSR bundles, then the card renderer beside them (share-cards door 3)
+        ->and(File::get(base_path('package.json')))->toContain('"build": "vite build && vite build --ssr && vite build --config vite.cards.config.js"');
 });
 
 test('readme names the commands', function () {

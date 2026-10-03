@@ -28,3 +28,4 @@ site/.cache/
 app/vendor/
 app/public/build/
 app/bootstrap/ssr/
+app/bootstrap/cards/

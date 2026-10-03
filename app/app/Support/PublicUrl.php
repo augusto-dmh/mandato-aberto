@@ -35,6 +35,18 @@ final class PublicUrl
         return "/fotos/{$sha256}.jpg";
     }
 
+    /** `{subject path}card/{code}/{format}.png`, under a member's legislature path or a roll call's path (share-cards door 6). */
+    public static function card(string $subjectPath, string $code, string $format): string
+    {
+        return "{$subjectPath}card/{$code}/{$format}.png";
+    }
+
+    /** `/verificar/`, or `/verificar/{code}/` for one code. */
+    public static function verify(?string $code = null): string
+    {
+        return $code === null ? '/verificar/' : "/verificar/{$code}/";
+    }
+
     private static function house(House|string $house): House
     {
         return $house instanceof House ? $house : House::from($house);
