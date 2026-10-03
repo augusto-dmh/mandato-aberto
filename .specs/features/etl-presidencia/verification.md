@@ -1,178 +1,219 @@
 # etl-presidencia verification
 
-**Verdict**: FAIL
+**Verdict**: PASS
 **Profile**: standard
-**Diff range**: 91323e8..bb01ceb
-**Round**: 1 - full
+**Diff range**: 91323e8..473e7b529f060b33076759f4a449f71f2b089c75
+**Round**: 2 - scoped
 **Verifier**: independent sub-agent (author != verifier)
 
-The checks are sound, and in the builder's working tree every proof is green. All five injected faults were killed.
-The commit at `HEAD` still does not hold the feature. `etl/inputs/joint-vote-aliases.json`, the door 6 alias file
-that `presidency.load_aliases()` reads on every presidency build (`etl/src/mandato_etl/presidency.py:19`,
-`etl/src/mandato_etl/cli.py` `build_presidency`), is matched by `.gitignore:4` (`etl/inputs/*`) and was never
-committed: `git ls-files etl/inputs` lists nothing. A clean `git worktree add <scratch> HEAD` with its own `uv sync` gives
-`40 failed, 390 passed, 23 errors`, and every failure is `FileNotFoundError: .../etl/inputs/joint-vote-aliases.json`.
-CI on this branch would fail the same way. 46 of the 60 checks have a proof that is red at `HEAD`. Only the local,
-ignored copy of the file makes them green.
+Round 1 (`bb01ceb`) returned FAIL with four gaps. Round 2 is scoped to the fix commits `baf37ae`, `dc926f5`, `b6453d3`,
+`f4cae72` and `473e7b5`, plus every round-1 verdict that was not PASS. All four gaps are closed at `473e7b5`:
 
-Commands run at `HEAD` (bb01ceb), real tree, one batch each:
+1. **Alias file (gap 1).** `.gitignore:6` now holds `!etl/inputs/joint-vote-aliases.json`, and `git ls-files etl/inputs`
+   lists `etl/inputs/joint-vote-aliases.json`. A clean `git worktree add /tmp/presid-v2 HEAD` with its own `uv sync`
+   gives 463 passed and 0 failed, and the real tree gives the same 463.
+2. **Guards (gap 2).** The five stop-the-build guards are proven by C61, and two of them were killed again here.
+3. **v4 member ids (gap 3).** `validate_dir` now runs `_dangling_member` on v4 house directories (`etl/src/mandato_etl/schema.py:162-164`).
+   C62 and C63 prove it, and both surfaces were killed.
+4. **C52 precision (gap 4).** C52 now asserts every veto URL exactly. A fault that the pre-fix assertion lets through is
+   killed by the new one.
 
-- `uv run --directory etl pytest -v -p no:cacheprovider` → 453 passed, 0 failed (68 s)
-- every named proof in one invocation: `uv run --directory etl pytest -v tests/test_presidencia_{acts,contract,counts,joint,sources,stages}.py tests/test_v4_houses.py -k "<57 names or-ed>"` → 117 passed, 2 deselected (`test_term_listed_from_its_start_date` and `test_unmatched_is_zero_in_recorded_build`, which no check names; both ran green in the full suite). Every test named in checks.md appears individually as PASSED in the output (64 proof lines, each with ≥1 hit)
-- C57: `uv run --directory etl pytest tests/test_v2_frozen.py … tests/test_senado_cli.py` (the 14 files) → 220 passed
-- C6 `test -z "$(git diff --name-only 91323e8..HEAD -- site design .github/workflows/publish.yml etl/schema/v3 ':(glob)etl/schema/*.json')"` → exit 0
-- C56 `grep -q 'mandato-etl validate tests/fixtures/v4/presidencia' .github/workflows/ci.yml` → exit 0 (`ci.yml:38`)
-- C59 `grep -q 'A feature \`etl-presidencia\` roda em \`standard\`' AGENTS.md` → exit 0
-- `uv run mandato-etl validate tests/fixtures/v4/presidencia` (from `etl/`) → exit 0, also exit 0 in the clean `HEAD` checkout
-- clean checkout of `HEAD` (scratch worktree, own `uv sync`): `uv run --directory etl pytest -q -rfE` → 40 failed, 390 passed, 23 errors, all from the missing alias file
-- No live API: the full suite was re-run in the scratch tree under a `sitecustomize` guard that refuses every non-loopback `connect` and DNS lookup (confirmed active by a probe to `legis.senado.leg.br` that was blocked). Result: 453 passed, 0 blocked attempts logged
+Commands run at `HEAD` `473e7b5`:
 
-"FAIL" in a Result cell below means the named proof is red on the committed `HEAD`. The cited assertion targets the
-value the check defines, and it passes in the working tree with the ignored file present.
+- **Clean checkout** (`/tmp/presid-v2`, own `uv sync`), under a `sitecustomize` network guard that refuses every
+  non-loopback `connect` and DNS lookup. The guard was confirmed active: a probe to `legis.senado.leg.br` was blocked.
+  - `uv run --directory etl pytest -v -p no:cacheprovider`: **463 passed**, 0 failed, 0 blocked network attempts (48.8 s).
+  - Every named proof in one invocation: `pytest -v <8 files> -k "<68 names or-ed>"` gave **127 passed**, 2 deselected
+    (`test_term_listed_from_its_start_date` and `test_unmatched_is_zero_in_recorded_build`, which no check names; both
+    are green in the full run). Each of the 68 names appears as an individual `PASSED` line at least once. All five C61
+    cases (`[veto-without-device]`, `[voted-device-not-decided]`, `[unknown-tipo-votacao]`, `[alias-to-absent-member]`,
+    `[act-outside-every-term]`), both C62 cases `[vote]` and `[author]`, `test_v4_fixture_house_validates`, both C63 cases
+    and `test_source_urls` are each listed PASSED.
+  - C57: the 14 files gave 220 passed.
+  - C6: the `git diff --name-only 91323e8..HEAD -- site design .github/workflows/publish.yml etl/schema/v3 ':(glob)etl/schema/*.json'`
+    test exited 0 with empty output.
+  - C56: the grep exited 0 (`.github/workflows/ci.yml:38`).
+  - C59: the grep exited 0 (`AGENTS.md:28`).
+  - `uv run mandato-etl validate tests/fixtures/v4/presidencia` (from `etl/`) exited 0.
+- **Real tree:** full suite 463 passed, named batch 127 passed, `validate` exit 0. The results match the clean checkout.
+- **Untracked-but-present sweep:** `git status --porcelain --ignored` on the real tree lists only `etl/.pytest_cache/`,
+  `etl/.venv/` and three `__pycache__/` directories. `etl/inputs` holds only the alias file, which is tracked and
+  byte-equal to `git show HEAD:etl/inputs/joint-vote-aliases.json`. No file a test reads exists only in the working
+  tree, and the equal 463/463 between the clean and real trees confirms it.
 
 ## Checks
 
+Verified at `473e7b5`. Every proof below is green in the clean checkout. The evidence cells were refreshed for the
+two files the fixes touched: `etl/tests/test_v4_houses.py` (+20 lines from line 12) and
+`etl/tests/test_presidencia_contract.py` (+7 lines from line 92). The other test files are byte-identical to `bb01ceb`
+(`git diff --stat bb01ceb..HEAD`), so their citations are carried from `bb01ceb`.
+
 | Check | Claim | Proof run | Evidence | Result |
 | --- | --- | --- | --- | --- |
-| C1 | v4 Câmara = v3 except `schema_version` | `test_camara_v4_equals_v3_but_version` PASSED (HEAD clean too) | `etl/tests/test_v4_houses.py:23` - `v4[relative] == v3[relative].replace(b'"schema_version":3', b'"schema_version":4')`; `:25` byte-equal otherwise | PASS |
-| C2 | same for Senate | `test_senado_v4_equals_v3_but_version` PASSED (HEAD clean too) | `etl/tests/test_v4_houses.py:42` - `_only_version_differs(snapshot(sd.out(sen)), snapshot(out))` | PASS |
-| C3 | default `data/v4/<house>`; out and v3 bytes and mtimes kept | `test_v4_default_out_leaves_out_and_v3_untouched` - red at HEAD (presidency build at `:64` raises FileNotFoundError) | `etl/tests/test_v4_houses.py:60`, `:65` meta files exist; `:66-67` `_stats(...) == before_out` (bytes + `st_mtime_ns`, `:46`) | FAIL |
-| C4 | bad contract/house: exit 1, usage, 0 requests, no output | `-k test_bad_contract_or_house_exits_1` 5 PASSED (HEAD clean too) | `etl/tests/test_v4_houses.py:76` `== 1`; `:77` `"usage:" in err`; `:78` `con.requests == []`; `:79` `not out.exists()` | PASS |
-| C5 | validate picks v4 set by scope; v2/v3 kept | `test_validate_picks_the_v4_set_by_scope` - red at HEAD (`:94` presidency build) | `etl/tests/test_v4_houses.py:86,91,95` `== 0`; `:99` scope on house `== 1`; `:103` `"unsupported schema_version 5" in err`; `:107,:110` v2/v3 `== 0`; `:113` relabelled v3 `== 1` | FAIL |
-| C6 | no diff in site, design, v3 schemas, v2 schemas, publish.yml | git-diff test, exit 0 | command output empty | PASS |
-| C7 | v4 schema set exact; house schemas = v3 but const 4 | `test_v4_schema_set` PASSED (HEAD clean too) | `etl/tests/test_v4_houses.py:123` file set; `:129` `const == 4`; `:131` `four == three` | PASS |
-| C8 | first build: 23 Congress paths once, headers, manifest | `test_first_build_requests_each_source_once` - red at HEAD | `etl/tests/test_presidencia_sources.py:47` `sorted(requested) == sorted(OTHERS + DEVICES)`; `:48` `len == 23`; `:52-53` Accept/User-Agent; `:60-62` sha256, bytes, entry keys | FAIL |
-| C9 | cache reuses only decided devices; `--refresh` refetches | `test_cache_reuses_only_decided_devices` - red at HEAD | `etl/tests/test_presidencia_sources.py:73` `== sorted(OTHERS)`; `:74` snapshot equal; `:77` `== sorted(OTHERS + DEVICES)` | FAIL |
-| C10 | ≥0.45 s apart, one in flight | `test_at_most_two_requests_per_second` PASSED (HEAD clean too) | `etl/tests/test_presidencia_sources.py:94` `b - a >= 0.45`; `:95` `con.max_in_flight == 1` | PASS |
-| C11 | 503×4 → exit 2, URL, sleeps [1,2,4], no `.part`, output kept; bad bodies retried | `test_download_failure_exits_2_and_keeps_output` red at HEAD; `-k test_bad_body_is_retried` 3 of 4 red at HEAD (`html-four-times` green) | `etl/tests/test_presidencia_sources.py:105` `== 2`; `:106` URL in err; `:107` `con.sleeps == [1, 2, 4]`; `:108` no `*.part`; `:109` snapshot; `:151` exit code; `:154` `con.sleeps == sleeps` | FAIL |
-| C12 | no planalto request | `test_no_planalto_request` - red at HEAD | `etl/tests/test_presidencia_sources.py:166` every URL starts with fake base; `:167` `not any("planalto.gov.br" in url ...)` | FAIL |
-| C13 | house dirs missing/invalid/v3 → exit 1 before any request | `-k test_house_directories_required` 3 PASSED (HEAD clean too: the gate runs before `load_aliases`) | `etl/tests/test_presidencia_sources.py:190` `== 1`; `:192` named words in err; `:193` `congress_requests == []`; `:194` `not out.exists()` | PASS |
-| C14 | exactly 18 act ids, distractors excluded | `test_one_act_per_mp_veto_and_executive_bill` - red at HEAD | `etl/tests/test_presidencia_acts.py:34` `sorted(ids) == sorted(R_IDS)`; `:35` `len == 18`; `:36` no msc/pln/pl-1/9203/9204 | FAIL |
-| C15 | kind/type, ints, vetoScope, non-veto devices [] | `test_kind_type_and_veto_scope` - red at HEAD | `etl/tests/test_presidencia_acts.py:45` `(kind, type) == expected[prefix]`; `:46` ints; `:48` total for vet-3-2026; `:50-51` null scope, `devices == []` | FAIL |
-| C16 | pl-1-2023 excluded, counter 1 | `test_before_first_term_is_excluded` - red at HEAD | `etl/tests/test_presidencia_acts.py:56`; `:57` `excludedBeforeFirstTerm == 1` | FAIL |
-| C17 | term edges; T termIds; meta.terms exact by build date | `test_term_boundaries`, `test_terms_listed_by_build_date` - both red at HEAD (edges at `:61-64` execute before the T build errors) | `etl/tests/test_presidencia_acts.py:61-64` `term_of(...)`; `:69-70` termIds; `:82` `== [TERM_2023]`; `:87` `== [TERM_2023, TERM_2027]` (literals `:73-75`) | FAIL |
-| C18 | 9 MP rules, 4 rejects | `-k test_mp_status_rules` 13 PASSED (HEAD clean too) | `etl/tests/test_presidencia_acts.py:103` `mp_status(record, ...) == (status, rule)` over `:90-99`; `:113-114` `pytest.raises(PresidencyError)` over `:106-110` | PASS |
-| C19 | 4 device rules, 3 rejects | `-k test_device_status_rules` 7 PASSED (HEAD clean too) | `etl/tests/test_presidencia_acts.py:122`; `:127-128` raises | PASS |
-| C20 | recorded MP and device status/rule/officialStatus | `test_recorded_statuses` - red at HEAD | `etl/tests/test_presidencia_acts.py:142` `(status, statusRule, officialStatus) == ...`; `:152` same per device | FAIL |
-| C21 | unknown MP/device value → exit 1 naming value + act, output kept | `-k test_unknown_status_stops_the_build` 2 - red at HEAD | `etl/tests/test_presidencia_acts.py:180` `== 1`; `:182` words in err; `:183` snapshot | FAIL |
-| C22 | veto pending/decided, unit cases | `test_veto_status` - red at HEAD (uses the R build fixture) | `etl/tests/test_presidencia_acts.py:188`, `:190`; `:191-193` `veto_status(...)` | FAIL |
-| C23 | bill precedence table (10 rows) | `-k test_bill_status_precedence` 10 PASSED (HEAD clean too) | `etl/tests/test_presidencia_acts.py:212` `bill_status(norma, camara, total) == (status, rule)` over `:199-210` | PASS |
-| C24 | recorded bill statuses; H vetoedTotally | `test_recorded_bill_statuses`, `test_vetoed_totally` - red at HEAD | `etl/tests/test_presidencia_acts.py:218-225`; `:230` `("vetoedTotally", "bill.03")` | FAIL |
-| C25 | law verbatim; approvedWithoutLaw 0/1 | `test_law_and_approved_without_law` - red at HEAD | `etl/tests/test_presidencia_acts.py:239` law literals `:235-237`; `:241` null; `:242` `== 0`; `:247-248` H `== 1` | FAIL |
-| C26 | vetoedMatter and relatedActId | `test_related_act` - red at HEAD | `etl/tests/test_presidencia_acts.py:261`; `:264`; `:268` `== "pl-9105-2025"` | FAIL |
-| C27 | 21 rules exact, keys, verbatim value, words, version 1 | `test_status_rules_file` - red at HEAD | `etl/tests/test_presidencia_acts.py:292` `== RULE_TABLE`; `:293` 21; `:295` keys; `:297` value in description; `:300` banned words; `:302-305`; `:306` `{"version": 1}` | FAIL |
-| C28 | issuedAt/statusAt/summary, device fields | `test_act_fields` - red at HEAD | `etl/tests/test_presidencia_acts.py:312`, `:314`, `:315`, `:317`, `:319-324` | FAIL |
-| C29 | MP stages, missingCamaraStage 1 | `test_mp_stages` - red at HEAD | `etl/tests/test_presidencia_stages.py:22-25` | FAIL |
-| C30 | bill stages, SF-only Senate stage | `test_bill_stages` - red at HEAD | `etl/tests/test_presidencia_stages.py:29-32` | FAIL |
-| C31 | vetoes have no stage; joint ids = device ids | `test_veto_has_no_stage` - red at HEAD | `etl/tests/test_presidencia_stages.py:37` `all(a["stages"] == [])`; `:40-41` | FAIL |
-| C32 | stage join returns the named roll calls | `test_stages_join_house_roll_calls` - red at HEAD | `etl/tests/test_presidencia_stages.py:51-53` | FAIL |
-| C33 | 6 joint roll calls, fields | `test_joint_roll_calls` - red at HEAD | `etl/tests/test_presidencia_joint.py:30`; `:32-36`; `:38-40` | FAIL |
-| C34 | position map + rejects | `-k test_position_map` 9 PASSED (HEAD clean too) | `etl/tests/test_presidencia_joint.py:48`; `:53-54` raises | PASS |
-| C35 | votes file shape, order, aj Albuquerque | `test_votes_file` - red at HEAD | `etl/tests/test_presidencia_joint.py:60`, `:62`, `:65`, `:66`, `:68-69` | FAIL |
-| C36 | unknown TipoVoto → exit 1, output kept | `test_unknown_vote_stops_the_build` - red at HEAD | `etl/tests/test_presidencia_joint.py:86` `== 1`; `:88`; `:89` snapshot | FAIL |
-| C37 | total veto: no votes, PDF URL, counter; device URLs; veto-page fallback | `test_total_veto_has_no_votes` - red at HEAD | `etl/tests/test_presidencia_joint.py:94-97`; `:101-102`; `:106-107` | FAIL |
-| C38 | tallies R, H, untrimmed 43825 | `test_tallies` red at HEAD; `test_tallies_untrimmed_device` PASSED | `etl/tests/test_presidencia_joint.py:125`, `:136`; `:144-145` `(37, 414, 0, 0, 3, 0)`, `(8, 64, 0, 0, 0, 0)` | FAIL |
-| C39 | resolution rule unit cases | `-k test_resolution_rule` PASSED (HEAD clean too) | `etl/tests/test_presidencia_joint.py:155-160`, `:163`, `:166` | PASS |
-| C40 | homonyms split by exercise | `test_homonyms_resolve_by_exercise` - red at HEAD | `etl/tests/test_presidencia_joint.py:172` | FAIL |
-| C41 | alias file exact; aliases resolve | `test_aliases` - red at HEAD: the file it asserts is not in the commit | `etl/tests/test_presidencia_joint.py:181` `== ALIASES`; `:182` keys + note; `:186`; `:188`; `:194` | FAIL |
-| C42 | unmatched fails closed, one line; ambiguous; counters 0 | `-k test_unmatched_fails_closed` 2 - red at HEAD; `test_unmatched_is_zero_in_recorded_build` (unnamed, full suite) red at HEAD | `etl/tests/test_presidencia_joint.py:208`; `:215` `== 1`; `:217-219`; `:226-228`; `:232` | FAIL |
-| C43 | duplicate vote / act id → exit 1 naming it | `-k test_duplicates_stop_the_build` 2 - red at HEAD | `etl/tests/test_presidencia_joint.py:251-253` | FAIL |
-| C44 | H member counts exact | `test_member_counts_hand` - red at HEAD | `etl/tests/test_presidencia_counts.py:31-40` | FAIL |
-| C45 | R member counts with amended base; unit base | `test_member_counts_recorded` red at HEAD; `test_base_needs_the_members_house_votes` PASSED | `etl/tests/test_presidencia_counts.py:45-59`; `:60` no 7007; `:75` `found == {("camara", 1): {...2/2}, ("senado", 2): {...1/1}}` | FAIL |
-| C46 | veto counted once; split → mixed | `test_veto_counted_once`, `test_split_veto_is_mixed` - red at HEAD | `etl/tests/test_presidencia_counts.py:85` `{"count": 1, "total": 1}`; `:94` `(0, 0, 1)` | FAIL |
-| C47 | R term coverage exact; sums hold in R/H/T | `test_term_coverage` 3 - red at HEAD | `etl/tests/test_presidencia_counts.py:122` `== R_TERMS` (`:97-104`); `:111`, `:113` sums | FAIL |
-| C48 | no rate keys; count objects exact | `test_no_rate_keys` 3 - red at HEAD | `etl/tests/test_presidencia_counts.py:146`, `:148` | FAIL |
-| C49 | every file passes in-package + Draft 2020-12; layout | `test_every_file_passes_its_schema` 3, `test_layout` - red at HEAD | `etl/tests/test_presidencia_contract.py:39`; `:40` `Draft202012Validator(spec).is_valid(doc)`; `:41` validate `== 0`; `:47` file list | FAIL |
-| C50 | schema failure → exit 1 naming file/path, output kept | `test_schema_failure_keeps_previous_output` - red at HEAD | `etl/tests/test_presidencia_contract.py:64` `== 1`; `:66` `"joint-roll-calls.json: $["`, `"'49.23.001/A' does not match"`; `:67` snapshot | FAIL |
-| C51 | meta keys, coverage exact, sources = manifest entries sorted | `test_meta` - red at HEAD | `etl/tests/test_presidencia_contract.py:73`, `:74`, `:75`, `:77`, `:79`, `:84` | FAIL |
-| C52 | act and joint sourceUrls | `test_source_urls` - red at HEAD | `etl/tests/test_presidencia_contract.py:94-95` MP exact; `:97` veto prefix; `:99` bill exact; `:101`; `:103-105` exact examples | FAIL |
-| C53 | no cpf key; vote keys exact | `test_no_cpf_and_only_allowed_vote_fields` - red at HEAD | `etl/tests/test_presidencia_contract.py:121`; `:124` | FAIL |
-| C54 | deterministic; ordering | `test_build_is_deterministic` - red at HEAD | `etl/tests/test_presidencia_contract.py:131` snapshot equal; `:133`; `:135`; `:137`; `:139` | FAIL |
-| C55 | one summary line per term; none with `--quiet` | `test_log_line_per_term` - red at HEAD | `etl/tests/test_presidencia_contract.py:148`; `:150` `err == ""`; `:156-159` | FAIL |
-| C56 | committed fixture = fresh R build; CI validates it | `test_committed_fixture_is_the_recorded_build` red at HEAD; grep exit 0 | `etl/tests/test_presidencia_contract.py:185` `snapshot(FIXTURE) == snapshot(out)`; `:186`; `.github/workflows/ci.yml:38` | FAIL |
-| C57 | v2/v3/senado suites green | 14 files, 220 passed (HEAD clean too) | suite exit 0 | PASS |
-| C58 | allowlist additions only; other columns never reach output | `test_allowlist_additions` - red at HEAD | `etl/tests/test_presidencia_acts.py:328-331` allowlists; `:332` no cpf column; `:335` `"Órgão do Poder Executivo" not in text` | FAIL |
-| C59 | AGENTS.md profile line | grep exit 0 | `AGENTS.md` line matched | PASS |
-| C60 | house dirs read beside `--out` | `test_house_directories_are_siblings_of_out` - red at HEAD | `etl/tests/test_presidencia_sources.py:204-205`; `:207-208` `not (pd.v4(con)).exists()` | FAIL |
+| C1 | v4 Câmara = v3 except `schema_version` | `test_camara_v4_equals_v3_but_version` PASSED | `etl/tests/test_v4_houses.py:43` `v4[relative] == v3[relative].replace(b'"schema_version":3', b'"schema_version":4')`; `:45` byte-equal otherwise | PASS |
+| C2 | same for the Senate | `test_senado_v4_equals_v3_but_version` PASSED | `etl/tests/test_v4_houses.py:62` `_only_version_differs(snapshot(sd.out(sen)), snapshot(out))` | PASS |
+| C3 | default `data/v4/<house>`; out and v3 bytes and mtimes kept | `test_v4_default_out_leaves_out_and_v3_untouched` PASSED | `etl/tests/test_v4_houses.py:80`, `:85` meta files exist; `:86-87` `_stats(...) == before_out` / `before_v3` | PASS |
+| C4 | bad contract/house: exit 1, usage, 0 requests, no output | `-k test_bad_contract_or_house_exits_1` 5 PASSED | `etl/tests/test_v4_houses.py:96` `== 1`; `:97` `"usage:" in err`; `:98` `con.requests == []`; `:99` `not out.exists()` | PASS |
+| C5 | validate picks the v4 set by scope; v2/v3 kept | `test_validate_picks_the_v4_set_by_scope` PASSED | `etl/tests/test_v4_houses.py:106,111,115` `== 0`; `:119` scope on a house `== 1`; `:123` `"unsupported schema_version 5" in err`; `:127,:130` v2/v3 `== 0`; `:133` relabelled v3 `== 1` | PASS |
+| C6 | no diff in site, design, v3 schemas, v2 schemas, publish.yml | git-diff test, exit 0 | empty output of the command in `.specs/features/etl-presidencia/checks.md:89` | PASS |
+| C7 | v4 schema set exact; house schemas = v3 but const 4 | `test_v4_schema_set` PASSED | `etl/tests/test_v4_houses.py:175` file set; `:181` `const == 4`; `:183` `four == three` | PASS |
+| C8 | first build: 23 Congress paths once, headers, manifest | `test_first_build_requests_each_source_once` PASSED | `etl/tests/test_presidencia_sources.py:47` `sorted(requested) == sorted(OTHERS + DEVICES)`; `:48` `len == 23`; `:52-53`; `:60-62` | PASS |
+| C9 | cache reuses only decided devices; `--refresh` refetches | `test_cache_reuses_only_decided_devices` PASSED | `etl/tests/test_presidencia_sources.py:73` `== sorted(OTHERS)`; `:74`; `:77` | PASS |
+| C10 | ≥0.45 s apart, one in flight | `test_at_most_two_requests_per_second` PASSED | `etl/tests/test_presidencia_sources.py:94` `b - a >= 0.45`; `:95` `con.max_in_flight == 1` | PASS |
+| C11 | 503×4 → exit 2, URL, sleeps [1,2,4], no `.part`, output kept; bad bodies retried | `test_download_failure_exits_2_and_keeps_output` PASSED; `-k test_bad_body_is_retried` 4 PASSED | `etl/tests/test_presidencia_sources.py:105` `== 2`; `:106`; `:107` `con.sleeps == [1, 2, 4]`; `:108`; `:109`; `:151`; `:154` | PASS |
+| C12 | no planalto request | `test_no_planalto_request` PASSED | `etl/tests/test_presidencia_sources.py:166`; `:167` `not any("planalto.gov.br" in url ...)` | PASS |
+| C13 | house dirs missing/invalid/v3 → exit 1 before any request | `-k test_house_directories_required` 3 PASSED | `etl/tests/test_presidencia_sources.py:190` `== 1`; `:192`; `:193` `congress_requests == []`; `:194` | PASS |
+| C14 | exactly 18 act ids, distractors excluded | `test_one_act_per_mp_veto_and_executive_bill` PASSED | `etl/tests/test_presidencia_acts.py:34` `sorted(ids) == sorted(R_IDS)`; `:35` `len == 18`; `:36` | PASS |
+| C15 | kind/type, ints, vetoScope, non-veto devices [] | `test_kind_type_and_veto_scope` PASSED | `etl/tests/test_presidencia_acts.py:45`; `:46`; `:48`; `:50-51` | PASS |
+| C16 | pl-1-2023 excluded, counter 1 | `test_before_first_term_is_excluded` PASSED | `etl/tests/test_presidencia_acts.py:56`; `:57` `excludedBeforeFirstTerm == 1` | PASS |
+| C17 | term edges; T termIds; meta.terms exact by build date | `test_term_boundaries`, `test_terms_listed_by_build_date` PASSED | `etl/tests/test_presidencia_acts.py:61-64` `term_of(...)`; `:69-70`; `:82` `== [TERM_2023]`; `:87` `== [TERM_2023, TERM_2027]` | PASS |
+| C18 | 9 MP rules, 4 rejects | `-k test_mp_status_rules` 13 PASSED | `etl/tests/test_presidencia_acts.py:103` `mp_status(record, ...) == (status, rule)`; `:113-114` `pytest.raises(PresidencyError)` | PASS |
+| C19 | 4 device rules, 3 rejects | `-k test_device_status_rules` 7 PASSED | `etl/tests/test_presidencia_acts.py:122`; `:127-128` | PASS |
+| C20 | recorded MP and device status/rule/officialStatus | `test_recorded_statuses` PASSED | `etl/tests/test_presidencia_acts.py:142`; `:152` | PASS |
+| C21 | unknown MP/device value → exit 1 naming value + act, output kept | `-k test_unknown_status_stops_the_build` 2 PASSED | `etl/tests/test_presidencia_acts.py:180` `== 1`; `:182`; `:183` snapshot | PASS |
+| C22 | veto pending/decided, unit cases | `test_veto_status` PASSED | `etl/tests/test_presidencia_acts.py:188`, `:190`; `:191-193` | PASS |
+| C23 | bill precedence table (10 rows) | `-k test_bill_status_precedence` 10 PASSED | `etl/tests/test_presidencia_acts.py:212` `bill_status(norma, camara, total) == (status, rule)` | PASS |
+| C24 | recorded bill statuses; H vetoedTotally | `test_recorded_bill_statuses`, `test_vetoed_totally` PASSED | `etl/tests/test_presidencia_acts.py:218-225`; `:230` `("vetoedTotally", "bill.03")` | PASS |
+| C25 | law verbatim; approvedWithoutLaw 0/1 | `test_law_and_approved_without_law` PASSED | `etl/tests/test_presidencia_acts.py:239`; `:241`; `:242` `== 0`; `:247-248` | PASS |
+| C26 | vetoedMatter and relatedActId | `test_related_act` PASSED | `etl/tests/test_presidencia_acts.py:261`; `:264`; `:268` `== "pl-9105-2025"` | PASS |
+| C27 | 21 rules exact, keys, verbatim value, words, version 1 | `test_status_rules_file` PASSED | `etl/tests/test_presidencia_acts.py:292` `== RULE_TABLE`; `:293`; `:295`; `:297`; `:300`; `:306` | PASS |
+| C28 | issuedAt/statusAt/summary, device fields | `test_act_fields` PASSED | `etl/tests/test_presidencia_acts.py:312`, `:314`, `:315`, `:317`, `:319-324` | PASS |
+| C29 | MP stages, missingCamaraStage 1 | `test_mp_stages` PASSED | `etl/tests/test_presidencia_stages.py:22-25` | PASS |
+| C30 | bill stages, SF-only Senate stage | `test_bill_stages` PASSED | `etl/tests/test_presidencia_stages.py:29-32` | PASS |
+| C31 | vetoes have no stage; joint ids = device ids | `test_veto_has_no_stage` PASSED | `etl/tests/test_presidencia_stages.py:37` `all(a["stages"] == [])`; `:40-41` | PASS |
+| C32 | stage join returns the named roll calls | `test_stages_join_house_roll_calls` PASSED | `etl/tests/test_presidencia_stages.py:51-53` | PASS |
+| C33 | 6 joint roll calls, fields | `test_joint_roll_calls` PASSED | `etl/tests/test_presidencia_joint.py:30`; `:32-36`; `:38-40` | PASS |
+| C34 | position map + rejects | `-k test_position_map` 9 PASSED | `etl/tests/test_presidencia_joint.py:48`; `:53-54` | PASS |
+| C35 | votes file shape, order, aj Albuquerque | `test_votes_file` PASSED | `etl/tests/test_presidencia_joint.py:60`, `:62`, `:65`, `:66`, `:68-69` | PASS |
+| C36 | unknown TipoVoto → exit 1, output kept | `test_unknown_vote_stops_the_build` PASSED | `etl/tests/test_presidencia_joint.py:86` `== 1`; `:88`; `:89` | PASS |
+| C37 | total veto: no votes, PDF URL, counter; device URLs; veto-page fallback | `test_total_veto_has_no_votes` PASSED | `etl/tests/test_presidencia_joint.py:94-97`; `:101-102`; `:106-107` | PASS |
+| C38 | tallies R, H, untrimmed 43825 | `test_tallies`, `test_tallies_untrimmed_device` PASSED | `etl/tests/test_presidencia_joint.py:125`, `:136`; `:144-145` | PASS |
+| C39 | resolution rule unit cases | `-k test_resolution_rule` PASSED | `etl/tests/test_presidencia_joint.py:155-160`, `:163`, `:166` | PASS |
+| C40 | homonyms split by exercise | `test_homonyms_resolve_by_exercise` PASSED | `etl/tests/test_presidencia_joint.py:172` | PASS |
+| C41 | alias file exact; aliases resolve | `test_aliases` PASSED; the file is now in the commit (`etl/inputs/joint-vote-aliases.json`, tracked) | `etl/tests/test_presidencia_joint.py:181` `[(house, name, uf, memberId) ...] == ALIASES` (literal `:175`); `:186`; `:188`; `:194` | PASS |
+| C42 | unmatched fails closed, one line; ambiguous; counters 0 | `-k test_unmatched_fails_closed` 2 PASSED (`test_unmatched_is_zero_in_recorded_build` green in full run) | `etl/tests/test_presidencia_joint.py:208`; `:215` `== 1`; `:217-219`; `:226-228`; `:232` | PASS |
+| C43 | duplicate vote / act id → exit 1 naming it | `-k test_duplicates_stop_the_build` 2 PASSED | `etl/tests/test_presidencia_joint.py:251-253` | PASS |
+| C44 | H member counts exact | `test_member_counts_hand` PASSED | `etl/tests/test_presidencia_counts.py:31-40` | PASS |
+| C45 | R member counts with amended base; unit base | `test_member_counts_recorded`, `test_base_needs_the_members_house_votes` PASSED | `etl/tests/test_presidencia_counts.py:45-59`; `:60`; `:75` | PASS |
+| C46 | veto counted once; split → mixed | `test_veto_counted_once`, `test_split_veto_is_mixed` PASSED | `etl/tests/test_presidencia_counts.py:85` `{"count": 1, "total": 1}`; `:94` `(0, 0, 1)` | PASS |
+| C47 | R term coverage exact; sums hold in R/H/T | `test_term_coverage` 3 PASSED | `etl/tests/test_presidencia_counts.py:122` `== R_TERMS`; `:111`, `:113` | PASS |
+| C48 | no rate keys; count objects exact | `test_no_rate_keys` 3 PASSED | `etl/tests/test_presidencia_counts.py:146`, `:148` | PASS |
+| C49 | every file passes in-package + Draft 2020-12; layout | `test_every_file_passes_its_schema` 3, `test_layout` PASSED | `etl/tests/test_presidencia_contract.py:39`; `:40` `Draft202012Validator(spec).is_valid(doc)`; `:41`; `:47` | PASS |
+| C50 | schema failure → exit 1 naming file/path, output kept | `test_schema_failure_keeps_previous_output` PASSED | `etl/tests/test_presidencia_contract.py:64` `== 1`; `:66`; `:67` snapshot | PASS |
+| C51 | meta keys, coverage exact, sources = manifest entries sorted | `test_meta` PASSED | `etl/tests/test_presidencia_contract.py:73`, `:74`, `:75`, `:77`, `:79`, `:84` | PASS |
+| C52 | act and joint sourceUrls; every veto `…/<Codigo>` | `test_source_urls` PASSED | `etl/tests/test_presidencia_contract.py:98` MP exact; `:102-103` every veto `== VETO_URL + veto_codes[a["id"]]` (codes from the served list entry `:92-94`); `:106` `seen == set(veto_codes)`; `:105` bill exact; `:108` joint `https://`; `:110-112` named examples | PASS |
+| C53 | no cpf key; vote keys exact | `test_no_cpf_and_only_allowed_vote_fields` PASSED | `etl/tests/test_presidencia_contract.py:128`; `:131` | PASS |
+| C54 | deterministic; ordering | `test_build_is_deterministic` PASSED | `etl/tests/test_presidencia_contract.py:138` snapshot equal; `:140`; `:142`; `:144`; `:146` | PASS |
+| C55 | one summary line per term; none with `--quiet` | `test_log_line_per_term` PASSED | `etl/tests/test_presidencia_contract.py:155`; `:157` `err == ""`; `:163` | PASS |
+| C56 | committed fixture = fresh R build; CI validates it | `test_committed_fixture_is_the_recorded_build` PASSED; grep exit 0 | `etl/tests/test_presidencia_contract.py:192` `snapshot(FIXTURE) == snapshot(out)`; `:193`; `.github/workflows/ci.yml:38` | PASS |
+| C57 | v2/v3/senado suites green | 14 files, 220 passed | suite exit 0 (`.specs/features/etl-presidencia/checks.md:262` command) | PASS |
+| C58 | allowlist additions only; other columns never reach output | `test_allowlist_additions` PASSED | `etl/tests/test_presidencia_acts.py:328-331`; `:332`; `:335` | PASS |
+| C59 | AGENTS.md profile line | grep exit 0 | `AGENTS.md:28` | PASS |
+| C60 | house dirs read beside `--out` | `test_house_directories_are_siblings_of_out` PASSED | `etl/tests/test_presidencia_sources.py:204-205`; `:207-208` | PASS |
+| C61 | five guards each exit 1 naming the record | `test_guards_stop_the_build_naming_the_record` 5 PASSED (one per guard id) | `etl/tests/test_presidencia_guards.py:54` `pd.build4(con, data, "--quiet") == 1`; `:56` `all(w in err for w in words)` over `:33-39`: `["vet-91-2025", "no device"]`, `["90.25.003", "prejudged", "not kept or overridden"]`, `["90.25.002", "Eletrônica", "not cedula or painel"]`, `["Prof. Dorinha Seabra/TO", "5386", "absent from senado/members.json"]`, `["mpv-1290-2025", "2027-02-10", "outside every known term"]` | PASS |
+| C62 | `validate` on a v4 house: dangling vote/author → exit 1 naming file, id, memberId; relabelled fixture → 0 | `test_validate_refuses_a_dangling_member_id_in_a_v4_house[vote]`, `[author]`, `test_v4_fixture_house_validates` PASSED | `etl/tests/test_v4_houses.py:148` `cli.main(["validate", ...]) == 1`; `:150` `relative in err and all(token in err for token in named) and "members.json" in err` (named `("6923", "9999")`, `("160000", "9998")` at `:17-20`); `:141` `== 0` | PASS |
+| C63 | presidency build refuses a dangling `senado` dir: exit 1 naming `senado/<file>` + memberId, 0 requests, no output | `test_presidency_build_refuses_a_dangling_house_directory[vote]`, `[author]` PASSED | `etl/tests/test_v4_houses.py:161` `== 1`; `:163` `f"senado/{relative}" in err and all(token in err ...)`; `:164` `pd.congress_requests(con) == []`; `:165` `not pd.out(con).exists()` | PASS |
 
-Level: every claim naming an exit code or stderr goes through `cli.main` with argv (C4, C5, C11, C13, C21, C36, C42, C43, C50, C55), and the HTTP claims cross a real socket to the fake server (C8-C12). No level gap. Precision: C52 asserts the veto URL form exactly for `vet-49-2023` only (`:103-105`) and only the prefix for the other six vetoes (`:97`). The form is proven, but "every veto `…/<Codigo>`" is asserted on 1 of 7. This is a minor precision note and not a FAIL on its own.
+The level judgment is carried from `bb01ceb` and extended at `473e7b5`. Every claim naming an exit code or stderr goes
+through `cli.main` with argv. That includes the new C61 (`pd.build4`), C62 (`cli.main(["validate", ...])`) and C63.
+There is no level gap.
+
+Precision is verified at `473e7b5`. The round-1 C52 note is closed: every veto URL is compared with its list entry's
+`Codigo`, and the set of vetoes seen must equal the served set, so a missing veto cannot pass silently.
 
 ## Coverage
 
-Each set was taken from its authority: the plan's door 4 rule table, door 3, door 5, door 6 with its amendment, and
-door 1, plus research `09` for the alias names and the observed values. Each was compared with the code
-(`presidency.py:22-107`, `:39-42`, `etl/inputs/joint-vote-aliases.json` in the working tree only), then joined to a
-proof that is green at `HEAD`.
+Rows touched by the fixes were recomputed at `473e7b5`. The other rows were recomputed at `bb01ceb`, and their only
+unproven members were "proof red at HEAD". Those proofs are now green in the clean checkout, so the rows are restated
+here with that status updated. The authority for each set is unchanged: the plan doors 1 and 3-7, the amendment, and
+research `09`.
 
 | Set (size) | Recomputed from | Member -> proof | Unproven |
 | --- | --- | --- | --- |
-| MP status rules (9) + rejects (4) | plan door 4; code `presidency.py:54-78` matches 1:1 (values, statuses, ids) | all 13 by C18 unit (`test_presidencia_acts.py:103`, `:113`), green at HEAD; build layer C20 red | - |
-| Device status rules (4) + rejects (3) | plan door 4; `presidency.py:79-88` | all by C19 unit, green at HEAD | - |
-| Veto status rules (2) | plan door 4 (`pending` if any device pending) | `veto.01`, `veto.02` only in C22, whose test is red at HEAD | veto.01, veto.02 (proof red at HEAD) |
-| Bill status rules (6) + precedence pairs (4) | plan door 4 / AC 14; `presidency.py:155-169` | all by C23 unit (10 rows), green at HEAD | - |
-| Device decision on a joint roll call (9: result kept/overridden, method cedula/painel, votesAvailable true/false, sourceUrl device/PDF/veto page) | plan door 5, AC 23, 26, 40; `presidency.py:400-435` | C33, C37, C35 - all red at HEAD | all 9 (proofs red at HEAD) |
-| Extra fail-closed guards added by the builder (5) | Handoff settled item 3; `presidency.py:320` (no device), `:403` (voted device not kept/overridden), `:406` (TipoVotacao), `:206` (alias -> absent member), `:274` (act outside every known term) | none: `grep -rn "lists no device\|not kept or overridden\|is not cedula\|absent from\|outside every known term" etl/tests` finds no presidency test | all 5 (no test even in the working tree; AGENTS.md "Comportamento novo sai com teste no mesmo PR") |
-| Joint positions (6) + rejects (3) | plan door 5; research 09 l.124, l.145 (`Obstrução` never seen, kept by plan) | all by C34 unit, green at HEAD | - |
-| Terms (2) and their dates (start/end/holder/sourceUrl) | plan door 3, Assumptions (EC 111/2021); `presidency.py:22-28` matches | edges asserted at `test_presidencia_acts.py:61-64` but inside C17 proofs that are red at HEAD; `terms()` start-date edge by the unnamed `test_term_listed_from_its_start_date` (green) | meta.terms content and the T-build assignment 2027-01-04 / 2027-01-05 (C17 proofs red at HEAD) |
-| Alias entries (4) | plan door 6 + research 09 l.147: `Márcio Bitar`/AC 285, `Janaina Carla Farias`/CE 6351, `Astr. Marcos Pontes`/SP 6009, `Prof. Dorinha Seabra`/TO 5386 - the working-tree file matches exactly | C41 - red at HEAD; the file is not in the commit (`.gitignore:4`, `git ls-files etl/inputs` empty) | all 4 (file absent from HEAD) |
-| Unmatched case (1) + ambiguous (1) | AC 31 as amended (fail closed) | C42 - red at HEAD; unit `resolve` returns `(None, n)` in C39 (green) but the stop-the-build is only in C42 | unmatched and ambiguous stop-the-build (proof red at HEAD) |
-| Resolution outcomes (6) | door 6 | exact, zero, several, period edge by C39 (green); alias C41, homonyms C40 (red) | alias, homonyms split by exercise |
-| Member veto base and indicators (4 indicators, 5 base cases incl. amendment) | door 6 + amendment, AC 32-34 | house-published base by `test_base_needs_the_members_house_votes` (green at HEAD); everything else C44-C46 (red) | participation/keepAll/overrideAll/mixed on built data; in exercise whole time; out of office on a session date; never voted; no session (no entry) |
-| `data/v4/presidencia` files (6 + votes dir) and their schemas (6) | door 1 | C7 schema set (green); committed fixture `etl/tests/fixtures/v4/presidencia` holds exactly the C49 layout and `mandato-etl validate` exits 0 on it at HEAD; C49-C51 build proofs red | - (proven via C7 + validate on the committed fixture) |
-| `validate` choices (5) + v3 behaviour on v4 house dirs | AC 4, door 1 ("house shapes identical to v3") | C5 red at HEAD. Merge interaction: etl-senado's referential check runs only `if version == 3` (`etl/src/mandato_etl/schema.py:162`), so a v4 house directory, including the one the presidency gate validates (`cli.py` `_house_members`), skips the dangling-member check a byte-identical v3 directory gets | v2, v3, v4 house, v4 presidency, unknown version (proof red at HEAD); dangling-member check on v4 house dirs (absent) |
-| Congress source files (5 kinds + manifest) and retryables (4) | door 7 | C8, C9, C11 red at HEAD (throttle C10 green) | all 6 file kinds, 503/429/empty/non-JSON retry (proofs red at HEAD) |
-| Coverage counters (6), stage cases (4), act sourceUrl forms (3) | AC 35, 39; AC 18-22; AC 40 | C16, C25, C29-C30, C37, C42, C47, C51, C52 - red at HEAD | all (proofs red at HEAD) |
-| `build --contract 4` exit codes (3) | Observable | 0 C1/C2, 1 C4/C13 green; 2 C11 red | exit 2 |
+| MP status rules (9) + rejects (4) | plan door 4; `presidency.py:54-78` (carried from `bb01ceb`, file unchanged) | all 13 by C18 unit; build layer C20, both green at `473e7b5` | - |
+| Device status rules (4) + rejects (3) | plan door 4; `presidency.py:79-88` (carried) | all by C19 unit; build C20 | - |
+| Veto status rules (2) | plan door 4 | `veto.01`, `veto.02` by C22, green at `473e7b5` | - |
+| Bill status rules (6) + precedence pairs (4) | plan door 4 / AC 14 (carried) | all 10 rows by C23 unit; build C24 | - |
+| Device decision on a joint roll call (9) | plan door 5, AC 23, 26, 40 (carried) | C33, C35, C37 green at `473e7b5` | - |
+| Builder-added stop-the-build guards (5), recomputed at `473e7b5` | Handoff settled item 3; code `presidency.py:319-320` (no device), `:402-403` (voted device not kept/overridden), `:405-406` (TipoVotacao), `:205-206` (alias to absent member), `:273-274` (act outside every term) | each by its own C61 case (`test_presidencia_guards.py:33-39`), and F1 and F2 below kill two of them independently of the fixer's runs | - |
+| Joint positions (6) + rejects (3) | plan door 5 (carried) | C34 unit; build C35, C38 | - |
+| Terms (2) and dates | plan door 3 (carried) | C17 edges `test_presidencia_acts.py:61-64`, meta.terms `:82`, `:87`, green at `473e7b5` | - |
+| Alias entries (4), recomputed at `473e7b5` | plan door 6 + research 09 l.147; the committed `etl/inputs/joint-vote-aliases.json` lists exactly `Márcio Bitar`/AC 285, `Janaina Carla Farias`/CE 6351, `Astr. Marcos Pontes`/SP 6009, `Prof. Dorinha Seabra`/TO 5386 | all 4 by C41 (`test_presidencia_joint.py:181`), green in the clean checkout | - |
+| Unmatched (1) + ambiguous (1) | AC 31 as amended (carried) | C42 green at `473e7b5` | - |
+| Resolution outcomes (6) | door 6 (carried) | exact, zero, several and period edge by C39; alias C41; homonyms C40 | - |
+| Member veto base and indicators (4 indicators, 5 base cases) | door 6 + amendment (carried) | C44-C46 and `test_base_needs_the_members_house_votes`, green at `473e7b5` | - |
+| `data/v4/presidencia` files (6 + votes dir) and schemas (6) | door 1 (carried) | C7, C49-C51; `validate` exit 0 on the committed fixture in the clean checkout | - |
+| Dangling `memberId` cases in a house directory (4), recomputed at `473e7b5` | door 1 (house shapes identical to v3) + etl-senado C45; code `schema.py:162-164` now skips only v2 and the presidency scope, then calls `_dangling_member` (`:167-181`: votes, then authors) | v3 vote/author by etl-senado C45 (inside C57, 220 passed); v4 vote/author by C62 (`validate`) and C63 (presidency gate `cli.py:347-349`) | - |
+| `validate` choices (5) | AC 4, door 1 | v2, v3, v4 house, v4 presidency and unknown version by C5, green at `473e7b5` | - |
+| Congress source files (5 kinds + manifest) and retryables (4) | door 7 (carried) | C8, C9, C11 green at `473e7b5`; throttle C10 | - |
+| Coverage counters (6), stage cases (4), act `sourceUrl` forms (3) | AC 35, 39; AC 18-22; AC 40 (sourceUrl recomputed at `473e7b5`) | C16, C25, C29-C30, C37, C42, C47, C51 green; MP, veto (all 7 exact) and bill forms by C52 | - |
+| `build --contract 4` exit codes (3) | Observable | 0 C1/C2; 1 C4, C13, C61, C63; 2 C11, all green | - |
 
 ## Test policy rows
 
+Re-judged at `473e7b5`: the rows unmet in round 1, plus the row classifying `schema.py`, which the fix touched.
+
 | Row | Files it classifies | Required proof | Expectation met |
 | --- | --- | --- | --- |
-| Decides, reached across a boundary | `presidency.py` | own layer: C18, C19, C23, C34, C39 green; boundary: C20, C24, C35-C46 red at HEAD; 5 builder-added stop-the-build branches have no proof at either layer | no - boundary proofs red at HEAD, 5 guards untested |
-| Decides, reached across a boundary | `sources/congresso.py` | C8-C12 across HTTP | no - C8, C9, C11, C12 red at HEAD (C10 green) |
-| Decides, reached across a boundary | `cli.py` | C3, C4, C13, C60 at the CLI | no - C3, C60 red at HEAD (C4, C13 green) |
-| Decides, reached across a boundary | `schema.py`, `publish.py` | C5, C49, C50 at the CLI | no - all three red at HEAD |
+| Decides, reached across a boundary | `presidency.py` | own layer: C18, C19, C22, C23, C34, C39; boundary: C20, C24, C35-C46, plus the five guards at the CLI by C61 | yes - all green at `473e7b5`; each guard has its own CLI case |
+| Decides, reached across a boundary | `sources/congresso.py` | C8-C12 across HTTP | yes - all five green at `473e7b5` |
+| Decides, reached across a boundary | `cli.py` | C3, C4, C13, C60, C63 at the CLI | yes - all green at `473e7b5` |
+| Decides, reached across a boundary | `schema.py`, `publish.py` | C5, C49, C50, C62, C63 at the CLI | yes - all green; the new v4 referential branch is reached by `validate` (C62) and by the build gate (C63) |
 | Decides, not reached across a boundary | none classified by the checks | - | yes (nothing classified) |
-| Instrumentation, pass-throughs | `contract_v3.py` version parameter | covered by C1, C2 | yes - C1, C2 green at HEAD |
+| Instrumentation, pass-throughs | `contract_v3.py` version parameter | covered by C1, C2 | yes - carried from `bb01ceb`, still green |
 
 ## Faults injected
 
-Scratch: `git worktree add /tmp/presid-verify HEAD` with its own `uv sync`. The ignored alias file was copied into the
-scratch only, because without it every covering proof is already red. Real-tree `git status --porcelain` was empty
-before and empty after. The scratch was removed with `git worktree remove --force`. A second scratch
-(`/tmp/presid-verify2`), used only to list the clean-checkout failures, was removed the same way, and the porcelain was
-still empty.
+Round 2 was verified at `473e7b5`. The scratch was `git worktree add /tmp/presid-v2 HEAD` with its own `uv sync`, and
+nothing was copied in from the real tree.
+
+- **Baseline:** the real tree's `git status --porcelain` was empty before the run.
+- **Restore:** each fault was undone with `git -C /tmp/presid-v2 checkout -- <file>`, and the scratch porcelain was
+  empty after the last restore.
+- **Cleanup:** the scratch was removed with `git worktree remove --force`. `git worktree list` no longer shows it, and
+  the real tree's porcelain was empty before this report was written.
 
 | Mutation | Location | Killed |
 | --- | --- | --- |
-| MP rule table: `APROVADO_PLV` -> `approved` instead of `approvedAmended` | `etl/src/mandato_etl/presidency.py:57` | yes - `test_mp_status_rules` 1 failed |
-| veto status: `pending` only when every device is pending | `etl/src/mandato_etl/presidency.py:152` | yes - `test_veto_status` failed |
-| alias resolution skipped (`alias = None`) | `etl/src/mandato_etl/presidency.py:203` | yes - `test_aliases` errored (its R build fails closed on `Márcio Bitar`) |
-| unmatched vote no longer stops the build (`if failed and False`) | `etl/src/mandato_etl/presidency.py:447` | yes - `test_unmatched_fails_closed` failed |
-| member veto base ignores the member's house (`published[house]` -> `voted`) | `etl/src/mandato_etl/presidency.py:474` | yes - `test_base_needs_the_members_house_votes` failed |
+| R2-F1 (C61): an unknown `TipoVotacao` defaults to `painel` (`METHODS.get(..., "painel")`) | `etl/src/mandato_etl/presidency.py:404` | yes - `[unknown-tipo-votacao]` failed, the other 4 guard cases passed |
+| R2-F2 (C61): alias-to-absent-member guard off (`if False:`) | `etl/src/mandato_etl/presidency.py:205` | yes - `[alias-to-absent-member]` failed, the other 4 passed |
+| R2-F3 (C62): referential check back to v3 only (`_dangling_member(out) if version == 3 else None`) | `etl/src/mandato_etl/schema.py:164` | yes - C62 `[vote]`, `[author]` and C63 `[vote]`, `[author]` failed; `test_v4_fixture_house_validates` passed |
+| R2-F4 (C63): presidency house gate ignores referential errors (`if error and "not in members.json" not in error`) | `etl/src/mandato_etl/cli.py:348` | yes - C63 `[vote]`, `[author]` failed; C62 passed (its own surface, distinct from F3) |
+| R2-F5 (C52): veto URL `Codigo + 1` for every veto outside 2023 | `etl/src/mandato_etl/presidency.py:312` | yes - `test_source_urls` failed at `test_presidencia_contract.py:102` (`…/17970` vs `…/17969`). The pre-fix test (`git show f4cae72^:…`) passed under the same mutant, which confirms gap 4 was real and is closed |
+| R1: MP rule `APROVADO_PLV` -> `approved` (carried from `bb01ceb`; `presidency.py` unchanged since) | `etl/src/mandato_etl/presidency.py:57` | yes - `test_mp_status_rules` failed |
+| R1: veto `pending` only when every device is pending (carried) | `etl/src/mandato_etl/presidency.py:152` | yes - `test_veto_status` failed |
+| R1: alias resolution skipped (carried) | `etl/src/mandato_etl/presidency.py:203` | yes - `test_aliases` errored |
+| R1: unmatched vote no longer stops the build (carried) | `etl/src/mandato_etl/presidency.py:447` | yes - `test_unmatched_fails_closed` failed |
+| R1: member veto base ignores the member's house (carried) | `etl/src/mandato_etl/presidency.py:474` | yes - `test_base_needs_the_members_house_votes` failed |
 
 ## Handoff deviations
 
-- (1) Three older tests moved from version 4 to 5 as the unknown version (`test_v3_cli.py` `contract-5` and `schema_version 5`, `test_publish.py` `v4` beside `v3`). The assertions are unchanged and door 1 makes 4 a known version. Accepted.
-- (2) Landing row 8 was written after the code. `b7c32bd` (checks, 21:34) precedes `4d62e37` (code, 21:41) and already pins C20/C28/C47/C60. Accepted, and recorded transparently.
-- (3) Extra fail-closed guards. These are consistent with AD-017 and AD-020, but four of the five (and the out-of-term guard) have no test. This is a finding (Coverage row above).
-- (4) The PEC hand date and (5) no pattern on `jointRollCallId`: accepted, since no check was edited.
-- (6) Closed by the orchestrator's amendment, and proven by `test_base_needs_the_members_house_votes` and C45.
-- (7) Term date pinned by constants only, a go-live item. Accepted as out of scope.
-- Deferred per-house count of vetoes with no published votes: accepted. `presidency-meta` `coverage` has `additionalProperties: false` with the six AC 39 keys (`etl/schema/v4/presidency-meta.schema.json`), so adding a key needs a version bump.
-- Merge `bb01ceb`: clean, with no conflict hunks (`git show --cc` is empty). The merged etl-senado code (camara `opener`, senado redirect warning, `assemble_senado` membership guard, `_dangling_member`) leaves this feature's behaviour intact, except for the v4 house validation gap in Coverage.
+Carried from `bb01ceb`: deviations (1), (2), (4), (5), (6) and (7) and the deferred per-house count were all accepted
+there and are unchanged. The updates below were verified at `473e7b5`:
 
-Swept existing: `conftest.FakeCamara` serving `/dadosabertos` (`etl/tests/conftest.py`), validate-then-swap in `publish.write` (`etl/src/mandato_etl/publish.py:23-30`, now refusing unknown files), and the `readers.read` allowlist (`etl/src/mandato_etl/readers.py:15`, `:60`, applied at `:82`) are all present as cited.
+- **(3) Extra fail-closed guards.** This is now proven by C61. The fixer reports that removing each guard in turn
+  failed only that guard's own case, and F1 and F2 above reproduce that independently. Accepted.
+- **Round 1 gap 1 (`baf37ae`).** The orchestrator versioned the alias file with a `.gitignore` exception. The file holds
+  only public names, UFs, official member ids and a note, with no CPF (AD-003). Accepted. Side note, not a check:
+  the comment at `.gitignore:3` still says "only the CPF-free candidacy export is versioned (AD-011)", and it now has
+  a second exception under it.
+- **Round 1 gap 3 (`b6453d3`).** The fix is in `validate_dir`, so the presidency gate inherits it. F4 shows that C63
+  pins the gate on its own surface, independent of `validate`. Accepted.
+- **Round 1 gap 4 (`f4cae72`).** Accepted, confirmed by F5.
+- **`checks.md` (`473e7b5`).** Adds C61-C63 and the matching Coverage, Test policy and Swept rows, and edits no
+  earlier check's claim. The check count line reads 63.
+
+Swept existing: carried from `bb01ceb`. `conftest.FakeCamara`, validate-then-swap in `publish.write` and the
+`readers.read` allowlist were untouched by the fixes.
 
 ## Gate
 
-- Real tree at `bb01ceb`: `uv run --directory etl pytest -v` - 453 passed, 0 failed. Named proofs batch: 117 passed. C57: 220 passed. `mandato-etl validate tests/fixtures/v4/presidencia` exit 0
-- Committed `HEAD` (clean worktree, own `uv sync`): `uv run --directory etl pytest -q` - 390 passed, 40 failed, 23 errors (all `FileNotFoundError: etl/inputs/joint-vote-aliases.json`). 46 of 60 checks have a red proof
-- `python3 ~/.claude/skills/tlc-spec-lean/scripts/validate_verification.py etl-presidencia` - exit 1, its only error being "verdict is FAIL"; no row contradicts the verdict
-
-Ranked gaps:
-
-1. `etl/inputs/joint-vote-aliases.json` is gitignored (`.gitignore:4` `etl/inputs/*`, with only `candidacy-2026.json` excepted) and absent from every commit. Every presidency build at `HEAD` fails, so 46 checks have red proofs and CI would fail. Fix: add `!etl/inputs/joint-vote-aliases.json` to `.gitignore` and commit the file. C3, C5, C8, C9, C11, C12, C14-C17, C20-C22, C24-C33, C35-C38, C40-C56, C58, C60 - `etl/src/mandato_etl/presidency.py:19`
-2. Five builder-added stop-the-build branches have no test: a veto with no device, a voted device not kept or overridden, a `TipoVotacao` outside the map, an alias pointing at an absent member, and an act outside every known term. Coverage "extra guards" - `etl/src/mandato_etl/presidency.py:320,403,406,206,274`
-3. Merge interaction: the referential check `_dangling_member` runs only on v3 directories, so the v4 house directories (identical to v3 by door 1) and the presidency build's house gate skip it. C5 / door 1 - `etl/src/mandato_etl/schema.py:162`
-4. Precision: the veto `sourceUrl` code is asserted exactly for one veto of seven. C52 - `etl/tests/test_presidencia_contract.py:97`
+- **Clean checkout of `473e7b5`** (own `uv sync`, network guard): `uv run --directory etl pytest -v` gave 463 passed
+  and 0 failed. The named-proof batch gave 127 passed. C57 gave 220 passed.
+  `mandato-etl validate tests/fixtures/v4/presidencia` exited 0.
+- **Real tree at `473e7b5`:** 463 passed, named batch 127 passed, `validate` exit 0. This matches the clean checkout.
+- **Tracked inputs:** `git ls-files etl/inputs` lists `etl/inputs/joint-vote-aliases.json`. Nothing a test reads is
+  untracked.
+- **Faults:** 5 injected in round 2, 5 killed. The 5 from round 1 are carried, all killed.
+- `python3 ~/.claude/skills/tlc-spec-lean/scripts/validate_verification.py etl-presidencia`: exit 0, with 0 errors and
+  0 warnings.

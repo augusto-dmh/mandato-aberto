@@ -1,6 +1,6 @@
 # ETL caches and outputs (hundreds of MB; provenance lives in data/raw/manifest.json)
 data/
-# Local inputs, among them the TSE CSV (carries CPF, AD-003); only the CPF-free candidacy export is versioned (AD-011)
+# Local inputs, among them the TSE CSV (carries CPF, AD-003); versioned exceptions: the CPF-free candidacy export (AD-011) and the joint-vote alias table (AD-020)
 etl/inputs/*
 !etl/inputs/candidacy-2026.json
 !etl/inputs/joint-vote-aliases.json
