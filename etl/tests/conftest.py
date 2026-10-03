@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from mandato_etl import cli
-from mandato_etl.sources import camara
+from mandato_etl.sources import camara, senado
 
 PINNED = datetime(2026, 9, 27, 12, 0, 0, tzinfo=UTC)  # 2026-09-27T09:00:00 in Brasília
 YEARLY = camara.YEARLY
@@ -220,6 +220,7 @@ def write_tse(path: Path, rows=TSE_ROWS) -> Path:
 class FakeCamara:
     def __init__(self):
         self.routes: dict[str, bytes] = {}
+        self.headers: dict[str, dict[str, str]] = {}  # path -> extra response headers
         self.fail: dict[str, list] = {}  # path -> statuses (or "hang") answered before the route
         self.requests: list[tuple[str, str]] = []
         self.delay = 0.0
@@ -246,6 +247,8 @@ class FakeCamara:
                         body = fake.routes[self.path]
                         self.send_response(200)
                         self.send_header("Content-Length", str(len(body)))
+                        for name, value in fake.headers.get(self.path, {}).items():
+                            self.send_header(name, value)
                         self.end_headers()
                         self.wfile.write(body)
                     else:
@@ -311,4 +314,11 @@ def built(fake):
     fake.serve(legislature())
     tse = write_tse(fake.raw.parent / "consulta_cand_2026_BRASIL.csv")
     assert build(fake, "--tse-csv", str(tse)) == 0
+    return fake
+
+
+@pytest.fixture
+def sen(fake, monkeypatch):
+    """The fake server with `sources.senado` pointed at it, under `/dadosabertos`."""
+    monkeypatch.setattr(senado, "API_URL", fake.base + "/dadosabertos")
     return fake

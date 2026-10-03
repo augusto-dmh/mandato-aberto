@@ -47,8 +47,8 @@ def test_v3_rejects_candidacy_flags(fake, capsys, flag):
 
 
 @pytest.mark.parametrize(
-    "argv", [["--contract", "4"], ["--contract", "x"], ["--contract", "3", "--house", "senado"]],
-    ids=["contract-4", "contract-x", "house-senado"],
+    "argv", [["--contract", "4"], ["--contract", "x"], ["--contract", "3", "--house", "presidencia"]],
+    ids=["contract-4", "contract-x", "house-presidencia"],
 )
 def test_bad_contract_or_house_exits_1(fake, capsys, argv):
     assert cli.main(["build", *argv, "--years", "2023", "--out", str(out3(fake))]) == 1
