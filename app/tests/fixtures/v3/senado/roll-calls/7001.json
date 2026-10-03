@@ -1,0 +1,67 @@
+{
+  "approved": true,
+  "ballot": "secret",
+  "date": "2025-06-10",
+  "description": "Votação secreta da indicação de autoridade.",
+  "governmentOrientation": null,
+  "house": "senado",
+  "id": "7001",
+  "kind": "final",
+  "kindRule": "senado.01",
+  "lastPresentationDescription": null,
+  "legislature": 57,
+  "openingDescription": null,
+  "organ": "PLEN",
+  "orientations": [],
+  "propositionId": null,
+  "sourceUrl": "https://legis.senado.leg.br/dadosabertos/votacao?codigoSessaoVotacao=7001",
+  "tallies": {
+    "no": 20,
+    "others": 1,
+    "yes": 40
+  },
+  "votes": [
+    {
+      "memberId": 9101,
+      "official": "Votou",
+      "party": "PT",
+      "partyMajority": null,
+      "position": "secret"
+    },
+    {
+      "memberId": 9102,
+      "official": "Votou",
+      "party": "PL",
+      "partyMajority": null,
+      "position": "secret"
+    },
+    {
+      "memberId": 9103,
+      "official": "Licença",
+      "party": "MDB",
+      "partyMajority": null,
+      "position": "notVoting"
+    },
+    {
+      "memberId": 9104,
+      "official": "AP",
+      "party": "PSD",
+      "partyMajority": null,
+      "position": "notVoting"
+    },
+    {
+      "memberId": 9105,
+      "official": "MIS",
+      "party": "PP",
+      "partyMajority": null,
+      "position": "notVoting"
+    },
+    {
+      "memberId": 9106,
+      "official": "NA",
+      "party": "PSB",
+      "partyMajority": null,
+      "position": "notVoting"
+    }
+  ]
+}

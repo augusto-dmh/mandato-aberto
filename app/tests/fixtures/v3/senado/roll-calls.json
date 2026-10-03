@@ -1,0 +1,42 @@
+[
+  {
+    "approved": true,
+    "ballot": "secret",
+    "date": "2025-06-10",
+    "description": "Votação secreta da indicação de autoridade.",
+    "governmentOrientation": null,
+    "house": "senado",
+    "id": "7001",
+    "kind": "final",
+    "kindRule": "senado.01",
+    "legislature": 57,
+    "organ": "PLEN",
+    "propositionId": null,
+    "sourceUrl": "https://legis.senado.leg.br/dadosabertos/votacao?codigoSessaoVotacao=7001",
+    "tallies": {
+      "no": 20,
+      "others": 1,
+      "yes": 40
+    }
+  },
+  {
+    "approved": true,
+    "ballot": "nominal",
+    "date": "2025-04-01",
+    "description": "Votação nominal do Projeto de Lei nº 1, de 2025.",
+    "governmentOrientation": "yes",
+    "house": "senado",
+    "id": "6923",
+    "kind": "unclassified",
+    "kindRule": null,
+    "legislature": 57,
+    "organ": "PLEN",
+    "propositionId": 160000,
+    "sourceUrl": "https://legis.senado.leg.br/dadosabertos/votacao?codigoSessaoVotacao=6923",
+    "tallies": {
+      "no": 1,
+      "others": 0,
+      "yes": 1
+    }
+  }
+]

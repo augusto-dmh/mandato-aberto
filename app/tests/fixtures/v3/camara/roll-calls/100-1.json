@@ -1,0 +1,52 @@
+{
+  "approved": true,
+  "ballot": "nominal",
+  "date": "2023-03-01",
+  "description": "Aprovado o Projeto de Lei nº 1, de 2023.",
+  "governmentOrientation": "yes",
+  "house": "camara",
+  "id": "100-1",
+  "kind": "final",
+  "kindRule": "camara.09",
+  "lastPresentationDescription": "Apresentação do Projeto de Lei n. 1/2023",
+  "legislature": 57,
+  "openingDescription": null,
+  "organ": "PLEN",
+  "orientations": [
+    {
+      "bench": "Governo",
+      "official": "Sim",
+      "position": "yes"
+    }
+  ],
+  "propositionId": 5001,
+  "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-1",
+  "tallies": {
+    "no": 1,
+    "others": 1,
+    "yes": 1
+  },
+  "votes": [
+    {
+      "memberId": 101,
+      "official": "Sim",
+      "party": "PSB",
+      "partyMajority": "yes",
+      "position": "yes"
+    },
+    {
+      "memberId": 102,
+      "official": "Não",
+      "party": "PL",
+      "partyMajority": "no",
+      "position": "no"
+    },
+    {
+      "memberId": 103,
+      "official": "Artigo 17",
+      "party": "MDB",
+      "partyMajority": null,
+      "position": "presiding"
+    }
+  ]
+}

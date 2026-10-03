@@ -2,15 +2,15 @@
 
 namespace App\Contract;
 
-/** The version seam (plan door 5): one reader per supported `schema_version`. */
+/** The version seam: one reader per supported `schema_version` (plan door 1; v2 is no longer read). */
 final class ContractReaders
 {
-    public const SUPPORTED_SCHEMA_VERSIONS = [2];
+    public const SUPPORTED_SCHEMA_VERSIONS = [3];
 
     public static function for(mixed $version): ?ContractReader
     {
         return match ($version) {
-            2 => app(V2Reader::class),
+            3 => app(V3Reader::class),
             default => null,
         };
     }

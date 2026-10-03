@@ -15,22 +15,32 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
-/** The eight tables an import writes. */
-const MANDATE_TABLES = ['legislatures', 'members', 'memberships', 'propositions', 'roll_calls', 'votes', 'authorships', 'contract_imports'];
+/** The tables an import writes: the ten contract tables plus `contract_imports`. */
+const MANDATE_TABLES = [
+    'legislatures', 'members', 'memberships', 'exercise_periods', 'propositions', 'roll_calls', 'votes', 'authorships',
+    'classification_rules', 'full_texts', 'contract_imports',
+];
 
-/** The MVP's contract fixture, read in place (plan, Assumptions: test data). */
-function fixtureDir(): string
+/** The app-owned v3 fixtures (plan, Assumptions: test data): `camara/` and `senado/` under one parent. */
+function fixtureDir(?string $house = null): string
 {
-    return base_path('../site/tests/fixtures/out');
+    return base_path('tests/fixtures/v3'.($house === null ? '' : "/{$house}"));
 }
 
-/** A writable copy of the fixture in the system temp directory, for tests that change it. */
-function fixtureCopy(): string
+/** A writable copy of the fixture parent (or one house) in the system temp directory, for tests that change it. */
+function fixtureCopy(?string $house = null): string
 {
     $dir = sys_get_temp_dir().'/mandato-contract-'.bin2hex(random_bytes(6));
-    File::copyDirectory(fixtureDir(), $dir);
+    File::copyDirectory(fixtureDir($house), $dir);
 
     return $dir;
+}
+
+/** Imports both fixture houses from their parent and fails the test on a non-zero exit. */
+function importFixtures(): void
+{
+    $result = runImport(['dir' => fixtureDir()]);
+    expect($result['code'])->toBe(0, $result['err']);
 }
 
 /** @return mixed decoded as arrays */
@@ -114,7 +124,7 @@ function textOf(?Element $element): string
 }
 
 /**
- * The head tags of AC 14 and AC 22, by name.
+ * The head tags of skeleton AC 14 and AC 22, by name.
  *
  * @return array<string, list<string>>
  */
