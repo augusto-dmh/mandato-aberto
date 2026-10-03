@@ -85,7 +85,8 @@ test('consumes the design package', function () {
 test('sail runs php 8.5 with the sibling mounts', function () {
     $services = Yaml::parseFile(base_path('compose.yaml'))['services'];
 
-    expect($services['laravel.test']['build']['context'])->toBe('./vendor/laravel/sail/runtimes/8.5')
+    // The published Sail runtime adds the card renderer's browser shell (share-cards door 3, C36).
+    expect($services['laravel.test']['build']['context'])->toBe('./docker/8.5')
         ->and($services['pgsql']['image'])->toBe('postgres:18-alpine')
         ->and($services['laravel.test']['volumes'])->toContain(
             '../design:/var/www/design',
