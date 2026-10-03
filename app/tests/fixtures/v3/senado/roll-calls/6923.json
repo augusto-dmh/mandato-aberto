@@ -1,0 +1,73 @@
+{
+  "approved": true,
+  "ballot": "nominal",
+  "date": "2025-04-01",
+  "description": "Votação nominal do Projeto de Lei nº 1, de 2025.",
+  "governmentOrientation": "yes",
+  "house": "senado",
+  "id": "6923",
+  "kind": "unclassified",
+  "kindRule": null,
+  "lastPresentationDescription": null,
+  "legislature": 57,
+  "openingDescription": null,
+  "organ": "PLEN",
+  "orientations": [
+    {
+      "bench": "Governo",
+      "official": "Sim",
+      "position": "yes"
+    }
+  ],
+  "propositionId": 160000,
+  "sourceUrl": "https://legis.senado.leg.br/dadosabertos/votacao?codigoSessaoVotacao=6923",
+  "tallies": {
+    "no": 1,
+    "others": 0,
+    "yes": 1
+  },
+  "votes": [
+    {
+      "memberId": 9101,
+      "official": "Sim",
+      "party": "PT",
+      "partyMajority": null,
+      "position": "yes"
+    },
+    {
+      "memberId": 9102,
+      "official": "Não",
+      "party": "PL",
+      "partyMajority": null,
+      "position": "no"
+    },
+    {
+      "memberId": 9103,
+      "official": "P-NRV",
+      "party": "MDB",
+      "partyMajority": null,
+      "position": "notVoting"
+    },
+    {
+      "memberId": 9104,
+      "official": "Presidente (art. 51 RISF)",
+      "party": "PSD",
+      "partyMajority": null,
+      "position": "presiding"
+    },
+    {
+      "memberId": 9105,
+      "official": "Licença",
+      "party": "PP",
+      "partyMajority": null,
+      "position": "notVoting"
+    },
+    {
+      "memberId": 9106,
+      "official": "NCom",
+      "party": "PSB",
+      "partyMajority": null,
+      "position": "notVoting"
+    }
+  ]
+}

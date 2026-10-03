@@ -1,0 +1,95 @@
+[
+  {
+    "authors": [
+      {
+        "firstSigner": true,
+        "memberId": 101
+      },
+      {
+        "firstSigner": false,
+        "memberId": 102
+      }
+    ],
+    "house": "camara",
+    "id": 5006,
+    "number": 6,
+    "presentedAt": "2027-02-10",
+    "sourceUrl": "https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=5006",
+    "status": "Aguardando parecer",
+    "summary": "Dispõe sobre dados abertos.",
+    "type": "PL",
+    "year": 2027
+  },
+  {
+    "authors": [
+      {
+        "firstSigner": true,
+        "memberId": 103
+      }
+    ],
+    "house": "camara",
+    "id": 5003,
+    "number": 3,
+    "presentedAt": "2024-02-01",
+    "sourceUrl": "https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=5003",
+    "status": "Promulgada",
+    "summary": "Altera o art. 37 da Constituição.",
+    "type": "PEC",
+    "year": 2024
+  },
+  {
+    "authors": [
+      {
+        "firstSigner": true,
+        "memberId": 101
+      },
+      {
+        "firstSigner": false,
+        "memberId": 102
+      }
+    ],
+    "house": "camara",
+    "id": 5001,
+    "number": 1,
+    "presentedAt": "2023-02-10",
+    "sourceUrl": "https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=5001",
+    "status": "Transformada em lei",
+    "summary": "Dispõe sobre transparência.",
+    "type": "PL",
+    "year": 2023
+  },
+  {
+    "authors": [
+      {
+        "firstSigner": true,
+        "memberId": 101
+      }
+    ],
+    "house": "camara",
+    "id": 5005,
+    "number": 5,
+    "presentedAt": "2023-01-15",
+    "sourceUrl": "https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=5005",
+    "status": null,
+    "summary": null,
+    "type": "REQ",
+    "year": 2023
+  },
+  {
+    "authors": [
+      {
+        "firstSigner": true,
+        "memberId": 102
+      }
+    ],
+    "house": "camara",
+    "id": 5007,
+    "number": 7,
+    "presentedAt": null,
+    "sourceUrl": "https://www.camara.leg.br/proposicoesWeb/fichadetramitacao?idProposicao=5007",
+    "status": null,
+    "summary": "Indica medidas.",
+    "type": "INC",
+    "year": 2024
+  }
+]

@@ -83,3 +83,63 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Layout tests
         run: npm run test:e2e
+  app:
+    name: app tests and gates
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: sail
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: testing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: testing
+      DB_USERNAME: sail
+      DB_PASSWORD: password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          extensions: pdo_pgsql, intl
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            design/package-lock.json
+            app/package-lock.json
+      - name: Build the design tokens
+        working-directory: design
+        run: npm ci && npm run build
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+      - name: Prepare the environment
+        run: cp .env.example .env && php artisan key:generate
+      - name: Pint
+        run: vendor/bin/pint --test
+      - name: Larastan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+      - name: Build the client and SSR bundles
+        run: npm ci && npm run build
+      - name: Start the SSR server
+        run: |
+          nohup php artisan inertia:start-ssr > storage/logs/ssr.log 2>&1 &
+          timeout 30 sh -c 'until curl -sf http://127.0.0.1:13714/health; do sleep 1; done'
+      - name: Test
+        run: php artisan test

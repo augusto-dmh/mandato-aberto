@@ -1,0 +1,46 @@
+{
+  "approved": true,
+  "ballot": "secret",
+  "date": "2025-09-01",
+  "description": "Votação secreta.",
+  "governmentOrientation": null,
+  "house": "camara",
+  "id": "100-6",
+  "kind": "unclassified",
+  "kindRule": null,
+  "lastPresentationDescription": null,
+  "legislature": 57,
+  "openingDescription": null,
+  "organ": "PLEN",
+  "orientations": [],
+  "propositionId": null,
+  "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-6",
+  "tallies": {
+    "no": 1,
+    "others": 0,
+    "yes": 2
+  },
+  "votes": [
+    {
+      "memberId": 101,
+      "official": "",
+      "party": "PSB",
+      "partyMajority": null,
+      "position": "secret"
+    },
+    {
+      "memberId": 102,
+      "official": "",
+      "party": "PL",
+      "partyMajority": null,
+      "position": "secret"
+    },
+    {
+      "memberId": 103,
+      "official": "",
+      "party": "MDB",
+      "partyMajority": null,
+      "position": "secret"
+    }
+  ]
+}

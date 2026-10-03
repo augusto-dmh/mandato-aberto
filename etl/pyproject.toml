@@ -10,10 +10,16 @@ mandato-etl = "mandato_etl.cli:main"
 
 [dependency-groups]
 dev = ["pytest>=8", "jsonschema>=4"]
+full-texts = [
+    "pypdf==6.19.0",
+]
 
 [build-system]
 requires = ["uv_build>=0.8,<0.12"]
 build-backend = "uv_build"
+
+[tool.uv]
+default-groups = ["dev", "full-texts"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

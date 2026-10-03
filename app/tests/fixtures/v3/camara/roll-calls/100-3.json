@@ -1,0 +1,45 @@
+{
+  "approved": null,
+  "ballot": "nominal",
+  "date": "2024-03-01",
+  "description": "Aprovado o Requerimento de Urgência.",
+  "governmentOrientation": "no",
+  "house": "camara",
+  "id": "100-3",
+  "kind": "procedural",
+  "kindRule": "camara.04",
+  "lastPresentationDescription": null,
+  "legislature": 57,
+  "openingDescription": null,
+  "organ": "PLEN",
+  "orientations": [
+    {
+      "bench": "Governo",
+      "official": "Não",
+      "position": "no"
+    }
+  ],
+  "propositionId": 5001,
+  "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-3",
+  "tallies": {
+    "no": 1,
+    "others": 0,
+    "yes": 1
+  },
+  "votes": [
+    {
+      "memberId": 101,
+      "official": "Não",
+      "party": "PSB",
+      "partyMajority": null,
+      "position": "no"
+    },
+    {
+      "memberId": 102,
+      "official": "Sim",
+      "party": "PL",
+      "partyMajority": null,
+      "position": "yes"
+    }
+  ]
+}

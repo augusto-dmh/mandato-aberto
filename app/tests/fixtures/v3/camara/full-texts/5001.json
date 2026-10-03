@@ -1,0 +1,9 @@
+{
+  "documentSha256": "51c21455520ce339057dc48e206469bfb051ff8385433b80a80c9bf13cf78722",
+  "extractedAt": "2027-03-02T02:00:00Z",
+  "extractor": "pypdf 6.1.0",
+  "house": "camara",
+  "propositionId": 5001,
+  "sourceUrl": "https://www.camara.leg.br/proposicoesWeb/prop_mostrarintegra?codteor=9001",
+  "text": "Art. 1º Esta lei dispõe sobre transparência.\nArt. 2º Esta lei entra em vigor na data de sua publicação."
+}

@@ -1,0 +1,83 @@
+{
+  "house": "camara",
+  "version": 1,
+  "rules": [
+    {
+      "id": "camara.01",
+      "kind": "procedural",
+      "field": "ultimaAberturaVotacao_descricao",
+      "pattern": "^votacao preliminar",
+      "description": "Procedimento: a descrição da última abertura da votação começa com \"Votação preliminar\"."
+    },
+    {
+      "id": "camara.02",
+      "kind": "procedural",
+      "field": "descricao",
+      "pattern": "apreciacao preliminar",
+      "description": "Procedimento: a descrição oficial menciona \"apreciação preliminar\"."
+    },
+    {
+      "id": "camara.03",
+      "kind": "procedural",
+      "field": "descricao",
+      "pattern": "^alteracao do regime de tramitacao",
+      "description": "Procedimento: a descrição oficial começa com \"Alteração do Regime de Tramitação\"."
+    },
+    {
+      "id": "camara.04",
+      "kind": "procedural",
+      "field": "descricao",
+      "pattern": "^(?:aprovad|rejeitad|mantid|suprimid)[oa]s?(?:,[^,]*,)? (?:(?:o|a|os|as) )?(?:requerimento|preferencia|recurso|inclusao)\\b",
+      "description": "Procedimento: a descrição oficial começa com aprovado, rejeitado, mantido ou suprimido (no gênero e número do objeto) seguido de \"Requerimento\", \"Preferência\", \"Recurso\" ou \"Inclusão\"."
+    },
+    {
+      "id": "camara.05",
+      "kind": "procedural",
+      "field": "descricao",
+      "pattern": "^requerimentos? (?:aprovad|rejeitad)",
+      "description": "Procedimento: a descrição oficial começa com \"Requerimento aprovado\" ou \"Requerimento rejeitado\", no singular ou no plural."
+    },
+    {
+      "id": "camara.06",
+      "kind": "procedural",
+      "field": "descricao",
+      "pattern": "^(?:aprovad|rejeitad|mantid|suprimid)[oa]s?(?:,[^,]*,)? (?:(?:o|a|os|as) )?redacao final\\b",
+      "description": "Procedimento: a descrição oficial começa com aprovado, rejeitado, mantido ou suprimido (no gênero e número do objeto) seguido de \"Redação Final\"."
+    },
+    {
+      "id": "camara.07",
+      "kind": "final",
+      "field": "descricao",
+      "pattern": "^(?:aprovad|rejeitad|mantid|suprimid)[oa]s?(?:,[^,]*,)? (?:(?:o|a|os|as) )?subemenda substitutiva global\\b",
+      "description": "Mérito, texto final: a descrição oficial começa com aprovado, rejeitado, mantido ou suprimido (no gênero e número do objeto) seguido de \"Subemenda Substitutiva Global\"."
+    },
+    {
+      "id": "camara.08",
+      "kind": "amendment",
+      "field": "descricao",
+      "pattern": "^(?:aprovad|rejeitad|mantid|suprimid)[oa]s?(?:,[^,]*,)? (?:(?:o|a|os|as) )?(?:texto|emendas?|subemendas?|destaques?|dispositivos?|art\\.?|artigos?|parte|paragrafo)\\b",
+      "description": "Mérito, alteração de texto: a descrição oficial começa com aprovado, rejeitado, mantido ou suprimido (no gênero e número do objeto) seguido de \"texto\", \"Emenda\", \"Subemenda\", \"Destaque\", \"dispositivo\", \"art.\", \"artigo\", \"parte\" ou \"parágrafo\"."
+    },
+    {
+      "id": "camara.09",
+      "kind": "final",
+      "field": "descricao",
+      "pattern": "^(?:aprovad|rejeitad|mantid|suprimid)[oa]s?(?:,[^,]*,)? (?:(?:o|a|os|as) )?(?:projeto|substitutivo|proposta|medida provisoria|parecer|pec)\\b",
+      "description": "Mérito, texto final: a descrição oficial começa com aprovado, rejeitado, mantido ou suprimido (no gênero e número do objeto) seguido de \"Projeto\", \"Substitutivo\", \"Proposta\", \"Medida Provisória\", \"Parecer\" ou \"PEC\"."
+    },
+    {
+      "id": "camara.10",
+      "kind": "amendment",
+      "field": "ultimaAberturaVotacao_descricao",
+      "pattern": "\\bdtq\\b",
+      "description": "Mérito, alteração de texto: a descrição da última abertura da votação menciona \"DTQ\", a sigla de destaque."
+    },
+    {
+      "id": "camara.11",
+      "kind": "final",
+      "field": "ultimaAberturaVotacao_descricao",
+      "pattern": "votacao secreta",
+      "description": "Mérito, texto final: a descrição da última abertura da votação menciona \"Votação secreta\"."
+    }
+  ]
+}

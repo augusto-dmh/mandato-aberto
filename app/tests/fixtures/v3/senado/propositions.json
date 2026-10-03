@@ -1,0 +1,19 @@
+[
+  {
+    "authors": [
+      {
+        "firstSigner": true,
+        "memberId": 9101
+      }
+    ],
+    "house": "senado",
+    "id": 160000,
+    "number": 1,
+    "presentedAt": "2025-01-10",
+    "sourceUrl": "https://www25.senado.leg.br/web/atividade/materias/-/materia/160000",
+    "status": null,
+    "summary": "Dispõe sobre o exemplo.",
+    "type": "PL",
+    "year": 2025
+  }
+]
