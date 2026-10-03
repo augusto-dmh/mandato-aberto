@@ -76,7 +76,7 @@ Hops in words, for the two paths that matter:
 | privacy promise | today's sentence "O site não grava cookie nem guarda nada no seu navegador" (`site/src/pages/dados-e-privacidade.astro`) stops being true for `/meus-eleitos/*` only. The consent page and the app's future privacy page carry the exception (AC 49) |
 | `.specs/STATE.md` | on approval, doors 1, 2, 5 and 10 reach past this feature (the legal basis, nothing stored before consent, the cookie boundary, the election-day blackout) and get one AD row |
 | sessions | `SESSION_DRIVER=file` app-wide (door 5): ai-summaries' Filament `/admin` login also runs on file sessions |
-| `research/` | new `research/07-tratamento-meus-eleitos.md`, the processing record for this feature (AC 50), beside the balancing test it does not replace |
+| `research/` | new `research/10-tratamento-meus-eleitos.md`, the processing record for this feature (AC 50), beside the balancing test it does not replace |
 
 ## Relations
 
@@ -252,7 +252,7 @@ What the person reads before consenting, and what a reviewer reads before go-liv
     - `As páginas do site não gravam cookie. Só a área Meus eleitos usa um cookie de sessão, necessário para este formulário, que some quando você fecha o navegador.`
     - `Responsável pelos dados: {controlador}. Contato: {contato}.`
     - checkbox `Autorizo o uso do meu e-mail e da lista de parlamentares que sigo para receber esses alertas, nos termos acima.`
-50. The repository SHALL contain `research/07-tratamento-meus-eleitos.md` in pt-BR, marked as drafted by AI and pending legal review. It SHALL have the sections `Finalidade`, `Base legal`, `Dados tratados`, `Dados não tratados`, `Operadores e transferência internacional`, `Retenção e exclusão`, `Direitos do titular`, `Riscos e salvaguardas` and `Período eleitoral`, and every number of retention and rate limit in it SHALL equal this plan's
+50. The repository SHALL contain `research/10-tratamento-meus-eleitos.md` in pt-BR, marked as drafted by AI and pending legal review. It SHALL have the sections `Finalidade`, `Base legal`, `Dados tratados`, `Dados não tratados`, `Operadores e transferência internacional`, `Retenção e exclusão`, `Direitos do titular`, `Riscos e salvaguardas` and `Período eleitoral`, and every number of retention and rate limit in it SHALL equal this plan's
 
 **Independent test:** render the consent page with known config and compare it to the copy line by line; check the document's headings.
 
@@ -311,7 +311,7 @@ The forms that send e-mail are bounded per address, per network and in total.
 | Follow cap | 50 per subscriber | a UF bench reaches 70 deputies (SP) plus 3 senators, but following a whole bench is a different product (a UF digest); 50 bounds e-mail size and abuse | y |
 | Unsubscribe page | GET renders a single button and POST acts; the header gives the true one click | link scanners GET every link; a GET that deletes would erase lists silently | y |
 | A roll call swept and re-imported | gets a new `first_import_id` and may be sent again | the sweep only happens on an ETL correction (app-skeleton door 6); a second e-mail about corrected data is acceptable | y |
-| E-mail format | HTML with a plain-text alternative carrying the same text and links | readers that block HTML and screen readers get the same content; no image means nothing is lost |  n |
+| E-mail format | HTML with a plain-text alternative carrying the same text and links | readers that block HTML and screen readers get the same content; no image means nothing is lost | y |
 | Corrections after sending | an e-mail is a snapshot with its collection date; the linked page is always current; no correction e-mail | AD-005 provenance; a correction mail would be a second campaign-like send about a person | y |
 | Rate-limit figures | 10 form posts per IP hash per hour, 3 mails per address per 24 h, 300 mails per hour in total | small enough to stop a script, large enough for a household behind one IP; costed against no provider yet | y |
 | IP in the rate limiter | key is SHA-256 of IP + `APP_KEY`, in the cache only, expiring with the window; never logged | the limiter needs a network identity; the hash keeps the cache free of addresses | y |
@@ -326,7 +326,7 @@ The forms that send e-mail are bounded per address, per network and in total.
 | --- | --- | --- | --- |
 | 1 | blocks go-live | Which e-mail provider, at what monthly cost, and in which country does it process data? The digest body names the members a person follows, so the provider receives sensitive data; a provider abroad is an international transfer (LGPD art. 33) that needs ANPD standard clauses or the consent copy's specific mention | `meus_eleitos.sending_enabled` stays false (AC 43); `{provedor}` and `{país do provedor}` in AC 49 have no value; no `DeliveryEventSource` exists (AC 54) |
 | 2 | blocks go-live | Who is named as controller in the consent copy: the identified natural persons or the association? | AC 49 and AC 37 cannot render a real controller; identity is outside the delegation |
-| 3 | blocks go-live | Legal review of the consent copy and of `research/07`. Does processing sensitive data take the project out of the small-agent regime of Resolução CD/ANPD 2/2022 (I could not confirm the text of its high-risk criteria), which would require a named encarregado and a RIPD? | the feature is built and tested, but the account area is not linked from public pages (the profile link of AC 15 stays behind `meus_eleitos.sending_enabled`) |
+| 3 | blocks go-live | Legal review of the consent copy and of `research/10`. Does processing sensitive data take the project out of the small-agent regime of Resolução CD/ANPD 2/2022 (I could not confirm the text of its high-risk criteria), which would require a named encarregado and a RIPD? | the feature is built and tested, but the account area is not linked from public pages (the profile link of AC 15 stays behind `meus_eleitos.sending_enabled`) |
 
 Resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`research/decisions-log.md`): (4) a separate feature, `app-contract-v3`, adds the app's v3 reader and Senate member pages after app-skeleton and contract-v3 land; this feature builds on it. Questions 1 to 3 (e-mail provider and its cost, controller identity, legal review) are outside the delegation and stay with the maintainer; sending stays off until they are answered.
 
@@ -368,7 +368,7 @@ Resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`r
 | command `meus-eleitos:prune` | output, exit codes | AC 51 |
 | document `digest e-mail` | structure, tone, what the reader does next | AC 34 to AC 40 |
 | document `confirmation and login e-mails` | structure and next step | AC 3, AC 17 (one link, one action) |
-| document `research/07-tratamento-meus-eleitos.md` | structure and depth | AC 50 |
+| document `research/10-tratamento-meus-eleitos.md` | structure and depth | AC 50 |
 
 ## Sources
 
