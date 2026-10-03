@@ -16,13 +16,16 @@ const props = defineProps({
   votes: { type: Array, required: true }, // [{ rollCallId, date, title, position, official, href }]
   classificationUrl: { type: String, required: true },
   proposicoesMethodUrl: { type: String, required: true },
+  symbolicMethodUrl: { type: String, required: true },
   scoreMethodUrl: { type: String, required: true },
   sources: { type: Array, default: () => [] },
 });
 
 const senate = computed(() => props.member.house === "senado");
 const hrefs = computed(() => Object.fromEntries(props.votes.map((v) => [v.rollCallId, v.href])));
-const noteIndex = 7;
+// Notes 1-6 are the indicators'; the symbolic count has the next one only when there is a count to note.
+const symbolicNote = computed(() => (props.mandate.symbolicMerit === null ? null : 7));
+const noteIndex = computed(() => (symbolicNote.value ?? 6) + 1);
 </script>
 
 <template>
@@ -63,12 +66,13 @@ const noteIndex = 7;
           {{ senate ? "O Senado Federal" : "A Câmara dos Deputados" }} não publica votações simbólicas como registros de votação; por isso elas não aparecem aqui.
         </p>
         <p v-else-if="mandate.symbolicMerit === 0" class="ma-symbolic ma-t-small">
-          Nenhuma votação simbólica sobre propostas e emendas ocorreu no plenário durante o exercício nesta legislatura.
+          Nenhuma votação simbólica sobre propostas e emendas ocorreu no plenário durante o exercício nesta legislatura.<a class="ma-note-ref" :href="`#nota-${symbolicNote}`" :aria-describedby="`nota-${symbolicNote}`"><sup class="ma-num">{{ symbolicNote }}</sup></a>
         </p>
         <p v-else class="ma-symbolic ma-t-small">
           Durante o exercício nesta legislatura, o plenário também decidiu <span class="ma-num">{{ formatNumber(mandate.symbolicMerit) }}</span>
-          {{ mandate.symbolicMerit === 1 ? "votação simbólica" : "votações simbólicas" }} sobre propostas e emendas. Votação simbólica não registra o voto de cada parlamentar.
+          {{ mandate.symbolicMerit === 1 ? "votação simbólica" : "votações simbólicas" }} sobre propostas e emendas.<a class="ma-note-ref" :href="`#nota-${symbolicNote}`" :aria-describedby="`nota-${symbolicNote}`"><sup class="ma-num">{{ symbolicNote }}</sup></a> Votação simbólica não registra o voto de cada parlamentar.
         </p>
+        <SourceNote v-if="symbolicNote" :index="symbolicNote" :source-url="member.sourceUrl" :source-label="member.houseName" :method-url="symbolicMethodUrl" />
 
         <div class="ma-stats">
           <div class="ma-stat">
@@ -91,8 +95,7 @@ const noteIndex = 7;
         <div class="ma-section__head">
           <h2 class="ma-t-title-2">Votações do mandato</h2>
           <p class="ma-t-small ma-muted">
-            Cada traço é uma votação do plenário com registro {{ senate ? "deste senador" : "deste deputado" }} na legislatura, da mais
-            antiga para a mais recente. Sim fica acima da linha, Não abaixo; as demais opções têm marca própria. Cada traço leva à votação.
+            Cada traço é uma votação do plenário com registro neste mandato, da mais antiga para a mais recente. Sim fica acima da linha, Não abaixo; as demais opções têm marca própria. Cada traço leva à votação.
           </p>
         </div>
         <MandateScore :votes="votes" :house="member.house" :href="(id) => hrefs[id]" />

@@ -4,7 +4,7 @@ use Dom\Element;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
-// Checks C62-C66 of .specs/features/app-contract-v3/checks.md.
+// Checks C62-C66, C75, C79 and C80 of .specs/features/app-contract-v3/checks.md.
 
 beforeEach(function () {
     requireSsr();
@@ -142,10 +142,54 @@ test('methodology head and every method link point to the app', function () {
                 array_map(fn ($a) => (string) $a->getAttribute('href'), iterator_to_array(html($response)->querySelectorAll('.ma-note a'))),
                 fn ($href) => str_contains($href, 'metodologia'),
             ));
-            expect(count($links))->toBe(8, $path);
+            // 6 indicators, propositions and the score; a deputy of the fixtures also has a symbolic count to note (C74).
+            expect(count($links))->toBe(str_starts_with($path, '/deputados/') ? 9 : 8, $path);
             foreach ($links as $href) {
                 expect($href)->toStartWith('https://mandato.test/metodologia/#');
             }
         }
     }
+});
+
+test('methodology says where senate non-votes appear', function () {
+    importFixtures();
+    $records = html($this->get('/metodologia/'))->getElementById('registros-sem-voto');
+    $after = $records->querySelector('.ma-table')->nextElementSibling;
+
+    expect(textOf($after))->toBe(METHOD_COPY['registros-sem-voto'])
+        ->and(textOf($after->nextElementSibling))->toBe('Na página de cada senador, os registros sem voto aparecem como "Não registrou voto"; o registro oficial aparece na página da votação, como "Registro do Senado".')
+        ->and($after->nextElementSibling->nextElementSibling)->toBeNull();
+});
+
+test('coverage counts point to their source and method', function () {
+    importFixtures();
+    $section = html($this->get('/metodologia/'))->getElementById('cobertura');
+    $tables = iterator_to_array($section->querySelectorAll('table'));
+
+    $expected = [
+        ['#nota-1', 2, ['https://dadosabertos.camara.leg.br/', 'Câmara dos Deputados'], 'Fonte: Câmara dos Deputados, dados de 01/03/2027 · Como calculamos'],
+        ['#nota-2', 1, ['https://legis.senado.leg.br/dadosabertos/', 'Senado Federal'], 'Fonte: Senado Federal, dados de 05/03/2027 · Como calculamos'],
+    ];
+    expect($tables)->toHaveCount(2);
+    foreach ($expected as $i => [$href, $rows, $source, $text]) {
+        $markers = array_map(fn ($a) => $a->getAttribute('href'), iterator_to_array($tables[$i]->querySelectorAll('tbody tr td:first-child .ma-note-ref')));
+        expect($markers)->toBe(array_fill(0, $rows, $href))
+            ->and($tables[$i]->querySelectorAll('.ma-note-ref'))->toHaveCount($rows);
+        $note = $section->querySelector('p.ma-note'.$href);
+        $links = iterator_to_array($note->querySelectorAll('a'));
+        expect([$links[0]->getAttribute('href'), textOf($links[0])])->toBe($source)
+            ->and([$links[1]->getAttribute('href'), textOf($links[1])])->toBe(['https://mandato.test/metodologia/#tipos-de-votacao', 'Como calculamos'])
+            ->and(textOf($note))->toBe($text);
+    }
+});
+
+test('coverage says when a legislature has no roll call', function () {
+    importFixtures();
+    $import = DB::table('contract_imports')->where('house', 'camara')->orderByDesc('id')->first();
+    $coverage = json_decode($import->coverage, true);
+    $coverage[1] = ['legislature' => 58, 'members' => 1, 'rollCalls' => ['nominal' => 0, 'secret' => 0, 'symbolic' => 0], 'through' => null, 'unclassified' => 0];
+    DB::table('contract_imports')->where('id', $import->id)->update(['coverage' => json_encode($coverage)]);
+
+    expect(tableRows(html($this->get('/metodologia/'))->getElementById('cobertura'))[1])
+        ->toBe(['Câmara dos Deputados', '58ª', 'sem votações', '0', '0', '0', '0']);
 });

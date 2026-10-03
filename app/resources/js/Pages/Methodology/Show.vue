@@ -1,11 +1,13 @@
 <script setup>
 // `/metodologia/`: what each number counts, the classification rules each house's latest import applied, and its coverage.
+import SourceNote from "mandato-design/components/SourceNote.vue";
 import { formatNumber } from "mandato-design/components/format.js";
 import { SENATE_NOT_VOTING, positionCase, voteCase } from "mandato-design/components/vote.js";
 import PublicLayout from "../../Components/PublicLayout.vue";
 
 defineProps({
-  houses: { type: Array, required: true }, // [{ house, name, ofName, imported, version, rules: [...], coverage: [...] }], Câmara first
+  houses: { type: Array, required: true }, // [{ house, name, ofName, imported, version, sourceUrl, collectedAt, rules: [...], coverage: [...] }], Câmara first
+  coverageMethodUrl: { type: String, required: true },
   sources: { type: Array, default: () => [] },
 });
 
@@ -120,28 +122,31 @@ const records = [
       <section id="cobertura" class="ma-section">
         <h2 class="ma-t-title-2">Cobertura</h2>
         <p>Quantas votações cada importação trouxe, por Casa e legislatura.</p>
-        <div v-for="h in houses" :key="h.house" class="ma-method__house">
-          <div v-if="h.imported" class="ma-table">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Casa</th><th scope="col">Legislatura</th><th scope="col">Dados até</th><th scope="col">Nominais</th>
-                  <th scope="col">Secretas</th><th scope="col">Simbólicas</th><th scope="col">Sem regra correspondente</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="c in h.coverage" :key="c.legislature">
-                  <td>{{ h.name }}</td>
-                  <td class="ma-num">{{ c.legislature }}</td>
-                  <td class="ma-num">{{ c.through ?? "sem votações" }}</td>
-                  <td class="ma-num">{{ formatNumber(c.nominal) }}</td>
-                  <td class="ma-num">{{ formatNumber(c.secret) }}</td>
-                  <td :class="{ 'ma-num': c.symbolic !== null }">{{ c.symbolic === null ? "não publicadas pela Casa" : formatNumber(c.symbolic) }}</td>
-                  <td class="ma-num">{{ formatNumber(c.unclassified) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div v-for="(h, i) in houses" :key="h.house" class="ma-method__house">
+          <template v-if="h.imported">
+            <div class="ma-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Casa</th><th scope="col">Legislatura</th><th scope="col">Dados até</th><th scope="col">Nominais</th>
+                    <th scope="col">Secretas</th><th scope="col">Simbólicas</th><th scope="col">Sem regra correspondente</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="c in h.coverage" :key="c.legislature">
+                    <td>{{ h.name }}<a class="ma-note-ref" :href="`#nota-${i + 1}`" :aria-describedby="`nota-${i + 1}`"><sup class="ma-num">{{ i + 1 }}</sup></a></td>
+                    <td class="ma-num">{{ c.legislature }}</td>
+                    <td class="ma-num">{{ c.through ?? "sem votações" }}</td>
+                    <td class="ma-num">{{ formatNumber(c.nominal) }}</td>
+                    <td class="ma-num">{{ formatNumber(c.secret) }}</td>
+                    <td :class="{ 'ma-num': c.symbolic !== null }">{{ c.symbolic === null ? "não publicadas pela Casa" : formatNumber(c.symbolic) }}</td>
+                    <td class="ma-num">{{ formatNumber(c.unclassified) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <SourceNote :index="i + 1" :source-url="h.sourceUrl" :source-label="h.name" :method-url="coverageMethodUrl" :collected-at="h.collectedAt" />
+          </template>
           <p v-else class="ma-empty">Ainda não há dados importados {{ h.ofName }}.</p>
         </div>
       </section>
