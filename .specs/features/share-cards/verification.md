@@ -1,51 +1,58 @@
 # share-cards verification
 
-**Verdict**: FAIL
+**Verdict**: PASS
 **Profile**: ui
-**Diff range**: 2ba30f7..419e2ca47e50aa37678826c08d5d762bd161e620
-**Round**: 2 - scoped
+**Diff range**: 2ba30f7..1b05fdc66361607ac52845ab7cb3838caef85aed
+**Round**: 3 - scoped
 **Verifier**: independent sub-agent (author != verifier)
 
-Round 2 is scoped to the fixes `3617790..419e2ca` (`34543a3`, `22fffb1`, `d6b1dc0`, `6ffcdb7`, `8ef3457`, `29410aa`, `baac197`, `419e2ca`) and to every round-1 verdict that was not PASS. Every proof re-ran at `419e2ca` in the Sail project `mandato-cards` (`APP_PORT=8094`, `FORWARD_DB_PORT=54344`, `VITE_PORT=5184`), with the design tokens, client, SSR and card bundles rebuilt at HEAD and the SSR server up (`/health` `{"status":"OK"}`). Every section below is marked `verified at 419e2ca` or `carried from 0c5238f`.
+Round 3 covers the fixes `9ce5f80..1b05fdc` and every round-2 verdict that was not PASS. The fixes are `a3afed5` and `927abe4` (plan text, by the orchestrator) and `8beb6d1` and `1b05fdc` (C83, by the fixer). `git diff 9ce5f80..HEAD --stat` touches only `.specs/features/share-cards/{plan,checks}.md`, `design/tests/cards.test.ts`, `design/e2e/cards.spec.ts` and `design/e2e/cards.pages.mjs`. No production file changed.
 
-The fixes close all four round-1 FAIL items, and every new assertion surface was made to fail once:
+Every proof re-ran at `1b05fdc` in the Sail project `mandato-cards` (`APP_PORT=8094`, `FORWARD_DB_PORT=54344`, `VITE_PORT=5184`). Before the runs, the design tokens, client, SSR and card bundles were rebuilt and the SSR server was started (`/health` `{"status":"OK"}`). Each section below is marked `verified at 1b05fdc`, `carried from 419e2ca` or `carried from 0c5238f`.
 
-1. C42 is no longer vacuous. Fault 1 (round 1's survivor, ` (75%)`) and fault 2 (a member's name on a roll-call card) are now killed.
-2. The feed and story arrangement is decided by a recorded plan amendment and proven by C78. Fault 3 (12 px per vote) is killed.
-3. The light-only card theme is proven by C79. Fault 4 (the page's `data-theme="light"` removed) is killed.
-4. C14's payload clause and AC 2's height rule are proven. Fault 5 (the height rule dropped) is killed.
+The round-2 blocking gap is closed. a1 6.3's "nunca no card: cor própria por pessoa" now has a check, C83, with two proofs:
 
-The verdict stays FAIL on one blocking gap, a round-1 `Uncovered` cell that no fix addressed: a1 6.3 lists "cor própria por pessoa" under "nunca no card", and no check can see a per-member colour. C44 compares only `tagName.class` (`design/tests/cards.test.ts:166`, `app/tests/Feature/CardContentTest.php:160`). C79 reads the theme tokens of one card. So a member-dependent inline colour, such as `:style="{ color: … }"` on the name, would pass every proof. Inline `:style` bindings already exist on the card (`design/components/MemberCard.vue:47`, `design/components/MandateScore.vue:49`, both widths), so the channel is live.
+- one in the design package over the inline `style` attributes;
+- one in Chromium over the computed colours of 5 member and 2 roll-call cards per format.
+
+Three faults were injected on its surfaces: a per-member colour on the name, on a figure and on the score marks. All three were killed. The three round-2 plan-text notes are fixed. C83 still has precision gaps, recorded in Ranked gaps 1. Neither proof reads `stroke` outside the marks, or `background-image`, `box-shadow` and the other colour properties beyond the four C83 names. The unit proof also skips an element that has no `style` on one card. So a per-member gradient (a1 line 207's "aura, gradiente gerado") bound only on some members, or a per-member `stroke` attribute on the score's axis line, would pass both proofs. These are narrower than the gap they replace: every colour the card draws today is compared. I judge them non-blocking, but the orchestrator may close them before merge (two one-line changes).
 
 ## Binding sources
 
-Verified at `419e2ca` for the rows the fixes touched (plan Assumptions and S4 amendment, door 3, the a1 6.3 "nunca no card" row). The other rows are carried from `0c5238f`: the fixes changed no file those rows read (`git diff 3617790..HEAD --stat` lists only tests, `ci.yml` and `.specs`).
+Verified at `1b05fdc` for the a1 6.3 row and for the plan rows the fixes touched: door 3, the Assumptions "Feed and story arrangement" row, and the S4 amendment. The other rows are carried from `0c5238f`, because no file they read changed.
 
 | Source | Opened | Contradiction | Uncovered |
 | --- | --- | --- | --- |
-| `research/design-anexos/a1-referencias-de-design.md` section 6.3, P9, P14, P15 | yes - re-read lines 207 and 278-286 at HEAD | none: three formats of one template (door 4, C37, C44, C47); fixed content (C37-C41); verification code (C49-C56); one tree for everyone (C44); long names and four-digit numbers (C45); same tokens and fonts (C32). "Nunca no card" is now asserted one needle per call: `%` (`app/tests/Feature/CardContentTest.php:137`, fault 1 killed), another member's name on a member or roll-call card (`:141`, fault 2 killed), Senate absence labels (`:145`), forbidden and extra words (`:138`), URLs (`:148`) | "cor própria por pessoa" (line 284; line 207 "Cor própria por parlamentar … Template fixo e idêntico para todos"): no check reaches a colour. C44 and AC 31 compare tag and class only (`design/tests/cards.test.ts:166`, `app/tests/Feature/CardContentTest.php:160`), C79 checks the theme of a single card, and the card already carries per-member inline `:style` (`design/components/MemberCard.vue:47`). Carried unresolved from round 1's `Uncovered` cell |
+| `research/design-anexos/a1-referencias-de-design.md` section 6.3, P9, P14, P15 | yes - re-read lines 207 and 278-286 at HEAD | none: three formats of one template (door 4, C37, C44, C47); fixed content (C37-C41); verification code (C49-C56); one tree for everyone (C44); long names and four-digit numbers (C45); same tokens and fonts (C32); "nunca no card" asserted one needle per call in C42 (`app/tests/Feature/CardContentTest.php:137`, `:138`, `:141`, `:145`, `:148`, carried from 419e2ca). The "cor própria por pessoa" rule (line 284; line 207 "Template fixo e idêntico para todos") is now covered by C83: inline styles minus widths per `tagName.class` (`design/tests/cards.test.ts:222`), and computed `color`, `background-color`, `border-color`, `fill` per `tagName.class` plus mark `fill` and `stroke` (`design/e2e/cards.spec.ts:150`, `:157`). Each was killed by a fault here | - |
 | `research/01-pesquisa-juridica.md` section 3.2 (photo licences, never alter the photo) | carried from `0c5238f` - read lines 75-86 | none: bytes cached and served unaltered (C3, C15); credit by house (C18, C37); no crop, filter or enlargement (C46) | - |
-| plan `Assumptions` feed and story arrangement (line 236) and the S4 amendment "decided at verification round 1 by the orchestrator" (line 167) | yes - plan lines 167 and 236 at HEAD | none in code: the amendment decides figures stacked on a shared left edge and a left-aligned score of width min(available, votes × 8 px) in the body's scale; `design/components/MemberCard.vue:47` (`maxWidth: votes.length * 8px` inside the zoomed body, `design/styles/components.css:670-678`) implements exactly that. The amendment states that it replaces the Assumption's "score at full width", so the plan resolves its own conflict, although line 236 still reads the old text (non-blocking note 2) | - : figures stacked and the score width are proven by C78 (`design/e2e/cards.spec.ts:57-58`, `:65-66`), fault 3 killed |
-| plan `Assumptions` "Card theme: light only" (line 237) and door 3 `colorScheme` `light` | yes - plan lines 88 and 237 | none: `app/resources/js/cards/render.js:64` `data-theme="light"`, `:84` `colorScheme: "light"` | - : C79 (`app/tests/Feature/CardRendererTest.php:148`, `:150-151`), fault 4 killed |
+| plan door 3 (`plan.md:88`) | yes, at HEAD | none: the commands are now given per place. The Dockerfile runs `npx -y playwright@$PLAYWRIGHT_VERSION install --with-deps --only-shell chromium`, matching `app/docker/8.5/Dockerfile:70` with `ARG PLAYWRIGHT_VERSION=1.63.0` at `:19`. CI runs `npx --no-install playwright-core install --with-deps --only-shell chromium`, matching `.github/workflows/ci.yml:144`. The doubled flags are gone (round-2 note 2 fixed) | - |
+| plan Assumptions "Feed and story arrangement" (`plan.md:236`) and the S4 amendment (`plan.md:167`) | yes, at HEAD | none: the row now reads "score left-aligned at min(available width, votes × 8 px)", which matches the amendment, `design/components/MemberCard.vue:47` and C78 (round-2 note 3 fixed). The amendment now reads "under the maintainer's delegation" and ends "The og format keeps its arrangement, and the same 8 px per vote cap applies to its score", which matches `MemberCard.vue:47` (the cap is not format-dependent) and the og card served here (round-2 note 4 fixed) | - |
+| plan `Assumptions` "Card theme: light only" (line 237) and door 3 `colorScheme` `light` | carried from `419e2ca` | none: `app/resources/js/cards/render.js:64`, `:84`; C79 | - |
 | `design/README.md` MemberCard and RollCallCard sections | carried from `0c5238f` | none | - |
 | `app/README.md` share-cards section | carried from `0c5238f` | none | - |
 
-**The plan amendment and the new checks, judged.** The score-cap amendment is legitimate rather than retrofitted. Round 1 refused the cap "without a ruling", and the ruling is now on the record: dated, attributed to the plan's approver, and argued on product grounds (two votes stretched across the column draw a few absurdly wide bars) rather than "the code already does it". It also stays inside what a1 6.3 decides (a miniature score, no width rule; a1's full-width "partitura" at lines 241 and 265 is the profile hero, not the card). Two provenance defects do not change that judgment. Unlike the plan's other amendments, it omits "under the maintainer's delegation". And it says "the og format keeps its arrangement" while the cap also applies in og (note 3). The new checks are derived from the plan's text and not from the code: C78 restates the amendment's formula, C79 the Assumption and door 3, C80 AC 2, C81 door 3's pin, and C82 AC 36. None is weaker than its source, and each was made to fail here (faults 3-5) or in the builder's recorded faults (C81, C82).
+**C83, judged against its source.** C83 comes from a1 6.3's text and plan door 4, not from the code. Its two proofs reach different channels:
 
-Step 1, verified at `419e2ca` for the card formats and the verification page (the fix touched no interface; this re-enumerates the round-1 gaps):
+- The unit proof reads every inline `style`, which is where the card already binds per-render values (`MemberCard.vue:47`, `MandateScore.vue:49`). It removes only the `width`, `min-width` and `max-width` declarations, which legitimately follow the vote count, and asserts that those declarations exist (`cards.test.ts:224`), so the strip cannot silently empty the comparison.
+- The Chromium proof reads computed colour. It also catches presentation attributes and stylesheet rules, which the unit proof cannot see: fault 3 survived the unit proof and was killed here.
+- The mark exemption is narrow. A mark's `fill` legitimately depends on the vote's position, so marks are excluded from the `fill` comparison. They are instead held to `none` or the strip's own colour, and the strip's colour is itself compared across pages.
+- The fixtures differ in name, party, house, legislature, figures, vote count, positions and photo (`design/e2e/cards.pages.mjs:35-52`). `cards.spec.ts:160` asserts that more than 8 elements are shared by every page in a group, so the comparison compares something.
 
-- Member card, feed and story. Eyebrow above photo above name: `design/e2e/cards.spec.ts:43-44`. Figures stacked, three of them on a shared left edge: C78 `:55`, `:57-58`. Score left-aligned at min(body, votes × 8 px × zoom), with a 240-vote and a 2-vote fixture: C78 `:65-66` (`design/e2e/cards.pages.mjs:27` adds `short-{format}`). Same footer: C37, C41. Light theme under a dark request: C79. **Per-member colour: no check (blocking gap).**
-- Member card, og: arrangement as in round 1 (`cards.spec.ts:40-41`). The score cap also applies here, with no plan sentence or check behind it (note 3). A real served og card of 102/57 (4 votes) draws a 32 px score.
-- Roll-call card, three formats: C40, C22, C45. No member name: C42 `:141`, killed by fault 2.
-- `/verificar/{code}/`: equal, changed and gone states C53, C74, C76; 404 C55; 301 C54; index C56; head tags C64, C76; image and alt C52, C60; **photo value (sha256 or initials sentence): C82** (`app/tests/Feature/VerifyPageTest.php:92`, `:100`, `:102`).
+**Step 1**, verified at `1b05fdc`. The fixes touched no interface, so only the round-2 gap is re-enumerated. Per-member colour on the member card (og, feed, story) and the roll-call card (og, feed, story): C83, both proofs, every format (`cards.spec.ts:145`, `cards.test.ts:219`). Every other element and arrangement of the member card, roll-call card and `/verificar/{code}/` is carried from `419e2ca`: C37-C47, C52-C56, C74, C76, C78, C79, C82.
 
 ## Checks
 
-Proof run means `sail artisan test --filter="<name>"` run alone at `419e2ca`, exit 0. The 73 distinct Pest filters each exited 0 alone. One combined run of all 73 names with `--log-junit` gave 103 testcases, 0 failed, and every name hit (68 single tests, datasets of 10, 10, 8, 4 and 3). Design proofs ran alone as `sail npm --prefix /var/www/design test -- <file> -t "<name>"` (1 passed each) and `test:e2e -- -g "<name>"` (1 passed each). Rows for checks the fixes did not touch carry their evidence from `0c5238f`, with line numbers refreshed where a touched file shifted. `app/tests/...` paths are relative to `app/`.
+Proof run means the proof was run alone at `1b05fdc` and exited 0:
+
+- Pest: `sail artisan test --filter="<name>"`. All 73 distinct filters exited 0 alone. One combined run of all 73 with `--log-junit` gave 103 testcases and 0 failures, and every name was hit.
+- Design unit: `sail npm --prefix /var/www/design test -- <file> -t "<name>"`. All 9 names gave 1 passed each.
+- Design e2e: `test:e2e -- -g "<name>"`. All 7 names gave 1 passed each.
+
+Evidence for rows the fixes did not touch is carried from `419e2ca`, or from `0c5238f` where that report carried it. `app/tests/...` paths are relative to `app/`.
 
 | Check | Claim | Proof run | Evidence | Result |
 | --- | --- | --- | --- | --- |
-| C1 | selection: none, fresh, stale > 7 days, failed retried | exit 0, 1 test (verified at 419e2ca) | `tests/Feature/PhotoCommandTest.php:51`, `:57`, `:71`, `:76` (carried from 0c5238f, unshifted) | PASS |
+| C1 | selection: none, fresh, stale > 7 days, failed retried | exit 0, 1 test (re-run at 1b05fdc; evidence from 419e2ca) | `tests/Feature/PhotoCommandTest.php:51`, `:57`, `:71`, `:76` (carried from 0c5238f, unshifted) | PASS |
 | C2 | `--house`, `--member`, `--stale-after=0` | exit 0, 1 test | `PhotoCommandTest.php:84`, `:88`, `:92` | PASS |
 | C3 | bytes, sha and version row; 301 to legis | exit 0, 1 test | `PhotoCommandTest.php:103`, `:107`, `:116` | PASS |
 | C4 | one file per sha, never rewritten | exit 0, 1 test | `PhotoCommandTest.php:138` | PASS |
@@ -58,7 +65,7 @@ Proof run means `sail artisan test --filter="<name>"` run alone at `419e2ca`, ex
 | C11 | storage failure → exit 1 | exit 0, 1 test | `PhotoCommandTest.php:322` | PASS |
 | C12 | lock held → exit 1, no request | exit 0, 1 test | `PhotoCommandTest.php:342`, `:343` | PASS |
 | C13 | bad options → exit 2 with the usage | exit 0, 4 dataset cases | `PhotoCommandTest.php:353`, `:354` | PASS |
-| C14 | shared sha is no one's photo: pages, payloads, re-request, recovery | both proofs exit 0, 1 test each (verified at 419e2ca) | first proof `PhotoCommandTest.php:372` `currentOf(...'9104'))->toBeNull()`, `:384` re-request, `:388` recovery; second proof `:408-409` both payloads' `photoSha256` `toBeNull()`, `:410` 9106's payload equals its current sha, `:414-415` both payloads follow the recovery. Round-1 GAP closed | PASS |
+| C14 | shared sha is no one's photo: pages, payloads, re-request, recovery | both proofs exit 0, 1 test each (re-run at 1b05fdc; evidence from 419e2ca) | first proof `PhotoCommandTest.php:372` `currentOf(...'9104'))->toBeNull()`, `:384` re-request, `:388` recovery; second proof `:408-409` both payloads' `photoSha256` `toBeNull()`, `:410` 9106's payload equals its current sha, `:414-415` both payloads follow the recovery. Round-1 GAP closed | PASS |
 | C15 | photo 200, headers, byte-identical | exit 0, 1 test | `tests/Feature/PhotoRouteTest.php:22`, `:24` | PASS |
 | C16 | 5 paths → 404 | exit 0, 1 test | `PhotoRouteTest.php:39` | PASS |
 | C17 | suppressed → 410 | exit 0, 1 test | `PhotoRouteTest.php:49` | PASS |
@@ -88,10 +95,10 @@ Proof run means `sail artisan test --filter="<name>"` run alone at `419e2ca`, ex
 | C41 | footer source, date, code, address | exit 0, 1 test | `CardContentTest.php:113` | PASS |
 | C42 | no `%`, forbidden terms, other names, absence labels or other URLs | exit 0, 1 test (verified at 419e2ca, 355 assertions) | `CardContentTest.php:137` `expect(str_contains($text, '%'))->toBeFalse(...)`; `:138` forbidden terms `toBe([])`; `:141` other names; `:145` absence labels; `:148` URLs `toBe(['mandato.test/verificar/'])`. One needle per call; fault 1 fails `:137` (`member 101: %`), fault 2 fails `:141` (`roll call 100-6: Ana Souza`). Round-1 FAIL closed | PASS |
 | C43 | name as stored, `text-transform: none` | e2e, 1 passed | `design/e2e/cards.spec.ts:75-76` (shifted +22) | PASS |
-| C44 | one tree for every member | design and app, 1 passed each | `design/tests/cards.test.ts:181`; `CardContentTest.php:166`. Proves what AC 31 says (tags and classes); per-member colour is outside it (blocking gap) | PASS |
+| C44 | one tree for every member | design and app, 1 passed each | `design/tests/cards.test.ts:181`; `CardContentTest.php:166`. Proves what AC 31 says (tags and classes); per-person colour is now C83's (unchanged at 1b05fdc) | PASS |
 | C45 | every format fits its box | e2e, 1 passed | `cards.spec.ts:86-87` | PASS |
 | C46 | photo whole, untouched, at most native size | e2e, 1 passed | `cards.spec.ts:106-109`, `:113`; `:112` is still a tautology (note 4) | PASS |
-| C47 | prototype card is `MemberCard` og | design unit and e2e, 1 passed each | `design/tests/cards.test.ts:193` | PASS |
+| C47 | prototype card is `MemberCard` og | design unit and e2e, 1 passed each | `design/tests/cards.test.ts:237` (shifted +44 by `8beb6d1`) | PASS |
 | C48 | canonical JSON | exit 0, 1 test | `tests/Unit/CardCodeTest.php:37`, `:40` | PASS |
 | C49 | code = Brasília date and 40 bits | exit 0, 1 test | `CardCodeTest.php:54`, `:60` | PASS |
 | C50 | 8 changes each change the code | exit 0, 8 dataset cases | `CardCodeTest.php:64` | PASS |
@@ -122,75 +129,91 @@ Proof run means `sail artisan test --filter="<name>"` run alone at `419e2ca`, ex
 | C75 | served request finds the browser | exit 0, 1 test; also served live, see Gate | `CardImageTest.php:312-314`, `:319-322` | PASS |
 | C76 | gone subject points at nothing gone | exit 0, 1 test | `VerifyPageTest.php:164`, `:166`, `:168` | PASS |
 | C77 | strip aria-label singular | design unit, 1 passed | `design/tests/components.test.ts:226`, `:227` | PASS |
-| C78 | feed and story: figures stacked, score left-aligned at min(body, votes × 8 px × zoom) | e2e `-g "feed and story stack the figures and size the score by its votes"`, 1 passed (verified at 419e2ca) | `design/e2e/cards.spec.ts:55` three figures; `:57` each top ≥ previous bottom − 0.5; `:58` left edges within 0.5; `:65` score left = body left; `:66` width = min(body.width, votes × 8 × zoom), over `member-{feed,story}` (240 votes) and `short-{feed,story}` (2 votes, `design/e2e/cards.pages.mjs:27`). Fault 3 failed `:66` by 11.19 px | PASS |
+| C78 | feed and story: figures stacked, score left-aligned at min(body, votes × 8 px × zoom) | e2e `-g "feed and story stack the figures and size the score by its votes"`, 1 passed (re-run at 1b05fdc; evidence from 419e2ca) | `design/e2e/cards.spec.ts:55` three figures; `:57` each top ≥ previous bottom − 0.5; `:58` left edges within 0.5; `:65` score left = body left; `:66` width = min(body.width, votes × 8 × zoom), over `member-{feed,story}` (240 votes) and `short-{feed,story}` (2 votes, `design/e2e/cards.pages.mjs:27`). Fault 3 failed `:66` by 11.19 px | PASS |
 | C79 | light theme under a dark scheme request | exit 0, 1 test, 7 assertions | `app/tests/Feature/CardRendererTest.php:145-146` the dark request reaches the page (unthemed turns dark); `:148` the card resolves `oklch(1 0 0)` / `oklch(0.16 0 0)` with `prefers-color-scheme: dark` true; `:150-151` `capture` pixel (10, 10) is white for both pages. Fault 4 failed `:148` (paper `oklch(0.14 0 0)`) | PASS |
 | C80 | 200 × 80 and 80 × 200 refused, 100 × 100 accepted | exit 0, 3 dataset cases | `PhotoCommandTest.php:206` the exact `photo failed camara 101: smaller than 100 x 100`, `:207-208` no row and no file; `:203` 100 × 100 becomes current; dataset `:211-213`. Fault 5 failed `wide enough, too short` | PASS |
 | C81 | CI installs the browser of the locked `playwright-core` | exit 0, 1 test, 6 assertions | `CardRendererTest.php:215` one install step; `:216` exactly `npx --no-install playwright-core install --with-deps --only-shell chromium`; `:218` after `npm ci`; `:219` no `node_modules/playwright` in the lock. In the Sail image, `npx --no-install playwright-core install --dry-run --only-shell chromium` resolves `chromium-headless-shell v1243` at `/opt/ms-playwright`, which is present there (`PLAYWRIGHT_VERSION=1.63.0` at `docker/8.5/Dockerfile:19`; lock `playwright-core` 1.63.0). Not run on GitHub | PASS |
 | C82 | verification page prints the photo the card showed | exit 0, 1 test | `VerifyPageTest.php:92` initials sentence; `:100` `Foto oficial: arquivo {$sha}`; `:102` the older code still prints the initials sentence | PASS |
+| C83 | no colour on a card belongs to a person: inline styles minus widths identical per tag and class (design); computed `color`, `background-color`, `border-color` and, outside the marks, `fill` identical per tag and class across 5 member and 2 roll-call cards per format, and every mark's `fill` and `stroke` `none` or the strip's colour (Chromium) | design unit `-t "no card carries a style of its own per subject"` 1 passed; e2e `-g "no card draws a colour of its own per subject"` 1 passed (verified at 1b05fdc) | `design/tests/cards.test.ts:190-196` strips `width`, `min-width`, `max-width` and keeps every other declaration; `:222` one style string per `tagName.class` across two members (Câmara with photo vs Senate without, 3 vs 30 votes) and two roll calls (Câmara approved vs Senate rejected); `:224` the stripped width declarations exist. `design/e2e/cards.spec.ts:129-131` the per-element tuple; `:134-137` mark `fill` and `stroke` outside {`none`, strip colour}; `:149` strip only on member cards; `:150` marks list empty; `:157` one tuple per key across `member`, `member48`, `short`, `nophoto`, `other` (and `rollcall`, `rollcall2`); `:160` more than 8 keys shared by every page; pages `design/e2e/cards.pages.mjs:35-52`. Faults 1-3 killed (below). Precision gaps: Ranked gaps 1 | PASS |
 
-Round-1 non-blocking items, re-judged at `419e2ca`:
+Round-2 non-blocking items, re-judged at `1b05fdc`:
 
-- CI Playwright drift: fixed by `8ef3457` (C81, plus the dry-run above).
-- C52's missing photo value: fixed by C82.
-- C46 tautology (`cards.spec.ts:112`), C33 proving blocking through `capture()` only, gone-state vote links, and `design/components/card.js` duplicating `Labels`: unchanged, carried from `0c5238f` (notes 4-6).
+- Note 2 (door 3's doubled flags and misattributed command): fixed by `a3afed5`, see Binding sources.
+- Note 3 (the Assumptions row still read "score at full width"): fixed by `a3afed5`.
+- Note 4 (og cap sentence and delegation wording): fixed by `927abe4` and `a3afed5`.
+- Note 5 (C46 tautology at `design/e2e/cards.spec.ts:112`, C33 through `capture()` only, gone-state vote links, `design/components/card.js` duplicating `Labels`): unchanged, carried from `0c5238f`.
 
 ## Coverage
 
-Rows the fixes touched are recomputed at `419e2ca`. The others are carried from `0c5238f`, where they were all `-`.
+The rows the fixes touched are recomputed at `1b05fdc`. The other rows are carried from `419e2ca`, where every one of them read `-`.
 
 | Set (size) | Recomputed from | Member -> proof | Unproven |
 | --- | --- | --- | --- |
-| photo body rules of AC 2 (5) | plan AC 2, `app/Console/Commands/FetchPhotos.php:216` | `FF D8 FF` C6 · ≤ 2 MiB C6 · JPEG C6 · width ≥ 100 C6, C80 (`tall enough, too narrow`) · height ≥ 100 C80 (`wide enough, too short`, fault 5 killed) | - |
-| photo value on a card payload (2) | plan AC 8, `app/Cards/Payloads.php:42` | shared hash → `photoSha256` null C14 (`PhotoCommandTest.php:408-409`) · current → its sha256 C14 `:410`, C82 | - |
-| photo values on the verification page (2) | plan AC 36 | sha256 C82 `VerifyPageTest.php:100` · initials C82 `:92`, `:102` | - |
-| feed and story arrangement (4) | plan Assumptions line 236 as replaced by the S4 amendment line 167 | photo above the name `cards.spec.ts:43-44` · figures stacked C78 `:57-58` · score left-aligned at min(available, votes × 8 px) C78 `:65-66` · same footer C37, C41 | - |
-| card theme (1) | plan Assumptions line 237, door 3 | light under a dark request C79 `CardRendererTest.php:148`, `:150-151` | - |
-| never on a card (8) | AC 29, a1 6.3 line 284 | forbidden terms C42 `:138` · extra words C42 `:138` · URL C42 `:148` · `%` C42 `:137` (fault 1 killed) · another member's name on a member card C42 `:141` · a member's name on a roll-call card C42 `:141` (fault 2 killed) · Senate absence labels C42 `:145` | per-member colour ("cor própria por pessoa"): no proof; C44 reads `tagName.class` only (`design/tests/cards.test.ts:166`, `CardContentTest.php:160`) |
-| Landing door 3 (members) | plan line 88 | Chromium via Playwright C22, C32, C33, C35 · version pin, image and CI C36, C81 · `colorScheme` `light` C79 | - |
-| startup config: browser shell (3 assemblies) | `docker/8.5/Dockerfile:19-20,70`, `.github/workflows/ci.yml:114,144` read directly | Sail image C36, C75 · CI job `app` C36, C75, C81 · design e2e in the same image C45 | - |
+| never on a card (8) | AC 29, a1 6.3 line 284 (verified at 1b05fdc) | forbidden terms C42 `:138` · extra words C42 `:138` · URL C42 `:148` · `%` C42 `:137` · another member's name on a member card C42 `:141` · a member's name on a roll-call card C42 `:141` · Senate absence labels C42 `:145` (C42 rows carried from 419e2ca) · a colour of its own per person C83 (`design/tests/cards.test.ts:222`, `design/e2e/cards.spec.ts:150`, `:157`; faults 1-3 killed) | - |
+| C83 colour channels the card binds today (4) | `design/components/MemberCard.vue:31-47`, `MandateScore.vue:49`, `:53`, `:78`, `vote.js:77-99`, `RollCallCard.vue`, `TallyBar.vue` (verified at 1b05fdc) | inline `style` C83 unit `:222` (fault 1 and fault 2 killed) · computed text, background and border colour of every element C83 e2e `:157` (faults 1 and 2 killed) · score mark `fill`/`stroke` C83 e2e `:150` (fault 3 killed, survived the unit proof as expected) · strip `color` (the marks' `currentColor`) C83 e2e `:157` | - |
+| feed and story arrangement (4) | plan Assumptions line 236 (now consistent with the S4 amendment line 167) | photo above the name `cards.spec.ts:43-44` · figures stacked C78 `:57-58` · score left-aligned at min(available, votes × 8 px) C78 `:65-66` · same footer C37, C41 (carried from 419e2ca) | - |
+| Landing door 3 (members) | `plan.md:88` (verified at 1b05fdc) | Chromium via Playwright C22, C32, C33, C35 · Dockerfile pin and CI command C36, C81 · `colorScheme` `light` C79 | - |
+| photo body rules of AC 2 (5); photo value on a payload (2); photo values on the verification page (2); card theme (1); startup config, browser shell (3) | carried from `419e2ca` | as in round 2 | - |
 | `/fotos/` statuses (3); card route statuses (16); verify statuses (5); transport rules (5); selection and outcomes (8); exit codes and options (6); formats and subjects (7); code cases, 404 causes, render outcomes, CLI exits (23); verification code cases, AC 37 states, AC 35 inputs (19); member regions and empty states (11); roll-call regions, results, tallies (12); photo rules on a card (5); share block, pages, SSR, cookie-free (31); prune (5); other Landing doors (8); config assemblies | carried from `0c5238f` | as in round 1 | - |
 
 ## Test policy rows
 
 | Row | Files it classifies | Required proof | Expectation met |
 | --- | --- | --- | --- |
-| Decides, reached across a boundary | `app/Cards/Code.php`, `app/Media/Photos.php`, `app/Cards/Payloads.php`, `app/Cards/Share.php`, `app/Http/Controllers/CardController.php`, `design/components/MemberCard.vue`, `RollCallCard.vue` | own layer C48-C51, C37, C39, C40, C44, C78 · boundary C52-C56, C18-C20, C22-C31, C38-C42, C57-C59, C82, C14 second proof | yes (verified at 419e2ca) - AC 29's table now asserted at the boundary on every row, one needle per call; faults 1 and 2 killed. The per-person colour gap is a binding-source member, recorded above, not an AC 29 row |
+| Decides, reached across a boundary | `app/Cards/Code.php`, `app/Media/Photos.php`, `app/Cards/Payloads.php`, `app/Cards/Share.php`, `app/Http/Controllers/CardController.php`, `design/components/MemberCard.vue`, `RollCallCard.vue` | own layer C48-C51, C37, C39, C40, C44, C78, C83 · boundary C52-C56, C18-C20, C22-C31, C38-C42, C57-C59, C82, C14 second proof | yes (verified at 1b05fdc for the design row: C83 adds an own-layer and a browser proof for the template's colour; the other files carried from 419e2ca) |
 | Decides, not reached across a boundary | `app/Console/Commands/PruneCards.php` | command C66 | yes (carried from 0c5238f) |
 | Entry point that decides nothing | `PhotoController`, `VerifyController::index`, routes | boundary C15-C17, C56, C27 | yes (carried from 0c5238f) |
 | Instrumentation, pass-throughs | render log line, `Renderer::run` env | consumer proofs C69, C75 | yes (carried from 0c5238f) |
 
 ## Faults injected
 
-Verified at `419e2ca`. Scratch worktree `git worktree add --detach /tmp/vf2-share-cards HEAD`, Sail project `vf2-cards` (`APP_PORT=8096`, `FORWARD_DB_PORT=54346`, `VITE_PORT=5186`), with tokens and bundles built and the 4 target proofs green before any fault. Each command that edited a file started with `cd /tmp/vf2-share-cards`. Each fault was restored with `git -C /tmp/vf2-share-cards checkout -- <file>`, the scratch porcelain checked empty, and the card bundle rebuilt where the fault had touched it. Afterwards: `sail down -v` (containers, network `vf2-cards_sail` and volume `vf2-cards_sail-pgsql` removed), `git worktree remove` and `prune`, then `docker ps -a`, `volume ls` and `network ls` showed nothing named `vf2`. No `git stash` was used. The real tree's porcelain was empty before the report was written.
+Rows 1-3 are verified at `1b05fdc`. Setup:
+
+- Scratch worktree `git worktree add --detach /tmp/vf3-share-cards HEAD`, with `vendor` and `node_modules` copied locally from the real tree.
+- Sail project `vf3-cards` (`APP_PORT=8097`, `FORWARD_DB_PORT=54347`, `VITE_PORT=5187`).
+- Both C83 proofs were green there before any fault. The real tree's porcelain was empty at baseline.
+
+Every command that edited a file started with `cd /tmp/vf3-share-cards`. Each fault was restored with `git -C /tmp/vf3-share-cards checkout -- <file>`, and the scratch porcelain was then checked empty. No `git stash` was used.
+
+Cleanup: `sail down -v` removed the containers, network `vf3-cards_sail` and volume `vf3-cards_sail-pgsql`. Then `git worktree remove --force` and `git worktree prune` ran. Afterwards `docker ps -a`, `volume ls` and `network ls` showed nothing named `vf3`, `/tmp/vf3-share-cards` no longer exists, and the real tree's porcelain was empty before this report was written. Rows 4-8 are carried from `419e2ca`, and the code they mutated is unchanged since.
 
 | Mutation | Location | Killed |
 | --- | --- | --- |
-| round-1 survivor: ` (75%)` after every `n de m` (card bundle rebuilt) | `design/components/MemberCard.vue:37` | yes - C42 at `app/tests/Feature/CardContentTest.php:137` (`member 101: %`) |
-| a member's name on a roll-call card: `{{ result }} · Ana Souza` (card bundle rebuilt) | `design/components/RollCallCard.vue:31` | yes - C42 at `CardContentTest.php:141` (`roll call 100-6: Ana Souza`) |
-| feed and story score width: `votes.length * 8` → `* 12` | `design/components/MemberCard.vue:47` | yes - C78 at `design/e2e/cards.spec.ts:66` (`short-feed score width`, off by 11.19 px) |
-| dark-scheme request: ` data-theme="light"` removed from the card page (card bundle rebuilt) | `app/resources/js/cards/render.js:64` | yes - C79 at `app/tests/Feature/CardRendererTest.php:148` (paper `oklch(0.14 0 0)`, ink dark) |
-| AC 2 height rule dropped: `if ($size[0] < self::MIN_SIDE)` only | `app/Console/Commands/FetchPhotos.php:216` | yes - C80 at `app/tests/Feature/PhotoCommandTest.php:206` (1 of 3 cases failed: `wide enough, too short`) |
+| per-party colour on the name: `:style="{ maxWidth: '100%', color: member.party === 'PL' ? 'oklch(0.17 0 0)' : 'oklch(0.16 0 0)' }"` on the `<h1>` (also tests that only the width declaration is stripped) | `design/components/MemberCard.vue:31` | yes - unit at `design/tests/cards.test.ts:222` (`og member H1.ma-card__name color:oklch(0.16 0 0),color:oklch(0.17 0 0): expected 2 to be 1`); e2e at `design/e2e/cards.spec.ts:157` (`og member H1.ma-card__name`, `other` page `oklch(0.16 0 0)` against `oklch(0.17 0 0)`) |
+| per-name background on each figure: `:style="{ backgroundColor: \`hsl(${member.name.charCodeAt(0)} 30% 97%)\` }"` on `.ma-card__figure` | `design/components/MemberCard.vue:35` | yes - unit at `cards.test.ts:222` (`og member P.ma-card__figure background-color:hsl(65 30% 97%),background-color:hsl(76 30% 97%)`); e2e at `cards.spec.ts:157` (`og member P.ma-card__figure`) |
+| per-mandate colour on the score marks through a presentation attribute: `v-bind="{ ...s.attrs, fill: s.attrs.fill === 'none' \|\| votes.length >= 100 ? s.attrs.fill : 'oklch(0.3 0 0)' }"` | `design/components/MandateScore.vue:78` | yes - e2e at `cards.spec.ts:150` (`short-og marks use the strip colour or none`). The unit proof passed, as expected: it reads `style` only, and this channel is the e2e proof's |
+| round 2: ` (75%)` after every `n de m` | `design/components/MemberCard.vue:37` | yes - C42 `app/tests/Feature/CardContentTest.php:137` (carried from 419e2ca) |
+| round 2: a member's name on a roll-call card | `design/components/RollCallCard.vue:31` | yes - C42 `CardContentTest.php:141` (carried from 419e2ca) |
+| round 2: feed and story score `* 8` → `* 12` | `design/components/MemberCard.vue:47` | yes - C78 `design/e2e/cards.spec.ts:66` (carried from 419e2ca) |
+| round 2: `data-theme="light"` removed from the card page | `app/resources/js/cards/render.js:64` | yes - C79 `app/tests/Feature/CardRendererTest.php:148` (carried from 419e2ca) |
+| round 2: AC 2 height rule dropped | `app/Console/Commands/FetchPhotos.php:216` | yes - C80 `app/tests/Feature/PhotoCommandTest.php:206` (carried from 419e2ca) |
 
 ## Gate
 
-Verified at `419e2ca` in `mandato-cards`, started for this round:
+Verified at `1b05fdc` in `mandato-cards`, which was started for this round:
 
-- `sail artisan test`, full suite, twice: 282 passed, 0 failed (3070 assertions) both times.
-- 73 named Pest filters, each run alone: all exit 0. In one junit-logged run of all 73: 103 testcases, 0 failures, every name hit.
-- Design: `npm test` 55 passed (6 files); `test:e2e` 18 passed; the 8 named unit and 6 named e2e proofs each run alone, 1 passed each.
-- `sail bin pint --test`: passed. `sail bin phpstan analyse`: 0 errors.
-- Builds: `design` `build` (`dist/tokens.css`), then `npm run build` (client, SSR, `bootstrap/cards/render.mjs` 52.01 kB). SSR `/health` OK. `/deputados/101/` serves `og:image` and `summary_large_image`.
-- One fresh served card per format from the running server on port 8094, `/deputados/102/legislatura/57/card/20270301-S6JM5X07/{1200x630,1080x1350,1080x1920}.png`: each 200 `image/png`, `Cache-Control: immutable, max-age=31536000, public`, no `Set-Cookie`. `file` reads 1200 × 630, 1080 × 1350 and 1080 × 1920; 42 115, 64 702 and 76 831 bytes. Logged `card rendered … 1238 / 1088 / 1293 ms`. Looking at the images: the feed card stacks the three figures on one left edge, and its 4-vote score is short and left-aligned, as the amendment decides. These requests added 1 snapshot and 3 PNGs to the dev database and to the gitignored media disk of `mandato-cards`.
-- `python3 /home/augusto/.claude/skills/tlc-spec-lean/scripts/validate_verification.py share-cards`: exit 1, with a single error: `verdict is FAIL - route the ranked gaps back as fixes, then re-verify` (no row contradicts the verdict). `mandato-cards` was stopped (`sail stop`) at the end of the round.
+- Builds: `design` `build` wrote `dist/tokens.css`, then `npm run build` built the client, the SSR bundle and `bootstrap/cards/render.mjs` (52.01 kB). SSR `/health` returned `{"status":"OK"}`.
+- `sail artisan test`, the full suite, ran twice: 282 passed, 0 failed (3070 assertions) both times.
+- The 73 named Pest filters each exited 0 alone. One junit-logged run of all 73 gave 103 testcases, 0 failures, and every name was hit.
+- Design: `npm test` gave 56 passed (6 files), `test:e2e` gave 19 passed. The 9 named unit proofs and 7 named e2e proofs, run alone, gave 1 passed each, including both C83 proofs.
+- `sail bin pint --test` passed. `sail bin phpstan analyse` reported 0 errors.
+- `validate_checks share-cards`: 0 errors. `validate_plan share-cards`: 0 errors, 1 warning (open question 1).
+- `/deputados/103/` serves `og:image` `…/deputados/103/legislatura/57/card/20270301-Y3ZC2A86/1200x630.png` and `twitter:card` `summary_large_image`.
+- One fresh card per format was served by the running server on port 8094 at `/deputados/103/legislatura/57/card/20270301-Y3ZC2A86/{1200x630,1080x1350,1080x1920}.png`. Each answered 200 `image/png` with `Cache-Control: immutable, max-age=31536000, public` and no `Set-Cookie`. `file` reads 1200 × 630, 1080 × 1350 and 1080 × 1920, at 37 205, 57 817 and 67 264 bytes. The log shows `card rendered … 1638 / 1578 / 1153 ms`.
+- Looking at the feed image: ink and grey on white only, figures stacked on one left edge, and a 3-vote score that is short and left-aligned. These requests added 1 snapshot and 3 PNGs to the dev database and to the gitignored media disk of `mandato-cards`.
+- `mandato-cards` was stopped (`sail stop`) after the served cards, before the fault project started.
+- `python3 /home/augusto/.claude/skills/tlc-spec-lean/scripts/validate_verification.py share-cards`: exit 0, 0 errors, 0 warnings.
 
 ## Ranked gaps
 
-1. **Blocking - per-member colour is uncovered (a1 6.3 "cor própria por pessoa").** No check sees a colour or an inline style. C44 and AC 31 compare `tagName.class` only (`design/tests/cards.test.ts:166`, `app/tests/Feature/CardContentTest.php:160`), and the card already binds per-member inline styles (`design/components/MemberCard.vue:47`, `design/components/MandateScore.vue:49`). A member-dependent `color` or `background` would pass every proof. This was round 1's `Uncovered` cell on the a1 row, and no fix addressed it. A fix within C44's own proof: also compare the `style` attribute with the width declarations removed, or compare the computed `color` and `background-color` of every element across the two members' cards in each format.
+None blocking. For the orchestrator:
 
-Not blocking, for the orchestrator:
+1. **C83 precision gaps (a1 6.3 "cor própria por pessoa"; line 207 names "aura, gradiente gerado").** Two escape paths remain. Both are deterministic from reading the code; neither was injected, because the brief capped faults at three.
+   - (a) The unit proof skips an element whose `style` is null (`design/tests/cards.test.ts:192`). An inline style bound on only some members (`:style="cond ? {…} : null"`) is therefore never compared with its absence. The claim says the attributes "are identical for every element", so the proof is weaker than the claim here.
+   - (b) The Chromium tuple (`design/e2e/cards.spec.ts:131`) reads `color`, `background-color`, `border-color` and `fill`. It does not read `stroke` outside the marks, which the axis `<line>` carries as a presentation attribute (`design/components/MandateScore.vue:53`). Nor does it read `background-image`, `box-shadow`, `outline-color`, `text-shadow` or `text-decoration-color`.
 
-2. Plan door 3 (`plan.md:88`, from `419e2ca`) now reads `npx --no-install playwright-core install --with-deps --only-shell chromium --with-deps --only-shell chromium`. The flags are doubled, and the text says this command runs "in the published Sail `Dockerfile` and in CI". The Dockerfile runs `npx -y playwright@$PLAYWRIGHT_VERSION install --with-deps --only-shell chromium` (`app/docker/8.5/Dockerfile:70`). No check or behaviour is wrong (C36 and C81 assert each install apart, both pinned to 1.63.0), but the one-way door's literal text is malformed and misattributes the CI command to the Dockerfile. It needs a one-line edit.
-3. Plan Assumptions line 236 still reads "score at full width" (Confirmed y). The S4 amendment (line 167) declares that it replaces this, and the Handoff says the row "stays as written". A reader of the table gets the superseded rule.
-4. The S4 amendment says "the og format keeps its arrangement", but the 8 px cap at `MemberCard.vue:47` applies to og too. Before this feature, the design-system prototype drew og's score uncapped. The served og card of 102/57 (4 votes) draws a 32 px score, and any og card under about 100 votes draws a short score. No binding source decides og's score width, so this is not a contradiction, but the amendment's sentence is inaccurate and C78 covers feed and story only. The amendment also omits "under the maintainer's delegation", which every other amendment states.
-5. Carried from `0c5238f`: C46's ratio assertion is a tautology (`design/e2e/cards.spec.ts:112`; the 4:5 aspect rests on `object-fit: contain` at `:109`). C33 proves request blocking through `capture()`, not through the CLI's `main`. In the gone state, the vote links still point at roll calls. `design/components/card.js` duplicates the app's `Labels`.
-6. Lessons (step 7) were not distilled: this round's brief kept the Verifier read-only except for this report.
+   Together, a gradient or shadow bound on only some members, or a per-member `stroke` on the axis line, passes both proofs. Fixes within the existing proofs: treat a null `style` as `""` instead of skipping it, and add `stroke`, `background-image` and `box-shadow` to the tuple.
+2. The `checks.md` header (line 6) still reads "82 checks". There are 83.
+3. Wording only: the plan Assumptions row (`plan.md:236`) now carries the amended rule but labels itself "(superseded by the S4 amendment …)". The amendment (`plan.md:167`) still says it "replaces the Assumption's 'score at full width'", a phrase the row no longer contains. A reader is not misled about the rule.
+4. Carried from `0c5238f`: C46's ratio assertion is a tautology (`design/e2e/cards.spec.ts:112`). C33 proves request blocking through `capture()`, not through the CLI's `main`. In the gone state, the vote links still point at roll calls. `design/components/card.js` duplicates the app's `Labels`.
+5. Lessons (step 7) were not distilled. This round's brief kept the Verifier read-only except for this report, and gap 1 is a grounded precision gap the orchestrator may record.

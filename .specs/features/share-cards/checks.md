@@ -3,7 +3,7 @@
 Profile: ui
 Plan: `.specs/features/share-cards/plan.md`
 
-82 checks in 7 slices plus shape checks and the batch 2, after-batch-2 and verification round 1 amendments · 9 one-way doors · 1 open, blocking go-live only (plan open question 1: the public domain; cards print the host of `APP_URL`)
+83 checks in 7 slices plus shape checks and the batch 2, after-batch-2 and verification round 1 amendments · 9 one-way doors · 1 open, blocking go-live only (plan open question 1: the public domain; cards print the host of `APP_URL`)
 
 All commands run from `app/` with this worktree's Sail project up: `app/.env` sets `COMPOSE_PROJECT_NAME=mandato-cards`, `APP_PORT=8094`, `FORWARD_DB_PORT=54344`, `VITE_PORT=5184`; `sail` is `./vendor/bin/sail`, and the image is built from the published `app/docker/8.5/Dockerfile` (door 3). Pest proofs are `sail artisan test --filter="<test name>"`; page proofs read server-rendered HTML, so they need `sail npm run build` and the SSR server (`sail exec -d -u sail laravel.test php artisan inertia:start-ssr`), and fail, never skip, when SSR is down (skeleton `requireSsr`). Card proofs that say "real renderer" run `node bootstrap/cards/render.mjs` with the Chromium headless shell; the others replace it with `Process::fake`. Design proofs are `sail npm --prefix /var/www/design test -- <file> -t "<name>"` and `sail npm --prefix /var/www/design run test:e2e -- -g "<name>"`. `{APP_URL}` is `https://mandato.test` (`phpunit.xml`), so `{host}` is `mandato.test`.
 
