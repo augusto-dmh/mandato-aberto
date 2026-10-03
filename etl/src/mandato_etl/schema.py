@@ -1,4 +1,4 @@
-"""Validates documents against `etl/schema/*.json` without a runtime dependency.
+"""Validates documents against `etl/schema/*.json` (v2) and `etl/schema/v3/*.json` without a runtime dependency.
 
 Implements only the JSON Schema keywords the contract uses and refuses any other, so a schema
 can never rely on a keyword this module would silently ignore.
@@ -9,6 +9,15 @@ import re
 from pathlib import Path
 
 SCHEMA_DIR = Path(__file__).resolve().parents[2] / "schema"
+VERSIONS = (2, 3)
+V3_FILES = {
+    "meta.json": "meta",
+    "members.json": "members",
+    "roll-calls.json": "roll-calls",
+    "propositions.json": "propositions",
+    "classification-rules.json": "classification-rules",
+}
+V3_DIRS = {"roll-calls": "roll-call", "full-texts": "full-text"}
 
 KEYWORDS = {
     "$schema", "$id", "$defs", "$ref", "title", "description",
@@ -29,13 +38,20 @@ class SchemaError(Exception):
     pass
 
 
-def load(kind: str) -> dict:
-    return json.loads((SCHEMA_DIR / f"{kind}.schema.json").read_text())
+def load(kind: str, version: int = 2) -> dict:
+    directory = SCHEMA_DIR if version == 2 else SCHEMA_DIR / f"v{version}"
+    return json.loads((directory / f"{kind}.schema.json").read_text())
 
 
-def kind_of(relative: str) -> str | None:
+def kind_of(relative: str, version: int = 2) -> str | None:
     """The schema that governs a file in the output directory, by its relative path."""
     parts = relative.split("/")
+    if version == 3:
+        if len(parts) == 1:
+            return V3_FILES.get(parts[0])
+        if len(parts) == 2 and parts[1].endswith(".json"):
+            return V3_DIRS.get(parts[0])
+        return None
     if len(parts) == 1:
         return {"meta.json": "meta", "deputies.json": "deputies", "roll-calls.json": "roll-calls"}.get(parts[0])
     if len(parts) == 2 and parts[1].endswith(".json"):
@@ -83,16 +99,31 @@ def first_error(doc, schema: dict, root: dict | None = None, path: str = "$") ->
     return None
 
 
+def version_of(out: Path):
+    """`meta.schema_version` of a directory; 2 when `meta.json` is missing or unreadable, so the v2 checks report it."""
+    try:
+        meta = json.loads((out / "meta.json").read_text())
+    except (OSError, json.JSONDecodeError):
+        return 2
+    return meta.get("schema_version", 2) if isinstance(meta, dict) else 2
+
+
 def validate_dir(out: Path) -> str | None:
-    """The first file under `out` that is unknown or fails its schema, as `<file>: <error>`."""
+    """The first file under `out` that is unknown or fails its schema, as `<file>: <error>`.
+
+    The schema set is chosen by `meta.json`'s `schema_version`.
+    """
+    version = version_of(out)
+    if version not in VERSIONS:
+        return f"meta.json: unsupported schema_version {version}"
     schemas = {}
     for path in sorted(p for p in out.rglob("*") if p.is_file()):
         relative = path.relative_to(out).as_posix()
-        kind = kind_of(relative)
+        kind = kind_of(relative, version)
         if kind is None:
             return f"{relative}: not part of the contract"
         if kind not in schemas:
-            schemas[kind] = load(kind)
+            schemas[kind] = load(kind, version)
         try:
             doc = json.loads(path.read_text())
         except json.JSONDecodeError as e:
@@ -100,7 +131,8 @@ def validate_dir(out: Path) -> str | None:
         error = first_error(doc, schemas[kind])
         if error:
             return f"{relative}: {error}"
-    for required in ("meta.json", "deputies.json", "roll-calls.json"):
+    required = V3_FILES if version == 3 else ("meta.json", "deputies.json", "roll-calls.json")
+    for required in required:
         if not (out / required).exists():
             return f"{required}: missing"
     return None

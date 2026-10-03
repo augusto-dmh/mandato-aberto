@@ -1,0 +1,38 @@
+{
+  "approved": true,
+  "ballot": "nominal",
+  "date": "2027-02-15",
+  "description": "Aprovado o Projeto de Lei nº 6, de 2027.",
+  "governmentOrientation": "yes",
+  "house": "camara",
+  "id": "300-1",
+  "kind": "final",
+  "kindRule": "camara.09",
+  "lastPresentationDescription": null,
+  "legislature": 58,
+  "openingDescription": null,
+  "organ": "PLEN",
+  "orientations": [
+    {
+      "bench": "Governo",
+      "official": "Sim",
+      "position": "yes"
+    }
+  ],
+  "propositionId": 5006,
+  "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/300-1",
+  "tallies": {
+    "no": 0,
+    "others": 0,
+    "yes": 1
+  },
+  "votes": [
+    {
+      "memberId": 101,
+      "official": "Sim",
+      "party": "PT",
+      "partyMajority": "yes",
+      "position": "yes"
+    }
+  ]
+}

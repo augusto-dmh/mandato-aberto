@@ -1,0 +1,20 @@
+{
+  "approved": true,
+  "ballot": "secret",
+  "date": "2025-08-01",
+  "description": "Votação secreta em turno único.",
+  "governmentOrientation": null,
+  "house": "camara",
+  "id": "100-5",
+  "kind": "final",
+  "kindRule": "camara.11",
+  "lastPresentationDescription": null,
+  "legislature": 57,
+  "openingDescription": "Votação secreta em turno único.",
+  "organ": "PLEN",
+  "orientations": [],
+  "propositionId": null,
+  "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-5",
+  "tallies": null,
+  "votes": []
+}

@@ -2,11 +2,12 @@
 // "Partitura do mandato": one column per nominal roll call, oldest first, one row per year.
 import { computed } from "vue";
 import { formatDate } from "./format.js";
-import { LEGEND, markShapes, voteCase } from "./vote.js";
+import { LEGEND, POSITION_LEGEND, markShapes, positionCase, voteCase } from "./vote.js";
 import VoteMark from "./VoteMark.vue";
 
 const props = defineProps({
-  votes: { type: Array, required: true }, // [{ rollCallId, date, title, vote, secret }]
+  votes: { type: Array, required: true }, // [{ rollCallId, date, title, vote, secret }] or, with `house`, [{ rollCallId, date, title, position, official }]
+  house: { type: String, default: null }, // contract v3: marks follow `position`, labels the house (app-contract-v3 door 5)
   href: { type: Function, default: (id) => `/votacoes/${id}/` },
   compact: { type: Boolean, default: false },
 });
@@ -26,7 +27,13 @@ const rows = computed(() => {
   return [...byYear].map(([year, votes]) => ({ year, votes }));
 });
 const widest = computed(() => Math.max(1, ...rows.value.map((r) => r.votes.length)));
-const label = (v) => voteCase(v.vote, v.secret).label;
+const caseOf = (v) => (props.house ? positionCase({ house: props.house, position: v.position, official: v.official ?? null }) : voteCase(v.vote, v.secret));
+const label = (v) => caseOf(v).label;
+const legend = computed(() =>
+  props.house
+    ? POSITION_LEGEND.map((position) => ({ key: position, mark: { house: props.house, position }, label: positionCase({ house: props.house, position }).label }))
+    : LEGEND.map((value) => ({ key: value, mark: { vote: value }, label: voteCase(value).label })),
+);
 /** Index of the first vote of each month in a row: where a month tick goes. */
 const monthStarts = (votes) => votes.flatMap((v, i) => (i === 0 || v.date.slice(0, 7) !== votes[i - 1].date.slice(0, 7) ? [i] : []));
 </script>
@@ -68,13 +75,13 @@ const monthStarts = (votes) => votes.flatMap((v, i) => (i === 0 || v.date.slice(
         >
           <title v-if="!compact">{{ formatDate(v.date) }} · {{ v.title }} · {{ label(v) }}</title>
           <rect v-if="!compact" class="ma-score__hit" x="0" y="0" :width="COLUMN" height="24" fill="none" pointer-events="all" />
-          <component :is="s.tag" v-for="(s, j) in markShapes(voteCase(v.vote, v.secret).kind)" :key="j" v-bind="s.attrs" transform="scale(0.5 1)" />
+          <component :is="s.tag" v-for="(s, j) in markShapes(caseOf(v).kind)" :key="j" v-bind="s.attrs" transform="scale(0.5 1)" />
         </component>
       </svg>
     </div>
     <template v-if="!compact">
       <ul class="ma-score__legend">
-        <li v-for="value in LEGEND" :key="value"><VoteMark :vote="value" />{{ voteCase(value).label }}</li>
+        <li v-for="item in legend" :key="item.key"><VoteMark v-bind="item.mark" />{{ item.label }}</li>
       </ul>
       <details class="ma-score__table">
         <summary>Ver as {{ ordered.length }} votações como tabela</summary>

@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Yaml\Yaml;
 
-// Checks C39 and C45-C48 of .specs/features/app-skeleton/checks.md: the files the gates and doors live in.
+// Checks C39 and C45-C48 of .specs/features/app-skeleton/checks.md (C47 now C72 of app-contract-v3): the files the gates and doors live in.
 
 test('ci job app runs every gate', function () {
     $job = Yaml::parseFile(base_path('../.github/workflows/ci.yml'))['jobs']['app'] ?? null;
@@ -76,9 +76,10 @@ test('consumes the design package', function () {
     expect($design['exports'])->toHaveKey('./styles/*')
         ->and($design['exports']['./styles/*'])->toBe('./styles/*');
 
-    foreach (['Deputies/Show.vue', 'RollCalls/Show.vue'] as $page) {
+    foreach (['Members/Show.vue', 'RollCalls/Show.vue', 'Methodology/Show.vue'] as $page) {
         expect(File::get(resource_path("js/Pages/{$page}")))->toMatch('/from\s+["\']mandato-design\/components\//');
     }
+    expect(File::exists(resource_path('js/Pages/Deputies/Show.vue')))->toBeFalse();
 });
 
 test('sail runs php 8.5 with the sibling mounts', function () {

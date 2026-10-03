@@ -1,0 +1,32 @@
+{
+  "approved": true,
+  "ballot": "nominal",
+  "date": "2023-04-01",
+  "description": "Aprovado o Requerimento nº 1.",
+  "governmentOrientation": null,
+  "house": "camara",
+  "id": "200-1",
+  "kind": "procedural",
+  "kindRule": "camara.04",
+  "lastPresentationDescription": null,
+  "legislature": 57,
+  "openingDescription": null,
+  "organ": "CCJC",
+  "orientations": [],
+  "propositionId": null,
+  "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/200-1",
+  "tallies": {
+    "no": 0,
+    "others": 0,
+    "yes": 1
+  },
+  "votes": [
+    {
+      "memberId": 101,
+      "official": "Sim",
+      "party": "PSB",
+      "partyMajority": null,
+      "position": "yes"
+    }
+  ]
+}

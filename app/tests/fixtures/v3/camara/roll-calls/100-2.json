@@ -1,0 +1,52 @@
+{
+  "approved": false,
+  "ballot": "nominal",
+  "date": "2023-05-10",
+  "description": "Rejeitada a Emenda nº 1.",
+  "governmentOrientation": "free",
+  "house": "camara",
+  "id": "100-2",
+  "kind": "amendment",
+  "kindRule": "camara.08",
+  "lastPresentationDescription": null,
+  "legislature": 57,
+  "openingDescription": null,
+  "organ": "PLEN",
+  "orientations": [
+    {
+      "bench": "Governo",
+      "official": "Liberado",
+      "position": "free"
+    }
+  ],
+  "propositionId": null,
+  "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-2",
+  "tallies": {
+    "no": 0,
+    "others": 2,
+    "yes": 0
+  },
+  "votes": [
+    {
+      "memberId": 101,
+      "official": "Abstenção",
+      "party": "PSB",
+      "partyMajority": null,
+      "position": "abstention"
+    },
+    {
+      "memberId": 102,
+      "official": "Obstrução",
+      "party": "PL",
+      "partyMajority": null,
+      "position": "obstruction"
+    },
+    {
+      "memberId": 103,
+      "official": "",
+      "party": "MDB",
+      "partyMajority": null,
+      "position": "notVoting"
+    }
+  ]
+}

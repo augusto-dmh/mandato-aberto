@@ -172,6 +172,47 @@ describe("components", () => {
     expect(doc.body.textContent).not.toContain("Como calculamos");
   });
 
+  it("VoteMark draws a v3 vote by position", async () => {
+    const { doc } = await render(VoteMark, { house: "senado", position: "presiding", official: "Presidente (art. 51 RISF)", who: "Ana Souza, PT-SP" });
+    const svg = doc.querySelector("svg.ma-vote")!;
+    expect(svg.classList.contains("ma-vote--presiding")).toBe(true);
+    expect(svg.getAttribute("aria-label")).toBe("Ana Souza, PT-SP, Presidente da sessão (art. 51 RISF)");
+    expect(svg.querySelector("circle")?.getAttribute("fill")).toBe("currentColor");
+
+    const yes = (await render(VoteMark, { house: "camara", position: "yes", official: "Sim", who: "Ana Souza, PT-SP" })).doc.querySelector("svg.ma-vote")!;
+    expect(yes.getAttribute("aria-label")).toBe("Ana Souza, PT-SP, votou Sim");
+    expect(yes.classList.contains("ma-vote--yes")).toBe(true);
+  });
+
+  it("MandateScore draws v3 votes by position", async () => {
+    const byPosition = [
+      { rollCallId: "6923", date: "2025-04-01", title: "PL 1/2025", position: "yes", official: "Sim" },
+      { rollCallId: "7001", date: "2025-06-10", title: "Votação secreta de 10/06/2025", position: "secret", official: "Votou" },
+      { rollCallId: "7002", date: "2025-07-01", title: "Votação nominal de 01/07/2025", position: "presiding", official: "Presidente (art. 51 RISF)" },
+      { rollCallId: "7003", date: "2025-08-01", title: "Votação nominal de 01/08/2025", position: "notVoting", official: null },
+    ];
+    const { doc } = await render(MandateScore, { votes: byPosition, house: "senado", href: (id: string) => `/senado/votacoes/${id}/` });
+    const cols = [...doc.querySelectorAll(".ma-score__col")];
+    expect(cols.map((c) => c.getAttribute("href"))).toEqual(["/senado/votacoes/6923/", "/senado/votacoes/7001/", "/senado/votacoes/7002/", "/senado/votacoes/7003/"]);
+    expect(cols.map((c) => c.querySelectorAll("rect:not(.ma-score__hit), circle, path").length)).toEqual([1, 0, 1, 0]);
+    expect(cols[0].querySelector("rect:not(.ma-score__hit)")?.getAttribute("y")).toBe("2");
+    expect([...doc.querySelectorAll(".ma-score__table tbody td:last-child")].map((td) => td.textContent?.trim())).toEqual([
+      "Sim", "Votou (votação secreta)", "Presidente da sessão (art. 51 RISF)", "Não registrou voto",
+    ]);
+    const legend = [...doc.querySelectorAll(".ma-score__legend li")].map((li) => li.textContent?.trim());
+    expect(legend).toEqual(["Sim", "Não", "Abstenção", "Obstrução", "Presidente da sessão (art. 51 RISF)", "Não registrou voto"]);
+    expect(doc.body.textContent).not.toContain("Art. 17");
+
+    // The v2 inputs still draw the skeleton's cases.
+    const old = (await render(MandateScore, { votes })).doc;
+    expect([...old.querySelectorAll(".ma-score__legend li")].map((li) => li.textContent?.trim())).toEqual([
+      "Sim", "Não", "Abstenção", "Obstrução", "Art. 17 (presidente da sessão)", "Registro sem voto",
+    ]);
+    expect([...old.querySelectorAll(".ma-score__table tbody td:last-child")].map((td) => td.textContent?.trim())).toEqual([
+      "Sim", "Obstrução", "Votação secreta", "Não",
+    ]);
+  });
+
   it("MandateScore without votes", async () => {
     const { doc } = await render(MandateScore, { votes: [] });
     expect(doc.querySelectorAll(".ma-score__row")).toHaveLength(0);
