@@ -5,7 +5,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
-// Checks C29-C33 of .specs/features/app-contract-v3/checks.md (C29, C30 carry skeleton C14, C17).
+// Checks C29-C33 and C81 of .specs/features/app-contract-v3/checks.md (C29, C30 carry skeleton C14, C17).
 
 function insertRow(string $table, array $row): int
 {
@@ -169,6 +169,32 @@ test('enforces the v3 keys cascades and nullability', function () {
 
     expect(sqlState(fn () => DB::table('roll_calls')->insert([...$rows['rollCall'], 'source_id' => '2-2', 'kind_rule' => 'camara.99'])))->toBeNull();
 });
+
+/** @return array<string, array{string, string}> each not-null column of door 3 that C32 leaves out, as [table, column] */
+function v3NotNullColumns(): array
+{
+    $columns = ['legislatures.starts_on' => ['legislatures', 'starts_on'], 'legislatures.ends_on' => ['legislatures', 'ends_on'], 'memberships.uf' => ['memberships', 'uf']];
+    foreach (['participation', 'government_alignment', 'party_alignment'] as $indicator) {
+        foreach (['all', 'merit'] as $basis) {
+            foreach (['count', 'total'] as $part) {
+                $columns["memberships.{$indicator}_{$basis}_{$part}"] = ['memberships', "{$indicator}_{$basis}_{$part}"];
+            }
+        }
+    }
+
+    return $columns;
+}
+
+test('refuses a null in each not-null column of door 3', function (string $table, string $column) {
+    $rows = v3Rows();
+    $valid = match ($table) {
+        'legislatures' => ['number' => 58, 'starts_on' => '2027-02-01', 'ends_on' => '2031-01-31'],
+        'memberships' => [...$rows['membership'], 'member_id' => insertRow('members', [...$rows['member'], 'source_id' => '77'])],
+    };
+
+    expect(sqlState(fn () => DB::table($table)->insert([...$valid, $column => null])))->toBe('23502')
+        ->and(sqlState(fn () => DB::table($table)->insert($valid)))->toBeNull();
+})->with(v3NotNullColumns());
 
 test('the v3 migration empties the v2 rows', function () {
     Artisan::call('migrate:rollback', ['--step' => 1, '--force' => true]);
