@@ -1,0 +1,90 @@
+{
+ "ResultadoVetoDispositivoCN": {
+  "noNamespaceSchemaLocation": "https://legis.senado.leg.br/dadosabertos/dados/cn/ResultadoVetoDispotivoCNv7.xsd",
+  "Metadados": {
+   "Versao": "02/10/2026 20:15:27",
+   "VersaoServico": "7",
+   "DataVersaoServico": "2018-08-06",
+   "DescricaoDataSet": "Resultado da votação nominal de um dispositivo de veto."
+  },
+  "Votacao": {
+   "ParteVetada": "§ 1º do art. 31",
+   "TipoVotacao": "Cédula",
+   "Sessao": "Sessão Conjunta nº 4 de 09/05/2024 às 10:00h",
+   "Camara": {
+    "Voto": [
+     {
+      "NomeParlamentar": "Adriana Ventura",
+      "PartidoParlamentar": "NOVO",
+      "UfParlamentar": "SP",
+      "TipoVoto": "Sim"
+     },
+     {
+      "NomeParlamentar": "Afonso Hamm",
+      "PartidoParlamentar": "PP",
+      "UfParlamentar": "RS",
+      "TipoVoto": "Não"
+     },
+     {
+      "NomeParlamentar": "Airton Faleiro",
+      "PartidoParlamentar": "PT",
+      "UfParlamentar": "PA",
+      "TipoVoto": "Não"
+     },
+     {
+      "NomeParlamentar": "aj Albuquerque",
+      "PartidoParlamentar": "PP",
+      "UfParlamentar": "CE",
+      "TipoVoto": "Não"
+     },
+     {
+      "NomeParlamentar": "Alexandre Guimarães",
+      "PartidoParlamentar": "MDB",
+      "UfParlamentar": "TO",
+      "TipoVoto": "Branco"
+     }
+    ]
+   },
+   "Senado": {
+    "Voto": [
+     {
+      "NomeParlamentar": "Alessandro Vieira",
+      "PartidoParlamentar": "MDB",
+      "UfParlamentar": "SE",
+      "TipoVoto": "Sim"
+     },
+     {
+      "NomeParlamentar": "Ciro Nogueira",
+      "PartidoParlamentar": "PP",
+      "UfParlamentar": "PI",
+      "TipoVoto": "Não"
+     },
+     {
+      "NomeParlamentar": "Confúcio Moura",
+      "PartidoParlamentar": "MDB",
+      "UfParlamentar": "RO",
+      "TipoVoto": "Não"
+     },
+     {
+      "NomeParlamentar": "Davi Alcolumbre",
+      "PartidoParlamentar": "UNIÃO",
+      "UfParlamentar": "AP",
+      "TipoVoto": "Não"
+     },
+     {
+      "NomeParlamentar": "Dr. Hiran",
+      "PartidoParlamentar": "PP",
+      "UfParlamentar": "RR",
+      "TipoVoto": "Não"
+     },
+     {
+      "NomeParlamentar": "Professora Dorinha Seabra",
+      "PartidoParlamentar": "UNIÃO",
+      "UfParlamentar": "TO",
+      "TipoVoto": "Não"
+     }
+    ]
+   }
+  }
+ }
+}

@@ -1,0 +1,124 @@
+{
+ "ListaVetosAnoCN": {
+  "noNamespaceSchemaLocation": "https://legis.senado.leg.br/dadosabertos/dados/cn/ListaVetosAnoCNv7.xsd",
+  "Metadados": {
+   "Versao": "22/09/2026 09:29:32",
+   "VersaoServico": "7",
+   "DataVersaoServico": "2018-08-06",
+   "DescricaoDataSet": "Lista dos vetos ocorridos em determinado ano"
+  },
+  "Vetos": {
+   "Veto": [
+    {
+     "Codigo": "17570",
+     "Materia": {
+      "Codigo": "169775",
+      "SiglaCasa": "CN",
+      "NomeCasa": "Congresso Nacional",
+      "Sigla": "VET",
+      "Numero": "29",
+      "Ano": "2025",
+      "EmTramitacao": "Não",
+      "Ementa": "Veto parcial aposto ao Projeto de Lei nº 2.159, de 2021, que \"Dispõe sobre o licenciamento ambiental; regulamenta o inciso IV do § 1º do art. 225 da Constituição Federal; altera as Leis nºs 9.605, de 12 de fevereiro de 1998 (Lei dos Crimes Ambientais), 9.985, de 18 de julho de 2000, e 6.938, de 31 de agosto de 1981; revoga dispositivos das Leis nºs 7.661, de 16 de maio de 1988, e 11.428, de 22 de dezembro de 2006; e dá outras providências.\".",
+      "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/169775"
+     },
+     "MateriaVetada": {
+      "Codigo": "148785",
+      "SiglaCasa": "CN",
+      "NomeCasa": "Congresso Nacional",
+      "Sigla": "PL",
+      "Numero": "2159",
+      "Ano": "2021",
+      "DescricaoObjetivoProcesso": "Revisora",
+      "EmTramitacao": "Não",
+      "Ementa": "Dispõe sobre o licenciamento ambiental; regulamenta o inciso IV do § 1º do art. 225 da Constituição Federal; altera as Leis nºs 9.605, de 12 de fevereiro de 1998, e 9.985, de 18 de julho de 2000; revoga dispositivo da Lei nº 7.661, de 16 de maio de 1988; e dá outras providências.",
+      "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/148785",
+      "UrlRelatorias": "https://legis.senado.leg.br/dadosabertos/materia/relatorias/148785",
+      "NormaGerada": {
+       "NomeNorma": "Lei nº 15.190 de 08/08/2025",
+       "UrlNorma": "https://legis.senado.leg.br/norma/41198421",
+       "CodigoNorma": "41198421",
+       "SiglaTipoNorma": "LEI-n",
+       "DescricaoTipoNorma": "Lei Numerada",
+       "NumeroNorma": "15190",
+       "AnoNorma": "2025",
+       "DataAssinatura": "2025-08-08",
+       "Observacao": "Quanto à vigência desta Lei; vide o art 67",
+       "DataPublicacao": "2025-08-08",
+       "SiglaVeiculoPublicacao": "DOUE",
+       "DescricaoVeiculoPublicacao": "[Diário Oficial da União - Edição Extra  de 08/08/2025 - nº 149-A] (p. 1, col. 1)"
+      }
+     },
+     "Mensagem": {
+      "Sigla": "MSG",
+      "Numero": "1097",
+      "Ano": "2025",
+      "UrlPlanalto": "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/Msg/Vep/VEP-1097-25.htm"
+     },
+     "Total": "Não",
+     "Assunto": "Licenciamento ambiental",
+     "DataRecebimentoCongresso": "2025-08-08",
+     "DataPublicacao": "2025-08-08",
+     "DataSobrestacaoPauta": "2025-09-07",
+     "SobrestandoPauta": "Não",
+     "QuantidadeDispositivos": "59",
+     "UrlDispositivos": "https://www.congressonacional.leg.br/dados/plenario/resultado/veto/materia/169775"
+    },
+    {
+     "Codigo": "17089",
+     "Materia": {
+      "Codigo": "166980",
+      "SiglaCasa": "CN",
+      "NomeCasa": "Congresso Nacional",
+      "Sigla": "VET",
+      "Numero": "3",
+      "Ano": "2025",
+      "EmTramitacao": "Sim",
+      "Ementa": "Veto parcial aposto ao Projeto de Lei nº 576, de 2021, que \"Disciplina o aproveitamento de potencial energético offshore; e altera a Lei nº 9.427, de 26 de dezembro de 1996, a Lei nº 9.478, de 6 de agosto de 1997, a Lei nº 10.438, de 26 de abril de 2002, a Lei nº 14.182, de 12 de julho de 2021, e a Lei nº 14.300, de 6 de janeiro de 2022\".",
+      "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/166980"
+     },
+     "MateriaVetada": {
+      "Codigo": "146793",
+      "SiglaCasa": "CN",
+      "NomeCasa": "Congresso Nacional",
+      "Sigla": "PL",
+      "Numero": "576",
+      "Ano": "2021",
+      "DescricaoObjetivoProcesso": "Iniciadora",
+      "EmTramitacao": "Sim",
+      "Ementa": "Disciplina a outorga de autorizações para aproveitamento de potencial energético offshore.",
+      "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/146793",
+      "UrlRelatorias": "https://legis.senado.leg.br/dadosabertos/materia/relatorias/146793",
+      "NormaGerada": {
+       "NomeNorma": "Lei nº 15.097 de 10/01/2025",
+       "UrlNorma": "https://legis.senado.leg.br/norma/40151309",
+       "CodigoNorma": "40151309",
+       "SiglaTipoNorma": "LEI-n",
+       "DescricaoTipoNorma": "Lei Numerada",
+       "NumeroNorma": "15097",
+       "AnoNorma": "2025",
+       "DataAssinatura": "2025-01-10",
+       "DataPublicacao": "2025-01-10",
+       "SiglaVeiculoPublicacao": "DOUE",
+       "DescricaoVeiculoPublicacao": "[Diário Oficial da União - Edição Extra  de 10/01/2025 - nº 7-B] (p. 1, col. 1)"
+      }
+     },
+     "Mensagem": {
+      "Sigla": "MSG",
+      "Numero": "44",
+      "Ano": "2025",
+      "UrlPlanalto": "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/Msg/Vep/VEP-44-25.htm"
+     },
+     "Total": "Não",
+     "Assunto": "Marco Regulatório de Energia \"Offshore\"",
+     "DataRecebimentoCongresso": "2025-01-14",
+     "DataPublicacao": "2025-01-10",
+     "DataSobrestacaoPauta": "2025-03-05",
+     "SobrestandoPauta": "Sim",
+     "QuantidadeDispositivos": "24",
+     "UrlDispositivos": "https://www.congressonacional.leg.br/dados/plenario/resultado/veto/materia/166980"
+    }
+   ]
+  }
+ }
+}
