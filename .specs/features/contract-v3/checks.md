@@ -3,7 +3,7 @@
 Profile: standard
 Plan: `.specs/features/contract-v3/plan.md`
 
-58 checks in 8 slices · 11 one-way doors (8 approved, 2 added by the orchestrator on 2026-10-02, 1 added while deriving checks) · 1 open question, which blocks go-live but not this build (rule descriptions reviewed in the PR)
+59 checks in 8 slices · 11 one-way doors (8 approved, 2 added by the orchestrator on 2026-10-02, 1 added while deriving checks) · 1 open question, which blocks go-live but not this build (rule descriptions reviewed in the PR)
 
 All proofs run from the repository root. `P` below abbreviates `uv run --directory etl pytest`.
 The feature base is `bc0a4a8` (the last commit before any code; its `etl/` equals `main`).
@@ -222,7 +222,7 @@ Proof: `P tests/test_v3_contract.py::test_proposition_summary_and_status_by_sour
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
-| proposition field sources (12) | bulk `type` C46 · bulk `number` C58 · bulk `year` C58 · bulk `summary` C59 · bulk `presentedAt` C46 · bulk `status` C59 · link `type` C58 · link `number` C58 · link `year` C58 · link `summary` C59 · link `presentedAt` C46 · link `status` C59 | - |
+| proposition field sources (12) | bulk `type` C58 · bulk `number` C58 · bulk `year` C58 · bulk `summary` C59 · bulk `presentedAt` C46 · bulk `status` C59 · link `type` C58 · link `number` C58 · link `year` C58 · link `summary` C59 · link `presentedAt` C46 · link `status` C59 | - |
 | `ballot` enum (3) | `nominal` C17, C25 · `secret` C17, C25, C27 · `symbolic` C17, C25, C26 | - |
 | `kind` enum (4) | `final` C21, C25 · `amendment` C21, C25 · `procedural` C21, C25 · `unclassified` C20, C25 | - |
 | Câmara ruleset v1 rules (11) | `camara.01` C21, C19 · `camara.02` C22 · `camara.03` C21, C25 · `camara.04` C21, C25 · `camara.05` C22 · `camara.06` C21 · `camara.07` C21 · `camara.08` C21, C25 · `camara.09` C21, C25 · `camara.10` C22 · `camara.11` C21, C25 | - |
