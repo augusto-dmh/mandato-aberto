@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "status-rules.schema.json",
+  "title": "status-rules.json",
+  "description": "The published rules that set every act and device status (door 4)",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/rule"
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "source",
+        "field",
+        "officialValue",
+        "status",
+        "description"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(mpv|device|veto|bill)\\.\\d{2}$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "provisionalMeasure",
+            "device",
+            "veto",
+            "bill"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "congresso",
+            "camara",
+            "mandato-aberto"
+          ]
+        },
+        "field": {
+          "type": "string"
+        },
+        "officialValue": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Matched exactly and verbatim; null when the rule reads no single official value"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "approvedAmended",
+            "rejected",
+            "lapsed",
+            "revoked",
+            "returned",
+            "kept",
+            "overridden",
+            "prejudged",
+            "decided",
+            "inProgress",
+            "law",
+            "vetoedTotally",
+            "withdrawn",
+            "archived"
+          ]
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

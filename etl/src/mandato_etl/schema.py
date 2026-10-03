@@ -1,4 +1,4 @@
-"""Validates documents against `etl/schema/*.json` (v2) and `etl/schema/v3/*.json` without a runtime dependency.
+"""Validates documents against `etl/schema/*.json` (v2) and `etl/schema/v{3,4}/*.json` without a runtime dependency.
 
 Implements only the JSON Schema keywords the contract uses and refuses any other, so a schema
 can never rely on a keyword this module would silently ignore.
@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 SCHEMA_DIR = Path(__file__).resolve().parents[2] / "schema"
-VERSIONS = (2, 3)
+VERSIONS = (2, 3, 4)
 V3_FILES = {
     "meta.json": "meta",
     "members.json": "members",
@@ -18,6 +18,16 @@ V3_FILES = {
     "classification-rules.json": "classification-rules",
 }
 V3_DIRS = {"roll-calls": "roll-call", "full-texts": "full-text"}
+# v4 house directories keep the v3 layout; the presidency directory is its own set, chosen by `meta.scope` (door 1).
+PRESIDENCY = "presidencia"
+PRESIDENCY_FILES = {
+    "meta.json": "presidency-meta",
+    "acts.json": "acts",
+    "status-rules.json": "status-rules",
+    "joint-roll-calls.json": "joint-roll-calls",
+    "member-veto-counts.json": "member-veto-counts",
+}
+PRESIDENCY_DIRS = {"joint-roll-calls": "joint-roll-call"}
 
 KEYWORDS = {
     "$schema", "$id", "$defs", "$ref", "title", "description",
@@ -43,14 +53,15 @@ def load(kind: str, version: int = 2) -> dict:
     return json.loads((directory / f"{kind}.schema.json").read_text())
 
 
-def kind_of(relative: str, version: int = 2) -> str | None:
+def kind_of(relative: str, version: int = 2, scope: str | None = None) -> str | None:
     """The schema that governs a file in the output directory, by its relative path."""
     parts = relative.split("/")
-    if version == 3:
+    if version in (3, 4):
+        files, dirs = (PRESIDENCY_FILES, PRESIDENCY_DIRS) if scope == PRESIDENCY else (V3_FILES, V3_DIRS)
         if len(parts) == 1:
-            return V3_FILES.get(parts[0])
+            return files.get(parts[0])
         if len(parts) == 2 and parts[1].endswith(".json"):
-            return V3_DIRS.get(parts[0])
+            return dirs.get(parts[0])
         return None
     if len(parts) == 1:
         return {"meta.json": "meta", "deputies.json": "deputies", "roll-calls.json": "roll-calls"}.get(parts[0])
@@ -99,27 +110,37 @@ def first_error(doc, schema: dict, root: dict | None = None, path: str = "$") ->
     return None
 
 
-def version_of(out: Path):
-    """`meta.schema_version` of a directory; 2 when `meta.json` is missing or unreadable, so the v2 checks report it."""
+def _meta(out: Path) -> dict:
     try:
         meta = json.loads((out / "meta.json").read_text())
     except (OSError, json.JSONDecodeError):
-        return 2
-    return meta.get("schema_version", 2) if isinstance(meta, dict) else 2
+        return {}
+    return meta if isinstance(meta, dict) else {}
+
+
+def version_of(out: Path):
+    """`meta.schema_version` of a directory; 2 when `meta.json` is missing or unreadable, so the v2 checks report it."""
+    return _meta(out).get("schema_version", 2)
+
+
+def scope_of(out: Path) -> str | None:
+    """`meta.scope` of a v4 directory: `presidencia` for the presidency set, absent for a house."""
+    return _meta(out).get("scope")
 
 
 def validate_dir(out: Path) -> str | None:
     """The first file under `out` that is unknown or fails its schema, as `<file>: <error>`.
 
-    The schema set is chosen by `meta.json`'s `schema_version`.
+    The schema set is chosen by `meta.json`'s `schema_version`, and in v4 by its `scope`.
     """
     version = version_of(out)
     if version not in VERSIONS:
         return f"meta.json: unsupported schema_version {version}"
+    scope = scope_of(out) if version == 4 else None
     schemas = {}
     for path in sorted(p for p in out.rglob("*") if p.is_file()):
         relative = path.relative_to(out).as_posix()
-        kind = kind_of(relative, version)
+        kind = kind_of(relative, version, scope)
         if kind is None:
             return f"{relative}: not part of the contract"
         if kind not in schemas:
@@ -131,7 +152,10 @@ def validate_dir(out: Path) -> str | None:
         error = first_error(doc, schemas[kind])
         if error:
             return f"{relative}: {error}"
-    required = V3_FILES if version == 3 else ("meta.json", "deputies.json", "roll-calls.json")
+    if version == 2:
+        required = ("meta.json", "deputies.json", "roll-calls.json")
+    else:
+        required = PRESIDENCY_FILES if scope == PRESIDENCY else V3_FILES
     for required in required:
         if not (out / required).exists():
             return f"{required}: missing"

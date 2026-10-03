@@ -47,8 +47,8 @@ def test_v3_rejects_candidacy_flags(fake, capsys, flag):
 
 
 @pytest.mark.parametrize(
-    "argv", [["--contract", "4"], ["--contract", "x"], ["--contract", "3", "--house", "presidencia"]],
-    ids=["contract-4", "contract-x", "house-presidencia"],
+    "argv", [["--contract", "5"], ["--contract", "x"], ["--contract", "3", "--house", "presidencia"]],
+    ids=["contract-5", "contract-x", "house-presidencia"],
 )
 def test_bad_contract_or_house_exits_1(fake, capsys, argv):
     assert cli.main(["build", *argv, "--years", "2023", "--out", str(out3(fake))]) == 1
@@ -68,9 +68,9 @@ def test_validate_picks_schema_by_version(fake, capsys):
     meta.write_text(json.dumps({**doc, "schema_version": 2}))
     capsys.readouterr()
     assert cli.main(["validate", str(out3(fake))]) == 1
-    meta.write_text(json.dumps({**doc, "schema_version": 4}))
+    meta.write_text(json.dumps({**doc, "schema_version": 5}))
     assert cli.main(["validate", str(out3(fake))]) == 1
-    assert "unsupported schema_version 4" in capsys.readouterr().err
+    assert "unsupported schema_version 5" in capsys.readouterr().err
 
 
 def test_v3_api_files_are_cached_and_listed(fake):

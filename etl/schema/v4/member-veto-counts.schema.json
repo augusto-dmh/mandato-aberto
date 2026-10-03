@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "member-veto-counts.schema.json",
+  "title": "member-veto-counts.json",
+  "description": "Descriptive counts of the vetoes each member voted on",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/count"
+  },
+  "$defs": {
+    "count": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "house",
+        "memberId",
+        "legislature",
+        "participation",
+        "keepAll",
+        "overrideAll",
+        "mixed"
+      ],
+      "properties": {
+        "house": {
+          "type": "string",
+          "enum": [
+            "camara",
+            "senado"
+          ],
+          "description": "The house the member sits in; presidencia and congresso are never house values (contract-v3 door 3)"
+        },
+        "memberId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "legislature": {
+          "type": "integer",
+          "minimum": 57
+        },
+        "participation": {
+          "$ref": "#/$defs/basis"
+        },
+        "keepAll": {
+          "$ref": "#/$defs/basis"
+        },
+        "overrideAll": {
+          "$ref": "#/$defs/basis"
+        },
+        "mixed": {
+          "$ref": "#/$defs/basis"
+        }
+      },
+      "description": "Vetoes counted once per member and legislature (door 6)"
+    },
+    "basis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "total"
+      ],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}
