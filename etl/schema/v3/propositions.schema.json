@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "propositions.schema.json",
+  "title": "propositions.json",
+  "description": "Propositions authored by members or decided by a roll call",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/proposition"
+  },
+  "$defs": {
+    "proposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "house",
+        "id",
+        "type",
+        "number",
+        "year",
+        "summary",
+        "presentedAt",
+        "status",
+        "sourceUrl",
+        "authors"
+      ],
+      "properties": {
+        "house": {
+          "type": "string",
+          "enum": [
+            "camara",
+            "senado"
+          ],
+          "description": "The chamber the record belongs to; part of every key (door 3)"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "type": {
+          "type": "string"
+        },
+        "number": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "year": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "summary": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "presentedAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sourceUrl": {
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/author"
+          }
+        }
+      }
+    },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "memberId",
+        "firstSigner"
+      ],
+      "properties": {
+        "memberId": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "firstSigner": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

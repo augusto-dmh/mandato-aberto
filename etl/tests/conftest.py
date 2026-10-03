@@ -24,7 +24,10 @@ YEARLY = camara.YEARLY
 # Full column lists of the real files, so the allowlist has something to drop.
 COLUMNS = {
     "votacoes": ["id", "uri", "data", "dataHoraRegistro", "idOrgao", "uriOrgao", "siglaOrgao", "idEvento", "uriEvento",
-                 "aprovacao", "votosSim", "votosNao", "votosOutros", "descricao"],
+                 "aprovacao", "votosSim", "votosNao", "votosOutros", "descricao", "ultimaAberturaVotacao_dataHoraRegistro",
+                 "ultimaAberturaVotacao_descricao", "ultimaApresentacaoProposicao_dataHoraRegistro",
+                 "ultimaApresentacaoProposicao_descricao", "ultimaApresentacaoProposicao_idProposicao",
+                 "ultimaApresentacaoProposicao_uriProposicao"],
     "votacoesVotos": ["idVotacao", "uriVotacao", "dataHoraVoto", "voto", "deputado_id", "deputado_uri", "deputado_nome",
                       "deputado_siglaPartido", "deputado_uriPartido", "deputado_siglaUf", "deputado_idLegislatura",
                       "deputado_urlFoto"],

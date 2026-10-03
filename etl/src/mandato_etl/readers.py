@@ -22,6 +22,8 @@ ALLOWLIST = {
         "votosNao",
         "votosOutros",
         "descricao",
+        "ultimaAberturaVotacao_descricao",
+        "ultimaApresentacaoProposicao_descricao",
     ],
     "votacoesVotos": [
         "idVotacao",
@@ -35,7 +37,15 @@ ALLOWLIST = {
         "deputado_urlFoto",
     ],
     "votacoesOrientacoes": ["idVotacao", "siglaBancada", "orientacao"],
-    "votacoesProposicoes": ["idVotacao", "proposicao_id", "proposicao_titulo", "proposicao_ementa"],
+    "votacoesProposicoes": [
+        "idVotacao",
+        "proposicao_id",
+        "proposicao_titulo",
+        "proposicao_ementa",
+        "proposicao_siglaTipo",
+        "proposicao_numero",
+        "proposicao_ano",
+    ],
     "proposicoes": [
         "id",
         "siglaTipo",
