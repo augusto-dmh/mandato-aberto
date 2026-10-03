@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MethodologyController;
+use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\RollCallController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,3 +15,6 @@ Route::get('/senadores/{id}/legislatura/{n}/', [MemberController::class, 'senato
 Route::get('/votacoes/{id}/', [RollCallController::class, 'camara'])->where('id', '[0-9]+-[0-9]+')->name('roll-calls.show');
 Route::get('/senado/votacoes/{id}/', [RollCallController::class, 'senado'])->whereNumber('id')->name('senate-roll-calls.show');
 Route::get('/metodologia/', [MethodologyController::class, 'show'])->name('methodology');
+
+// Official photos from our origin, content-addressed (share-cards door 6).
+Route::get('/fotos/{sha256}.jpg', [PhotoController::class, 'show'])->where('sha256', '[0-9a-f]{64}')->name('photos.show');

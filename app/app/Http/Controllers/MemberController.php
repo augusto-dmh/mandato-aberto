@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Media\Photos;
 use App\Models\House;
 use App\Models\Member;
 use App\Models\Membership;
@@ -92,6 +93,7 @@ class MemberController extends Controller
                 'houseName' => Labels::house($house),
                 'sourceUrl' => $member->source_url,
             ],
+            'photo' => Photos::forPage($house, $member->source_id),
             'mandate' => [
                 'legislature' => $legislature,
                 'label' => $years($membership),

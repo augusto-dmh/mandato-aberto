@@ -47,6 +47,15 @@ return [
             'report' => false,
         ],
 
+        // Official photos and rendered cards (share-cards door 1): read only through the app's routes, never linked.
+        'media' => [
+            'driver' => 'local',
+            'root' => storage_path('app/media'),
+            'visibility' => 'private',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

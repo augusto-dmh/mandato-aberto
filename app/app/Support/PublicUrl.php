@@ -29,6 +29,12 @@ final class PublicUrl
         return $absolute ? rtrim((string) config('app.url'), '/').$path : $path;
     }
 
+    /** `/fotos/{sha256}.jpg`: content-addressed, so a changed photo gets a new URL (share-cards door 6). */
+    public static function photo(string $sha256): string
+    {
+        return "/fotos/{$sha256}.jpg";
+    }
+
     private static function house(House|string $house): House
     {
         return $house instanceof House ? $house : House::from($house);

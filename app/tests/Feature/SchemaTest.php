@@ -171,7 +171,8 @@ test('enforces the v3 keys cascades and nullability', function () {
 });
 
 test('the v3 migration empties the v2 rows', function () {
-    Artisan::call('migrate:rollback', ['--step' => 1, '--force' => true]);
+    // Rolls back the v3 migration by its path: later features add migrations after it (share-cards door 2).
+    Artisan::call('migrate:rollback', ['--path' => 'database/migrations/2026_10_03_000000_reshape_for_contract_v3.php', '--force' => true]);
     expect(DB::getSchemaBuilder()->hasColumn('roll_calls', 'secret'))->toBeTrue();
 
     DB::table('legislatures')->insert(['number' => 57]);
