@@ -2,6 +2,7 @@
 
 import csv
 import hashlib
+import http.client
 import json
 import time
 import urllib.error
@@ -43,7 +44,7 @@ class DownloadError(Exception):
 
 
 def _get(url, consume, accept=None):
-    """Runs `consume` on the response, retrying 429, 503 and network errors after 1, 2 and 4 s."""
+    """Runs `consume` on the response, retrying 429, 503, network errors and cut bodies after 1, 2 and 4 s."""
     headers = {"User-Agent": USER_AGENT}
     if accept:
         headers["Accept"] = accept
@@ -54,7 +55,7 @@ def _get(url, consume, accept=None):
                 return consume(response)
         except urllib.error.HTTPError as e:
             reason, retry = f"HTTP {e.code}", e.code in RETRY_STATUSES
-        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+        except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException) as e:
             reason, retry = str(getattr(e, "reason", e)) or "timeout", True
         if not retry or delay is None:
             raise DownloadError(url, reason)

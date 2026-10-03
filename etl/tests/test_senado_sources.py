@@ -3,6 +3,7 @@
 import hashlib
 import json
 
+import pytest
 import senado_data as sd
 
 from mandato_etl import readers
@@ -89,6 +90,23 @@ def test_retry_then_success(sen):
     sen.fail[sd.PREFIX + "/votacao?dataInicio=2025-01-01&dataFim=2025-12-31"] = [503]
     assert sd.build(sen, "--quiet") == 0
     assert sen.sleeps == [1]
+
+
+@pytest.mark.parametrize("cut", ["truncate", "truncate-chunked"])
+def test_truncated_response_is_retried(sen, capsys, cut):
+    # The live API once cut a 561 KB chunked orientation file mid-body (http.client.IncompleteRead); a body
+    # short of its Content-Length reads without error, so the download counts the bytes.
+    path = sd.PREFIX + "/votacao?dataInicio=2025-01-01&dataFim=2025-12-31"
+    sd.serve(sen, sd.indicators())
+    sen.fail[path] = [cut]
+    assert sd.build(sen, "--quiet") == 0
+    assert sen.sleeps == [1]
+    sen.fail[path] = [cut] * 4
+    sen.sleeps.clear()
+    capsys.readouterr()
+    assert sd.build(sen, "--quiet", "--refresh") == 2
+    assert sen.base + path in capsys.readouterr().err
+    assert list(sen.raw.rglob("*.part")) == []
 
 
 def test_at_most_four_concurrent_requests(sen, monkeypatch):

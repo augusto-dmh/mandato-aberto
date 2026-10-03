@@ -10,7 +10,7 @@ When this ships, `mandato-etl build --contract 3 --house senado` writes a valida
 
 ## Flow
 
-This reuses the HTTP policy, raw cache and manifest of `sources.camara` (`_get`, retry on 429/503, `User-Agent`, `_entry`), the `readers` allowlist, and contract-v3's `classify`, `contract_v3` and `publish.write`. It does not write a second Senate-only assembler or validator.
+This reuses the HTTP policy, raw cache and manifest of `sources.camara` (`_get`, retry on 429/503 and, since this build, on a body cut short, `User-Agent`, `_entry`), the `readers` allowlist, and contract-v3's `classify`, `contract_v3` and `publish.write`. It does not write a second Senate-only assembler or validator.
 
 1. `mandato-etl build --contract 3 --house senado [--years] [--refresh] [--out] [--quiet]` -> `cli` (exists) - accepts `senado` for `--house` under `--contract 3` only; `--out` defaults to `data/v3/senado`
 2. `cli` -> `sources.senado` (new, no door - placement per conventions) - for every legislature from the 57th whose start is on or before the build date, it downloads `/votacao` and `/plenario/votacao/orientacaoBancada` per calendar year inside the legislature, plus `/senador/lista/legislatura/{n}?exercicio=S`, `/senador/lista/atual`, `/processo?codigoParlamentarAutor={id}&dataInicioApresentacao={start}` per senator and `/processo/{id}` for multi-author bills. Each is cached in `data/raw/` with one manifest entry in the existing shape

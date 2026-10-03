@@ -4,6 +4,7 @@ Every response is kept verbatim under `data/raw/senado/` (it carries no CPF) and
 `readers.read_senado`, which drops every personal field (door 1).
 """
 
+import http.client
 import json
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
@@ -23,9 +24,13 @@ def _download(url: str, dest: Path, now: datetime, warn) -> None:
         deprecation, sunset = response.headers.get("Deprecation"), response.headers.get("Sunset")
         if deprecation or sunset:
             warn(f"warning: {url} is deprecated (Deprecation: {deprecation or '-'}; Sunset: {sunset or '-'})")
+        size = 0
         with open(part, "wb") as f:
             while chunk := response.read(1 << 20):
-                f.write(chunk)
+                size += f.write(chunk)
+        expected = response.headers.get("Content-Length")
+        if expected is not None and size != int(expected):
+            raise http.client.IncompleteRead(b"", int(expected) - size)
 
     try:
         camara._get(url, consume, accept="application/json")

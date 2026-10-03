@@ -242,6 +242,18 @@ class FakeCamara:
                         if action == "hang":
                             time.sleep(1.0)
                             return
+                        if action == "truncate":  # a body cut short of its Content-Length
+                            self.send_response(200)
+                            self.send_header("Content-Length", "100")
+                            self.end_headers()
+                            self.wfile.write(b"[")
+                            return
+                        if action == "truncate-chunked":  # a chunked body cut inside a chunk
+                            self.send_response(200)
+                            self.send_header("Transfer-Encoding", "chunked")
+                            self.end_headers()
+                            self.wfile.write(b"64\r\n[")
+                            return
                         self.send_error(action)
                     elif self.path in fake.routes:
                         body = fake.routes[self.path]
