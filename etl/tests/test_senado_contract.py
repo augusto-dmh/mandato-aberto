@@ -138,3 +138,14 @@ def test_house_and_identity(sen):
     for r in sd.load(sen, "roll-calls.json"):
         assert r["id"].isdigit()
         assert sd.load(sen, f"roll-calls/{r['id']}.json")["house"] == "senado"
+
+
+def test_voter_absent_from_every_legislature_list_fails_the_build(sen, capsys):
+    stranger = sd.roll_call(6901, "2025-05-01", "Votação nominal do Projeto de Lei nº 60, de 2025.", 6101, [
+        sd.vote(9301, "Nove Três Zero Um", "PT", "SP", "Sim")])
+    sd.serve(sen, sd.dataset({sd.YEAR_2025: [stranger]}, {sd.YEAR_2025: []}, {57: []},
+                                list_voters=False))
+    assert sd.build(sen, "--quiet") == 1
+    err = capsys.readouterr().err
+    assert "6901" in err and "9301" in err and "members" in err
+    assert not sd.out(sen).exists()

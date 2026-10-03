@@ -43,15 +43,16 @@ class DownloadError(Exception):
         self.url = url
 
 
-def _get(url, consume, accept=None):
-    """Runs `consume` on the response, retrying 429, 503, network errors and cut bodies after 1, 2 and 4 s."""
+def _get(url, consume, accept=None, opener=None):
+    """Runs `consume` on the response (fetched with `opener`, `urlopen` by default), retrying 429, 503, network errors and cut bodies after 1, 2 and 4 s."""
     headers = {"User-Agent": USER_AGENT}
     if accept:
         headers["Accept"] = accept
     request = urllib.request.Request(url, headers=headers)
+    open_url = opener.open if opener else urllib.request.urlopen
     for delay in (*RETRY_DELAYS, None):
         try:
-            with urllib.request.urlopen(request, timeout=TIMEOUT) as response:
+            with open_url(request, timeout=TIMEOUT) as response:
                 return consume(response)
         except urllib.error.HTTPError as e:
             reason, retry = f"HTTP {e.code}", e.code in RETRY_STATUSES

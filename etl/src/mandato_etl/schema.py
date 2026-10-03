@@ -159,4 +159,21 @@ def validate_dir(out: Path) -> str | None:
     for required in required:
         if not (out / required).exists():
             return f"{required}: missing"
+    return _dangling_member(out) if version == 3 else None
+
+
+def _dangling_member(out: Path) -> str | None:
+    """The first vote or authorship of a v3 directory whose member id is not in its own `members.json`."""
+    known = {m["id"] for m in json.loads((out / "members.json").read_text())}
+    for path in sorted((out / "roll-calls").glob("*.json")):
+        doc = json.loads(path.read_text())
+        for vote in doc["votes"]:
+            if vote["memberId"] not in known:
+                return (f"roll-calls/{path.name}: roll call {doc['id']} has a vote by memberId {vote['memberId']}, "
+                        "which is not in members.json")
+    for proposition in json.loads((out / "propositions.json").read_text()):
+        for author in proposition["authors"]:
+            if author["memberId"] not in known:
+                return (f"propositions.json: proposition {proposition['id']} has an author memberId "
+                        f"{author['memberId']}, which is not in members.json")
     return None

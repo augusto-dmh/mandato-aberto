@@ -221,6 +221,7 @@ class FakeCamara:
     def __init__(self):
         self.routes: dict[str, bytes] = {}
         self.headers: dict[str, dict[str, str]] = {}  # path -> extra response headers
+        self.redirects: dict[str, tuple[str, dict[str, str]]] = {}  # path -> (301 Location path, extra headers)
         self.fail: dict[str, list] = {}  # path -> statuses (or "hang") answered before the route
         self.requests: list[tuple[str, str]] = []
         self.delay = 0.0
@@ -255,6 +256,14 @@ class FakeCamara:
                             self.wfile.write(b"64\r\n[")
                             return
                         self.send_error(action)
+                    elif self.path in fake.redirects:
+                        location, extra = fake.redirects[self.path]
+                        self.send_response(301)
+                        self.send_header("Location", fake.base + location)
+                        self.send_header("Content-Length", "0")
+                        for name, value in extra.items():
+                            self.send_header(name, value)
+                        self.end_headers()
                     elif self.path in fake.routes:
                         body = fake.routes[self.path]
                         self.send_response(200)
