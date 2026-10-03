@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $roll_call_id
  * @property int $member_id
- * @property string $vote
+ * @property string $official the house's value verbatim (AD-018 generalises the Senate's leave codes)
+ * @property string $position `yes`, `no`, `abstention`, `obstruction`, `presiding`, `secret` or `notVoting`
  * @property string $party
  * @property string|null $party_majority
  * @property-read RollCall $rollCall

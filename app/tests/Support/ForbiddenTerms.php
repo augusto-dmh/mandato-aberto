@@ -16,6 +16,26 @@ final class ForbiddenTerms
     }
 
     /**
+     * The terms `$text` contains as whole words, ignoring case and accents (app-contract-v3 AC 39).
+     *
+     * @param  list<string>  $terms
+     * @return list<string>
+     */
+    public static function inText(string $text, array $terms): array
+    {
+        $plain = self::fold($text);
+
+        return array_values(array_filter($terms, fn (string $term) => preg_match(self::pattern(self::fold($term)), $plain) === 1));
+    }
+
+    private static function fold(string $text): string
+    {
+        $decomposed = (string) \Normalizer::normalize($text, \Normalizer::FORM_D);
+
+        return mb_strtolower((string) preg_replace('/\p{Mn}+/u', '', $decomposed));
+    }
+
+    /**
      * @param  list<string>  $roots  directories; one that does not exist holds nothing
      * @param  list<string>  $terms
      * @return list<array{file: string, term: string}>

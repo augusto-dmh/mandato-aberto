@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\File;
 use Tests\Support\ForbiddenTerms;
 
-// Checks C43 and C44 of .specs/features/app-skeleton/checks.md.
+// Checks C43 and C44 of .specs/features/app-skeleton/checks.md, and C50 of .specs/features/app-contract-v3/checks.md.
 
 test('no forbidden term in app copy', function () {
     $hits = ForbiddenTerms::scan([app_path(), resource_path(), lang_path()], config('forbidden-terms'));
@@ -35,4 +35,27 @@ test('forbidden list matches the mvp list', function () {
     foreach ($terms[1] as $term) {
         expect(config('forbidden-terms'))->toContain($term);
     }
+});
+
+/** The words AC 39 adds to the forbidden list for rendered pages: no copy ranks one vote above another. */
+const RANKING_WORDS = ['importante', 'importantes', 'relevante', 'relevantes'];
+
+test('no ranking word in rendered pages', function () {
+    requireSsr();
+    importFixtures();
+    $terms = [...RANKING_WORDS, ...config('forbidden-terms')];
+    expect($terms)->toHaveCount(23);
+
+    foreach (RENDERED_PAGES as $path) {
+        $response = $this->get($path);
+        $response->assertOk();
+        $text = html_entity_decode((string) $response->getContent(), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+            .json_encode($response->viewData('page')['props'], JSON_UNESCAPED_UNICODE);
+        expect(ForbiddenTerms::inText($text, $terms))->toBe([], $path);
+    }
+
+    expect(ForbiddenTerms::inText('Uma votação IMPORTANTE', RANKING_WORDS))->toBe(['importante'])
+        ->and(ForbiddenTerms::inText('Votações Relevantes.', RANKING_WORDS))->toBe(['relevantes'])
+        ->and(ForbiddenTerms::inText('A importância do tema', RANKING_WORDS))->toBe([])
+        ->and(ForbiddenTerms::inText('Sem APROVACAO', config('forbidden-terms')))->toBe(['aprovação']);
 });

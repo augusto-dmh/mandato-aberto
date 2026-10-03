@@ -36,6 +36,14 @@ function fixtureCopy(?string $house = null): string
     return $dir;
 }
 
+/** Every page the fixtures render: 6 member pages, 9 roll-call pages and the methodology (C50, C66). */
+const RENDERED_PAGES = [
+    '/deputados/101/', '/deputados/101/legislatura/57/', '/deputados/102/', '/deputados/103/', '/senadores/9101/', '/senadores/9103/',
+    '/votacoes/100-1/', '/votacoes/100-2/', '/votacoes/100-3/', '/votacoes/100-4/', '/votacoes/100-5/', '/votacoes/100-6/', '/votacoes/200-1/',
+    '/senado/votacoes/6923/', '/senado/votacoes/7001/',
+    '/metodologia/',
+];
+
 /** Imports both fixture houses from their parent and fails the test on a non-zero exit. */
 function importFixtures(): void
 {

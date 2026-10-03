@@ -2,60 +2,60 @@
 
 namespace App\Presenters;
 
+use App\Models\House;
 use Collator;
 
 /**
- * How each deputy voted, grouped by value (AC 19, 20): the known options in a fixed order, the
- * empty value after them, any other value alphabetically, names in pt-BR order inside a group.
- * A secret ballot records who voted and no vote, so it is one group.
+ * How each member voted, grouped by position (AC 43): the seven positions in a fixed order, each
+ * headed in the house's words, names in pt-BR order inside a group.
  *
- * @phpstan-type Entry array{deputyId: int, name: string, party: string, uf: string, vote: string}
- * @phpstan-type Group array{value: string, label: string, entries: list<Entry>}
+ * @phpstan-type Entry array{memberId: string, name: string, party: string, uf: string, href: string, position: string, official: string}
+ * @phpstan-type Group array{position: string, label: string, entries: list<Entry>}
  */
 final class VoteGroups
 {
-    public const ORDER = ['Sim', 'Não', 'Abstenção', 'Obstrução', 'Artigo 17', ''];
-
-    private const LABELS = [
-        'Artigo 17' => 'Art. 17 (presidente da sessão)',
-        '' => 'Registro sem voto',
-    ];
+    public const ORDER = ['yes', 'no', 'abstention', 'obstruction', 'presiding', 'secret', 'notVoting'];
 
     /**
      * @param  list<Entry>  $entries
      * @return list<Group>
      */
-    public static function of(array $entries, bool $secret): array
+    public static function of(array $entries, House $house): array
     {
         $collator = new Collator('pt_BR');
-        $byName = fn (array $a, array $b) => $collator->compare($a['name'], $b['name']) ?: $a['deputyId'] <=> $b['deputyId'];
+        $byName = fn (array $a, array $b) => $collator->compare($a['name'], $b['name']) ?: strcmp($a['memberId'], $b['memberId']);
 
-        if ($secret) {
-            usort($entries, $byName);
-
-            return $entries === [] ? [] : [['value' => '', 'label' => 'Deputados que votaram', 'entries' => $entries]];
-        }
-
-        $byValue = [];
+        $byPosition = [];
         foreach ($entries as $entry) {
-            $byValue[$entry['vote']][] = $entry;
+            $byPosition[$entry['position']][] = $entry;
         }
-        $values = array_map(strval(...), array_keys($byValue));
-        usort($values, function (string $a, string $b) use ($collator) {
-            $ia = array_search($a, self::ORDER, true);
-            $ib = array_search($b, self::ORDER, true);
-            if ($ia !== false || $ib !== false) {
-                return ($ia === false ? PHP_INT_MAX : $ia) <=> ($ib === false ? PHP_INT_MAX : $ib);
+
+        $groups = [];
+        foreach (self::ORDER as $position) {
+            if (! isset($byPosition[$position])) {
+                continue;
             }
-
-            return $collator->compare($a, $b);
-        });
-
-        return array_map(function (string $value) use ($byValue, $byName) {
-            $group = $byValue[$value];
+            $group = $byPosition[$position];
             usort($group, $byName);
+            $groups[] = ['position' => $position, 'label' => self::label($position, $house), 'entries' => $group];
+        }
 
-            return ['value' => $value, 'label' => self::LABELS[$value] ?? $value, 'entries' => $group];
-        }, $values);
+        return $groups;
+    }
+
+    public static function label(string $position, House $house): string
+    {
+        $senate = $house === House::Senado;
+
+        return match ($position) {
+            'yes' => 'Sim',
+            'no' => 'Não',
+            'abstention' => 'Abstenção',
+            'obstruction' => 'Obstrução',
+            // The house's own presiding label (door 5), as `positionCase` in design/components/vote.js writes it.
+            'presiding' => $senate ? 'Presidente da sessão (art. 51 RISF)' : 'Art. 17 (presidente da sessão)',
+            'secret' => $senate ? 'Senadores que votaram' : 'Deputados que votaram',
+            default => 'Sem voto registrado',
+        };
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\ContractImport;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -36,10 +35,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
-            ...parent::share($request),
-            // When the data shown was collected (AC 27): the latest import's generatedAt, in UTC.
-            'collectedAt' => fn () => ContractImport::latestRun()?->generated_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
-        ];
+        // What each page says was collected, and when, depends on its house: each controller passes `sources`.
+        return parent::share($request);
     }
 }

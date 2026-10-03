@@ -17,11 +17,15 @@ use Illuminate\Support\Carbon;
  * @property string $description
  * @property int|null $proposition_id
  * @property bool|null $approved
- * @property bool $secret
- * @property int $tally_yes
- * @property int $tally_no
- * @property int $tally_others
+ * @property string $ballot `nominal`, `secret` or `symbolic`
+ * @property string $kind `final`, `amendment`, `procedural` or `unclassified`
+ * @property string|null $kind_rule
+ * @property int|null $tally_yes all three null, or none (plan door 3)
+ * @property int|null $tally_no
+ * @property int|null $tally_others
  * @property string|null $government_orientation
+ * @property string|null $opening_description
+ * @property string|null $last_presentation_description
  * @property string $source_url
  * @property-read Proposition|null $proposition
  */
@@ -35,7 +39,6 @@ class RollCall extends Model
             'house' => House::class,
             'date' => 'date',
             'approved' => 'boolean',
-            'secret' => 'boolean',
         ];
     }
 

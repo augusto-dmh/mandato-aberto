@@ -33,12 +33,12 @@ final class V3Reader implements ContractReader
             $legislatures[$l->id] = ['number' => $l->id, 'starts_on' => $l->start, 'ends_on' => $l->end];
         }
         $refuse = fn (string $file, string $reason, int|string $id) => new ContractException("{$dir}/{$file}: {$reason}: {$id}");
-        $sameHouse = function (stdClass $record, string $file, int|string $id) use ($house, $refuse) {
+        $sameHouse = function (stdClass $record, string $file, int|string $id) use ($house, $refuse): void {
             if ($record->house !== $house) {
                 throw $refuse($file, "house {$record->house} differs from meta.house {$house}", $id);
             }
         };
-        $listed = function (int $legislature, string $file, int|string $id) use ($legislatures, $refuse) {
+        $listed = function (int $legislature, string $file, int|string $id) use ($legislatures, $refuse): void {
             if (! isset($legislatures[$legislature])) {
                 throw $refuse($file, "legislature {$legislature} not in meta.legislatures", $id);
             }
@@ -85,8 +85,9 @@ final class V3Reader implements ContractReader
                 $memberships[$mandate->legislature][$id] = $this->membership($id, $mandate);
             }
         }
-        $refuseMember = function (int $memberId, string $file, string $role) use ($memberRecords, $refuse) {
-            if (! isset($memberRecords[(string) $memberId])) {
+        $known = array_fill_keys(array_keys($memberRecords), true);
+        $refuseMember = function (int $memberId, string $file, string $role) use ($known, $refuse): void {
+            if (! $this->has($known, (string) $memberId)) {
                 throw $refuse($file, "{$role} member not in members.json", $memberId);
             }
         };
@@ -224,6 +225,12 @@ final class V3Reader implements ContractReader
             fullTexts: $fullTexts,
             scopes: $scopes,
         );
+    }
+
+    /** @param  array<int|string, true>  $set */
+    private function has(array $set, string $key): bool
+    {
+        return isset($set[$key]);
     }
 
     /** @return array<string, mixed> */
