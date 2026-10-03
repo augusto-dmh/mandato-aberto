@@ -122,7 +122,7 @@ Proof: `sail artisan test --filter="overview without nominal roll calls says unt
 **C33** - Over the fixtures, `/legislaturas/57/` renders one `<nav aria-label="Legislaturas">` with links `58ª legislatura (2027–2031)` → `/legislaturas/58/` then `57ª legislatura (2023–2027)` → `/legislaturas/57/`, only the latter with `aria-current="page"`; with only the Senate fixture imported (legislature 57 alone stored), no such nav renders (AC 30)
 Proof: `sail artisan test --filter="overview navigates between legislatures"`
 
-**C34** - Over the search fixture (16 members), the HTML of `/legislaturas/57/` and `/legislaturas/58/`, `data-page` included, holds none of the 16 member names, no `href` starting with `/deputados/` or `/senadores/`, no `<img>`, no element whose text contains `%`, and none of the strings `participação`, `alinhamento`, `percentual`, `distribuição`, `histograma` (AC 31)
+**C34** - Over the search fixture (18 members), the HTML of `/legislaturas/57/` and `/legislaturas/58/`, `data-page` included, holds none of the 18 member names, no `href` starting with `/deputados/` or `/senadores/`, no `<img>`, no element whose text contains `%`, and none of the strings `participação`, `alinhamento`, `percentual`, `distribuição`, `histograma` (AC 31)
 Proof: `sail artisan test --filter="overview names no person"`
 
 **C35** - Over the fixtures, `/legislaturas/56/`, `/legislaturas/59/`, `/legislaturas/abc/`, `/legislaturas/5a/` and `/legislaturas/` each respond 404 with the `<h1>` `Página não encontrada` (AC 32, door 1)

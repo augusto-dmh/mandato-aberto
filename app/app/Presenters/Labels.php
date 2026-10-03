@@ -85,4 +85,21 @@ final class Labels
 
         return $lines;
     }
+
+    /**
+     * The footer line of a page that spans both houses (app-home AC 42): each house with an import, with
+     * the Brasília day of its latest one, in one sentence; null when no house has been imported.
+     */
+    public static function sourcesLine(): ?string
+    {
+        $parts = [];
+        foreach (House::cases() as $house) {
+            $import = ContractImport::latestOf($house);
+            if ($import !== null) {
+                $parts[] = self::ofHouse($house).', coletados em '.Dates::br(HouseActivity::brasiliaDay($import));
+            }
+        }
+
+        return $parts === [] ? null : 'Dados abertos '.implode(', e ', $parts).'.';
+    }
 }
