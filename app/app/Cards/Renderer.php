@@ -92,6 +92,7 @@ final class Renderer
     {
         try {
             $result = Process::timeout((int) config('mandato.card_render_timeout'))
+                ->env(array_filter(['PLAYWRIGHT_BROWSERS_PATH' => (string) config('mandato.card_browsers_path')]))
                 ->input(json_encode($input, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR))
                 ->run([...(array) config('mandato.card_renderer'), ...$flags]);
         } catch (ProcessTimedOutException) {

@@ -5,11 +5,13 @@ use App\Models\House;
 use Illuminate\Process\PendingProcess;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
 use Symfony\Component\Process\Process as SymfonyProcess;
+use Symfony\Component\Yaml\Yaml;
 use Tests\Support\Jpeg;
 
 // share-cards S3: card images from the design template in three sizes (C20, C22-C31).
@@ -266,4 +268,56 @@ test('a suppressed member renders the initials on page and card', function () {
     $this->get("/deputados/101/legislatura/58/card/{$before}/1080x1350.png")->assertStatus(200);
     expect($inputs[1]['photo'])->toBeNull()
         ->and($inputs[2]['photo'])->toBeNull();
+});
+
+/**
+ * Runs `$callback` with `$name` removed from (null) or set in the process environment, as `php artisan
+ * serve` and PHP-FPM hand it to the PHP that answers the request, and restores it afterwards.
+ */
+function withServerEnvironment(string $name, ?string $value, callable $callback): mixed
+{
+    $saved = [getenv($name), $_ENV[$name] ?? null, $_SERVER[$name] ?? null];
+    $value === null ? putenv($name) : putenv("{$name}={$value}");
+    unset($_ENV[$name], $_SERVER[$name]);
+    if ($value !== null) {
+        $_ENV[$name] = $_SERVER[$name] = $value;
+    }
+    try {
+        return $callback();
+    } finally {
+        $saved[0] === false ? putenv($name) : putenv("{$name}={$saved[0]}");
+        unset($_ENV[$name], $_SERVER[$name]);
+        if ($saved[1] !== null) {
+            $_ENV[$name] = $saved[1];
+        }
+        if ($saved[2] !== null) {
+            $_SERVER[$name] = $saved[2];
+        }
+    }
+}
+
+test('a served card finds the browser whatever environment the server passes', function () {
+    requireCardRenderer();
+    importFixtures();
+    // The browsers path reaches a served request only through config, read from `.env`: `artisan serve`
+    // drops the image's `ENV PLAYWRIGHT_BROWSERS_PATH` from the PHP it starts, and PHP-FPM clears it.
+    $browsers = getenv('PLAYWRIGHT_BROWSERS_PATH') ?: getenv('HOME').'/.cache/ms-playwright';
+    config(['mandato.card_browsers_path' => $browsers]);
+    $empty = sys_get_temp_dir().'/no-browsers-'.bin2hex(random_bytes(4));
+    mkdir($empty);
+    $code = Code::of(rollCallPayload(House::Camara, '100-1'));
+
+    foreach (['removed' => [null, '1200x630'], 'pointing at no browser' => [$empty, '1080x1350']] as $case => [$value, $format]) {
+        $response = withServerEnvironment('PLAYWRIGHT_BROWSERS_PATH', $value, fn () => $this->get("/votacoes/100-1/card/{$code}/{$format}.png"));
+        expect($response->getStatusCode())->toBe(200, $case)
+            ->and($response->headers->get('Content-Type'))->toBe('image/png', $case)
+            ->and(pngSize((string) $response->getContent()))->toBe(CARD_FORMATS[$format], $case);
+    }
+
+    $dockerfile = File::get(base_path('docker/8.5/Dockerfile'));
+    preg_match('/^ENV PLAYWRIGHT_BROWSERS_PATH=(\S+)$/m', $dockerfile, $image);
+    expect(File::get(base_path('config/mandato.php')))->toContain("'card_browsers_path' => env('PLAYWRIGHT_BROWSERS_PATH')")
+        ->and(File::get(base_path('.env.example')))->toMatch('/^PLAYWRIGHT_BROWSERS_PATH='.preg_quote($image[1] ?? '-', '/').'$/m')
+        // CI copies `.env.example` but installs the browser elsewhere: its own variable wins over `.env`
+        ->and(Yaml::parseFile(base_path('../.github/workflows/ci.yml'))['jobs']['app']['env']['PLAYWRIGHT_BROWSERS_PATH'] ?? null)->toBeString();
 });
