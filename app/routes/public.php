@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LegislatureController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MethodologyController;
 use App\Http\Controllers\RollCallController;
+use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
 // The public paths (skeleton door 10, plan door 4): a link shared from the static site keeps working
@@ -14,3 +17,8 @@ Route::get('/senadores/{id}/legislatura/{n}/', [MemberController::class, 'senato
 Route::get('/votacoes/{id}/', [RollCallController::class, 'camara'])->where('id', '[0-9]+-[0-9]+')->name('roll-calls.show');
 Route::get('/senado/votacoes/{id}/', [RollCallController::class, 'senado'])->whereNumber('id')->name('senate-roll-calls.show');
 Route::get('/metodologia/', [MethodologyController::class, 'show'])->name('methodology');
+
+// Home, search and the legislature overview (app-home door 1): no `/legislaturas/` index, no alias for the current one.
+Route::get('/', [HomeController::class, 'show'])->name('home');
+Route::get('/busca/', [SearchController::class, 'show'])->name('search');
+Route::get('/legislaturas/{n}/', [LegislatureController::class, 'show'])->whereNumber('n')->name('legislatures.show');

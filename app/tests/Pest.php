@@ -2,6 +2,7 @@
 
 use Dom\Element;
 use Dom\HTMLDocument;
+use Dom\Node;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -148,4 +149,93 @@ function headTags(HTMLDocument $doc): array
     $tags['canonical'] = array_map(fn ($l) => (string) $l->getAttribute('href'), iterator_to_array($doc->querySelectorAll('head link[rel="canonical"]')));
 
     return $tags;
+}
+
+/**
+ * A copy of the fixture parent with the app-home search members added (app-home checks, "the search fixture"):
+ * six Câmara mandates and a Senate legislature 58 with three senators, imported like any contract.
+ */
+function searchFixture(): string
+{
+    $dir = fixtureCopy();
+    $mandate = fn (string $party, string $uf, string $end) => [
+        'legislature' => 58, 'party' => $party, 'uf' => $uf,
+        'exercisePeriods' => [['start' => '2027-02-01T00:00:00', 'end' => $end]],
+        'participation' => ['all' => ['count' => 0, 'total' => 0], 'merit' => ['count' => 0, 'total' => 0]],
+        'governmentAlignment' => ['all' => ['count' => 0, 'total' => 0], 'merit' => ['count' => 0, 'total' => 0]],
+        'partyAlignment' => ['all' => ['count' => 0, 'total' => 0], 'merit' => ['count' => 0, 'total' => 0]],
+        'symbolicMerit' => 0, 'authoredCount' => 0, 'firstSignerCount' => 0, 'requirementsCount' => 0,
+    ];
+    $member = fn (string $house, int $id, string $name, array $mandate) => [
+        'house' => $house, 'id' => $id, 'name' => $name, 'party' => $mandate['party'], 'uf' => $mandate['uf'],
+        'photoUrl' => "https://example.org/{$house}/{$id}.jpg", 'sourceUrl' => "https://example.org/{$house}/{$id}",
+        'mandates' => [$mandate],
+    ];
+
+    $camara = readJson("{$dir}/camara/members.json");
+    foreach ([
+        [104, 'João da Silva', 'PT', 'SP', '2027-03-01T09:00:00'],
+        [105, 'Ágata Rocha', 'PSOL', 'RJ', '2027-03-01T09:00:00'],
+        [106, 'Mariana Silva', 'MDB', 'BA', '2027-02-20T00:00:00'],
+        [107, 'Abel Nunes', 'PSD', 'AM', '2027-03-01T09:00:00'],
+        [108, 'Paulo Silva', 'PL', 'SP', '2027-03-01T09:00:00'],
+        [1001, 'Paulo Silva', 'PL', 'MG', '2027-03-01T09:00:00'],
+    ] as [$id, $name, $party, $uf, $end]) {
+        $camara[] = $member('camara', $id, $name, $mandate($party, $uf, $end));
+    }
+    writeJson("{$dir}/camara/members.json", $camara);
+    $meta = readJson("{$dir}/camara/meta.json");
+    $meta['coverage'][1]['members'] = 7;
+    writeJson("{$dir}/camara/meta.json", $meta);
+
+    $senado = readJson("{$dir}/senado/members.json");
+    foreach ([
+        [9107, 'Paulo Silva', 'PT', 'SP', '2027-03-05T12:00:00'],
+        [9108, 'Zélia Moura', 'PP', 'GO', '2027-03-05T12:00:00'],
+        [9109, 'Otávio Brandão', 'PSD', 'BA', '2027-03-03T00:00:00'],
+    ] as [$id, $name, $party, $uf, $end]) {
+        $senado[] = $member('senado', $id, $name, $mandate($party, $uf, $end));
+    }
+    writeJson("{$dir}/senado/members.json", $senado);
+    $meta = readJson("{$dir}/senado/meta.json");
+    $meta['legislatures'][] = ['id' => 58, 'start' => '2027-02-01', 'end' => '2031-01-31', 'sourceUrl' => 'https://dadosabertos.camara.leg.br/api/v2/legislaturas/58'];
+    $meta['coverage'][] = ['legislature' => 58, 'members' => 3, 'rollCalls' => ['nominal' => 0, 'secret' => 0, 'symbolic' => null], 'through' => null, 'unclassified' => 0];
+    writeJson("{$dir}/senado/meta.json", $meta);
+
+    return $dir;
+}
+
+function importSearchFixture(): void
+{
+    $result = runImport(['dir' => searchFixture()]);
+    expect($result['code'])->toBe(0, $result['err']);
+}
+
+/** Text of each element `$selector` matches inside `$root`, in document order. */
+function textsOf(?Element $root, string $selector): array
+{
+    return $root === null ? [] : array_map(fn ($e) => textOf($e), iterator_to_array($root->querySelectorAll($selector)));
+}
+
+/**
+ * Asserts the named nodes appear in the document in the order given: each one exists and is followed
+ * by the next (the same node twice is allowed: one house block is both first and last). The failure
+ * names the pair that is out of order.
+ *
+ * @param  array<string, ?Node>  $nodes
+ */
+function expectDocumentOrder(array $nodes): void
+{
+    foreach ($nodes as $label => $node) {
+        expect($node)->not->toBeNull("{$label} is missing");
+    }
+    $labels = array_keys($nodes);
+    $nodes = array_values($nodes);
+    for ($i = 1; $i < count($nodes); $i++) {
+        if ($nodes[$i - 1]->isSameNode($nodes[$i])) {
+            continue;
+        }
+        expect($nodes[$i - 1]->compareDocumentPosition($nodes[$i]) & Node::DOCUMENT_POSITION_FOLLOWING)
+            ->toBeGreaterThan(0, "{$labels[$i]} must come after {$labels[$i - 1]}");
+    }
 }

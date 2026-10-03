@@ -27,6 +27,8 @@ A feature `contract-v3` roda em `standard`: os indicadores e a classificação d
 
 A feature `app-contract-v3` roda em `ui`: perfis, votações do Senado e metodologia são telas.
 
+A feature `app-home` roda em `ui`: home, busca e visão geral da legislatura são telas, e o risco está no texto e no arranjo (nada que ordene pessoas, estados vazios).
+
 ## Convenções
 
 - Código, commits, branches, nomes de arquivo e identificadores em inglês. Copy do site, documentos de pesquisa e corpo de PR em português. Artefatos em `.specs/` em inglês.

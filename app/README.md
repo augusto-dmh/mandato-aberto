@@ -37,7 +37,7 @@ sail artisan inertia:start-ssr                                    # in the foreg
 sail exec -d -u sail laravel.test php artisan inertia:start-ssr   # or detached
 ```
 
-Pages answer at `http://localhost:${APP_PORT}/deputados/{id}/`, `/senadores/{id}/` (each with `legislatura/{n}/`), `/votacoes/{id}/`, `/senado/votacoes/{id}/` and `/metodologia/`. Without the SSR server they still answer, with every share tag in the head and the body rendered in the browser.
+Pages answer at `http://localhost:${APP_PORT}/` (home), `/busca/` (search), `/legislaturas/{n}/` (overview), `/deputados/{id}/`, `/senadores/{id}/` (each with `legislatura/{n}/`), `/votacoes/{id}/`, `/senado/votacoes/{id}/` and `/metodologia/`. Without the SSR server they still answer, with every share tag in the head and the body rendered in the browser. With it, the home, search and overview send no client script at all.
 
 ## Tests and gates
 
@@ -50,3 +50,13 @@ sail bin phpstan analyse           # Larastan, level 6
 ```
 
 CI runs the same gates in job `app` of `.github/workflows/ci.yml`.
+
+## Page weight
+
+The home, search and overview have a first-load budget (`.specs/features/app-home/checks.md`, C42 to C44). The HTML and CSS halves run in Pest; the whole first load is measured in Chromium over the budget dataset, outside CI:
+
+```bash
+sail artisan migrate:fresh --force && sail artisan db:seed --class=BudgetSeeder --force   # replaces the development data
+npm ci --prefix ../design && npx --prefix ../design playwright install chromium
+node tests/budget/first-load.mjs http://localhost:${APP_PORT}                             # exits 1 over budget
+```
