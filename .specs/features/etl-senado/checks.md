@@ -174,6 +174,13 @@ Proof: `P tests/test_senado_sources.py::test_allowlist_projection`
 **C44** - `AGENTS.md` declares `A feature \`etl-senado\` roda em \`standard\`` under `## tlc-spec-lean`
 Proof: `grep -q 'A feature `etl-senado` roda em `standard`' AGENTS.md`
 
+**C45** - `mandato-etl validate` on a v3 directory exits `1` when a roll call's vote or a proposition's author names a `memberId` absent from that directory's `members.json`, printing the file, the roll call or proposition id and the `memberId`; the Senate fixture, with its five voters in `members.json`, exits `0` (app-contract-v3 AC 10, which the app's importer enforces)
+Proof: `P tests/test_v3_senado.py::test_validate_refuses_a_member_id_missing_from_members`
+Proof: `P tests/test_v3_senado.py::test_senate_fixture_validates`
+
+**C46** - A Senate build whose vote records name a `codigoParlamentar` listed in no legislature list exits `1` naming the roll call and the member id, and writes no `data/v3/senado`; a voter is never published without a member (fail closed, so C45 holds for every real build)
+Proof: `P tests/test_senado_contract.py::test_voter_absent_from_every_legislature_list_fails_the_build`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -205,7 +212,7 @@ Proof: `grep -q 'A feature `etl-senado` roda em `standard`' AGENTS.md`
 | entities in `Relations` (10) | Legislature C36 · Member C8 · Mandate C8 · ExercisePeriod C9 · RollCall C15 · Vote C21 · Orientation C24 · Proposition C26 · ClassificationRule C19 · Authorship C30, C31 | - |
 | startup config: Senate API base and output root (2 assemblies) | CLI default `data/v3/senado` C7 · test harness `--out` and `API_URL` C1 | - |
 
-- Claims naming an exit code or stderr content: C3, C5-C7, C14, C17, C22, C35, C38 - each proof runs `cli.main` with argv and asserts the return code and captured stderr
+- Claims naming an exit code or stderr content: C3, C5-C7, C14, C17, C22, C35, C38, C45, C46 - each proof runs `cli.main` with argv and asserts the return code and captured stderr
 - Claims about HTTP behaviour: C1-C5 - each proof crosses a real socket to the local fake server
 - Decision tables proven at their own layer and at the CLI: positions (C20 unit, C21 build), orientations (C20 unit, C24 build), rules (C18 unit and build), twins (C15 unit and build), exercise periods (C9 build, C10 unit)
 
@@ -255,3 +262,4 @@ Carried by `plan.md`.
 - **Settled mid-build:** nobody answered questions (orchestrator delegation); decided by the builder and reviewable in the diff: (1) contract-v3's `test_bad_contract_or_house_exits_1[house-senado]` (its C4) expected `--house senado` to fail, which contract-v3's plan said would last only until this feature; the case now uses `--house presidencia` with the same assertions. (2) Doors 5 and 6 were added before the code (vote `nomeParlamentar` for AC 11; the Senate allowlist in `readers.SENADO_ALLOWLIST`, because etl-camara's test renders every `readers.ALLOWLIST` kind as CSV). (3) `contract_v3.assemble` was split so both houses share `finish` (indicators, ordering, coverage, files); the Câmara output is unchanged and its suite green. (4) The live API cut a chunked response mid-body while fixtures were recorded; `camara._get` now retries `http.client.HTTPException`, and the Senate download also retries a body short of its `Content-Length` (urllib returns it silently); the Câmara bulk download has no such length check yet. (5) Roll calls whose `/votacao` record has no `dataApresentacao` in door 1 get `presentedAt: null` unless the process is in an authorship list; their `authors` is `[]` because first signers are only fetched for authored types. (6) A listed senator with no `SiglaPartidoParlamentar` and no vote gets party `S/Partido`, the Senate's own label. (7) Mismatch warnings and the deprecation warning print even with `--quiet`, as the v2 TSE warning does. (8) Deprecation is read on every hop: a recording `HTTPRedirectHandler` warns for the URL of each `301` that carries the headers, and the final response is checked too, once per URL (research 07 §2); the redirected body still has to pass its envelope check (AC 6). (9) Requirements follow AC 29 literally (prefix only, no `autoria` filter), so a `RQS` signed by a bloc leader that lists the senator counts for them
 - **Abandoned:** recording every senator's authorship list for the off-suite run (about 100 calls, over the 1 request per second budget for live calls); a Senate-only assembler (the plan forbids it; `finish` is shared instead)
 - **Verification round 1 fix:** deprecation sent as a `301` is now warned about (C5, `sources/senado.py` `_DeprecationWarner`, `camara._get(opener=)`); proof `test_deprecation_sent_as_a_redirect_warns_and_continues` failed before the fix (0 warning lines) and passes after
+- **Verification round 1 fix (member ids):** `validate` now checks every v3 vote and authorship `memberId` against `members.json` (C45); fixture roll call `6923` had voters 9103-9105 without members, now added. A real build could emit such a voter when the Senate's legislature list omits one who voted (`senate_mandates` only builds mandates for listed senators), so `assemble_senado` fails closed with a `ContractError` (C46); authorship cannot dangle because authors come only from members' own processes. Test datasets with empty lists now get listed voters from `senado_data.with_voters`; if the live build trips C46, the source list is incomplete and the fix is a decision about what to publish for that voter

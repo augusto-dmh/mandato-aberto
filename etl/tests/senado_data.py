@@ -9,7 +9,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from mandato_etl import cli
+from mandato_etl import cli, contract_v3
 
 RECORDED = Path(__file__).parent / "fixtures" / "v3" / "recorded" / "senado"
 CLOCK_2027 = datetime(2027, 3, 1, 12, 0, 0, tzinfo=UTC)  # 2027-03-01T09:00:00 in Brasília
@@ -114,13 +114,40 @@ def detail(pid, codes) -> dict:
         for i, code in enumerate(codes, 1)]}
 
 
-def dataset(votacao, orientacao, lists, processos=None, details=None, atual=None) -> dict:
-    """API documents by path under `/dadosabertos`.
+def with_voters(votacao: dict, lists: dict) -> dict:
+    """`(lists, added)`: `lists` plus a senator in exercise since the legislature's start for each voter its
+    list lacks, and `added` = {code: start} of those senators.
+
+    The Senate lists every voter of a legislature; the fixtures only spell out the senators a test is about.
+    """
+    lists, added = {n: list(entries) for n, entries in lists.items()}, {}
+    for records in votacao.values():
+        for r in records:
+            try:
+                n = contract_v3.legislature_of(r["dataSessao"])
+            except contract_v3.ContractError:  # before the first legislature: the build leaves it out
+                continue
+            for v in r["votos"]:
+                code = str(v["codigoParlamentar"])
+                if n in lists and not any(e["IdentificacaoParlamentar"]["CodigoParlamentar"] == code
+                                          for e in lists[n]):
+                    start = contract_v3.LEGISLATURES[n][0]
+                    lists[n].append(senator(code, v["nomeParlamentar"], v["siglaPartidoParlamentar"],
+                                            v["siglaUFParlamentar"], [(start, None)], legislatures=(n, n + 1)))
+                    added[code] = min(added.get(code, start), start)
+    return lists, added
+
+
+def dataset(votacao, orientacao, lists, processos=None, details=None, atual=None, list_voters=True) -> dict:
+    """API documents by path under `/dadosabertos`; `list_voters` adds the voters `lists` lacks (`with_voters`).
 
     votacao / orientacao: {(first day, last day): [records]}; lists: {legislature: [Parlamentar]};
     processos: {(member, start): [process]}; details: {process id: [codigoParlamentar by ordem]}.
     """
     routes = {}
+    if list_voters:
+        lists, added = with_voters(votacao, lists)
+        processos = {**{(code, start): [] for code, start in added.items()}, **(processos or {})}
     for (first, last), records in votacao.items():
         routes[f"/votacao?dataInicio={first}&dataFim={last}"] = records
     for (first, last), items in orientacao.items():

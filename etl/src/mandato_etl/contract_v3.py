@@ -647,6 +647,13 @@ def assemble_senado(
             "sourceUrl": _proposition_url(prop, p.get("codigoMateria")), "authors": authors[prop],
         }
 
+    known = {m["id"] for m in members}
+    for rc_id, doc in docs.items():
+        for v in doc["votes"]:
+            if v["memberId"] not in known:
+                raise ContractError(f"roll call {rc_id}: memberId {v['memberId']} voted but is in no legislature "
+                                    "list, so members.json would not hold it")
+
     mismatches = Counter()
     periods = {(str(m["id"]), x["legislature"]): x["exercisePeriods"] for m in members for x in m["mandates"]}
     for rc_id, doc in docs.items():

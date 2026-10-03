@@ -274,7 +274,7 @@ def test_manifest_hashes_match_stored_files(built_indicators):
 def test_symbolic_counts_are_nullable_in_senate_fixture():
     senado = ETL / "tests" / "fixtures" / "v3" / "senado"
     members = json.loads((senado / "members.json").read_text())
-    assert [m["symbolicMerit"] for member in members for m in member["mandates"]] == [None] * 4
+    assert [m["symbolicMerit"] for member in members for m in member["mandates"]] == [None] * 10
     meta = json.loads((senado / "meta.json").read_text())
     assert [c["rollCalls"]["symbolic"] for c in meta["coverage"]] == [None] * len(meta["coverage"])
     assert cli.main(["validate", str(senado)]) == 0
