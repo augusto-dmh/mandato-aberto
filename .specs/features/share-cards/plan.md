@@ -216,26 +216,28 @@ The `mandato:photos` and `mandato:cards:prune` commands (door 9) are called by t
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Verification profile | `ui` | the deliverable is images whose copy and arrangement are the risk (what never goes on a card); `ui` enumerates both per screen, as app-contract-v3 chose | n |
-| Basis on the member card | the three indicators on the `merit` basis, the line `Nas votações sobre propostas e emendas` naming it once; the `all` basis stays on the page | four figures in two bases overflow the 1200 × 630 layout the design tests fixed; `merit` is the page's first basis and meus-eleitos' default | n |
-| Photo recheck interval | 7 days; members with no photo every run | Câmara ignores conditional requests and Senate photos change rarely; a daily full pass would download about 50 MB a day from the houses | n |
-| PNG retention | 30 days for codes that are not their subject's latest; snapshots forever | a snapshot is about 1 KB to 3 KB after PostgreSQL compression; a PNG about 200 KB and re-renderable from its snapshot | n |
-| Snapshot storage estimate | worst case about 100 MB a year (every subject's card fetched on every voting day); realistic far less, since a snapshot exists only once its card was served | keeps the "kept forever" promise affordable without summarising old snapshots | n |
-| Render concurrency | 2 simultaneous renders per app instance | one Chromium uses roughly 150 MB; a crawl of old card URLs must not exhaust a small server | n |
-| Render time target | p95 of 3 s for a cold render, read from the AC 49 log line | a preview crawler that waits longer may show no image; a target, not a criterion | n |
-| Feed and story arrangement | photo above the name, figures stacked, score at full width, same footer | the 3:4 photo and the score need the vertical space; one arrangement per format inside one component (door 4) | n |
-| Card theme | light only, whatever the reader's system theme | an image outlives the page's theme, and the photo mat is specified in light (design-system AC 31) | n |
-| Photo suppression | a config list `mandato.photo_suppressed` handled by the maintainer | research 01 asks for a 48 h removal process; a list in config is the smallest mechanism until the corrections admin exists | n |
-| Placeholder detection | a sha256 shared by two or more members is no photo (AC 8) | an unknown Senate id answered 200 with a JPEG on 2026-10-02; a shared image cannot be anyone's official photo | n |
-| Senate photo in the 3:4 mat | shown whole with mat bands, not reframed | one fixed template for everyone (a1 6.3) and no crop (P9) | n |
+| Verification profile | `ui` | the deliverable is images whose copy and arrangement are the risk (what never goes on a card); `ui` enumerates both per screen, as app-contract-v3 chose | y |
+| Basis on the member card | the three indicators on the `merit` basis, the line `Nas votações sobre propostas e emendas` naming it once; the `all` basis stays on the page | four figures in two bases overflow the 1200 × 630 layout the design tests fixed; `merit` is the page's first basis and meus-eleitos' default | y |
+| Photo recheck interval | 7 days; members with no photo every run | Câmara ignores conditional requests and Senate photos change rarely; a daily full pass would download about 50 MB a day from the houses | y |
+| PNG retention | 30 days for codes that are not their subject's latest; snapshots forever | a snapshot is about 1 KB to 3 KB after PostgreSQL compression; a PNG about 200 KB and re-renderable from its snapshot | y |
+| Snapshot storage estimate | worst case about 100 MB a year (every subject's card fetched on every voting day); realistic far less, since a snapshot exists only once its card was served | keeps the "kept forever" promise affordable without summarising old snapshots | y |
+| Render concurrency | 2 simultaneous renders per app instance | one Chromium uses roughly 150 MB; a crawl of old card URLs must not exhaust a small server | y |
+| Render time target | p95 of 3 s for a cold render, read from the AC 49 log line | a preview crawler that waits longer may show no image; a target, not a criterion | y |
+| Feed and story arrangement | photo above the name, figures stacked, score at full width, same footer | the 3:4 photo and the score need the vertical space; one arrangement per format inside one component (door 4) | y |
+| Card theme | light only, whatever the reader's system theme | an image outlives the page's theme, and the photo mat is specified in light (design-system AC 31) | y |
+| Photo suppression | a config list `mandato.photo_suppressed` handled by the maintainer | research 01 asks for a 48 h removal process; a list in config is the smallest mechanism until the corrections admin exists | y |
+| Placeholder detection | a sha256 shared by two or more members is no photo (AC 8) | an unknown Senate id answered 200 with a JPEG on 2026-10-02; a shared image cannot be anyone's official photo | y |
+| Senate photo in the 3:4 mat | shown whole with mat bands, not reframed | one fixed template for everyone (a1 6.3) and no crop (P9) | y |
 
 **Open questions:**
 
 | # | Kind | Question | Until answered |
 | --- | --- | --- | --- |
 | 1 | blocks go-live | The card prints the host of `APP_URL` in `confira em {host}/verificar/`. The public domain is undecided (AD-012, deploy feature) | cards are built and tested with the configured host; cards served before a domain change print the old host, so the old host must keep redirecting `/verificar/` |
-| 2 | open | Whether the Câmara's `bandep` profile photos are formally under the image bank's CC BY licence (research 01, open item 5; inference) | credit stays `Foto: Câmara dos Deputados`, as in the MVP |
-| 3 | open | Whether the Senate serves a generic image for a member without a photo; AC 8 catches a shared placeholder, not a stale small portrait | a Senate photo below 100 px is refused (AC 2); anything else shows as the house serves it |
+
+Resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`research/decisions-log.md`): (2) build with the credit "Foto: Câmara dos Deputados" as the live MVP already does; confirming that the `bandep` profile photos fall under the image bank's CC BY licence stays a pre-launch check in research 01 open item 5, and the cache can be emptied by one command if the answer is no; (3) AC 8's shared-hash rule is the guard; a stale small portrait is accepted as an official photo, because it is what the Senate publishes. Question 1 (the public domain) belongs to the deploy feature and the maintainer.
+
+**Approval:** approved by the orchestrator under the maintainer's delegation on 2026-10-02, every assumption confirmed. Build starts after app-contract-v3.
 
 ## Observable
 
