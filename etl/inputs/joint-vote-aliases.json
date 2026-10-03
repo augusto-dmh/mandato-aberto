@@ -1,0 +1,30 @@
+[
+  {
+    "house": "senado",
+    "name": "Márcio Bitar",
+    "uf": "AC",
+    "memberId": 285,
+    "note": "Joint-session votes write the name this way; the Senate list says Marcio Bittar (research 09 section 4.5, 100 votes)"
+  },
+  {
+    "house": "senado",
+    "name": "Janaina Carla Farias",
+    "uf": "CE",
+    "memberId": 6351,
+    "note": "Civil name in joint-session votes; the Senate list says Janaína Farias (research 09 section 4.5, 63 votes)"
+  },
+  {
+    "house": "senado",
+    "name": "Astr. Marcos Pontes",
+    "uf": "SP",
+    "memberId": 6009,
+    "note": "Abbreviated in joint-session votes; the Senate list says Astronauta Marcos Pontes (research 09 section 4.5, 46 votes)"
+  },
+  {
+    "house": "senado",
+    "name": "Prof. Dorinha Seabra",
+    "uf": "TO",
+    "memberId": 5386,
+    "note": "Abbreviated in joint-session votes; the Senate list says Professora Dorinha Seabra (research 09 section 4.5, 46 votes)"
+  }
+]

@@ -3,6 +3,7 @@ data/
 # Local inputs, among them the TSE CSV (carries CPF, AD-003); only the CPF-free candidacy export is versioned (AD-011)
 etl/inputs/*
 !etl/inputs/candidacy-2026.json
+!etl/inputs/joint-vote-aliases.json
 # Python
 __pycache__/
 .venv/
