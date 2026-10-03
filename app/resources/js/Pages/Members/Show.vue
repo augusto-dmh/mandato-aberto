@@ -7,6 +7,7 @@ import SourceNote from "mandato-design/components/SourceNote.vue";
 import { formatNumber } from "mandato-design/components/format.js";
 import { computed } from "vue";
 import PublicLayout from "../../Components/PublicLayout.vue";
+import ShareImages from "../../Components/ShareImages.vue";
 
 const props = defineProps({
   member: { type: Object, required: true },
@@ -19,6 +20,7 @@ const props = defineProps({
   proposicoesMethodUrl: { type: String, required: true },
   symbolicMethodUrl: { type: String, required: true },
   scoreMethodUrl: { type: String, required: true },
+  card: { type: Object, required: true }, // share-cards AC 42
   sources: { type: Array, default: () => [] },
 });
 
@@ -107,6 +109,8 @@ const noteIndex = computed(() => (symbolicNote.value ?? 6) + 1);
           :collected-at="sources[0]?.collectedAt ?? ''"
         />
       </section>
+
+      <ShareImages :card="card" />
     </main>
   </PublicLayout>
 </template>

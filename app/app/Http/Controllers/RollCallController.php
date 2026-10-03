@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Cards\Code;
+use App\Cards\Payloads;
+use App\Cards\Share;
 use App\Models\House;
 use App\Models\RollCall;
 use App\Models\Vote;
@@ -54,12 +57,18 @@ class RollCallController extends Controller
             'official' => $v->official,
         ])->values()->all();
 
+        // The card of this roll call, computed and never stored here (share-cards door 8).
+        $payload = Payloads::rollCall($house, $rollCall);
+        $code = Code::of($payload);
+
         return Inertia::render('RollCalls/Show', [
             'meta' => [
                 'title' => $title,
                 'description' => $description,
                 'path' => PublicUrl::rollCall($house, $rollCall->source_id),
+                'image' => Share::image($payload, $code),
             ],
+            'card' => Share::card($payload, $code),
             'rollCall' => [
                 'id' => $rollCall->source_id,
                 'house' => $house->value,

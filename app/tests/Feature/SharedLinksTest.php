@@ -60,7 +60,8 @@ test('head tags survive an ssr outage', function () {
             ->and($tags['og:type'])->toBe(['website'])
             ->and($tags['og:site_name'])->toBe(['Mandato Aberto'])
             ->and($tags['og:locale'])->toBe(['pt_BR'])
-            ->and($tags['twitter:card'])->toBe(['summary'])
+            // share-cards door 7: member and roll-call pages preview their card; the methodology has none
+            ->and($tags['twitter:card'])->toBe([$path === '/metodologia/' ? 'summary' : 'summary_large_image'])
             ->and($doc->getElementById('app'))->not->toBeNull()
             ->and($doc->getElementById('app')->childElementCount)->toBe(0);
     }

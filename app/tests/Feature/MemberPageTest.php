@@ -81,7 +81,8 @@ test('member head carries the share tags', function () {
         ->and($tags['og:type'])->toBe(['website'])
         ->and($tags['og:site_name'])->toBe(['Mandato Aberto'])
         ->and($tags['og:locale'])->toBe(['pt_BR'])
-        ->and($tags['twitter:card'])->toBe(['summary']);
+        // share-cards door 7: a member page previews its card
+        ->and($tags['twitter:card'])->toBe(['summary_large_image']);
 
     $senator = headTags(html($this->get('/senadores/9101/')));
     expect($senator['title'])->toBe(['Rosa Andrade (PT-SP) na 57ª legislatura - Mandato Aberto'])
