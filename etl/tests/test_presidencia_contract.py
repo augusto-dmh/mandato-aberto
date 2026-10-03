@@ -89,14 +89,21 @@ def test_source_urls(con, monkeypatch):
         assert build(con, monkeypatch, name, "--refresh") == 0
         mp_codes = {f"mpv-{m['identificacao'][4:].replace('/', '-')}": m["codigoMateria"]
                     for path, doc in getattr(pd, name)()["congress"].items() if "sigla=MPV" in path for m in doc}
+        veto_codes = {f"vet-{v['Materia']['Numero']}-{v['Materia']['Ano']}": v["Codigo"]
+                      for path, doc in getattr(pd, name)()["congress"].items() if path.startswith("/materia/vetos/")
+                      for v in doc["ListaVetosAnoCN"]["Vetos"].get("Veto", [])}
+        seen = set()
         for a in pd.load(con, "acts.json"):
             if a["kind"] == "provisionalMeasure":
                 assert a["sourceUrl"] == ("https://www.congressonacional.leg.br/materias/medidas-provisorias/-/mpv/"
                                           f"{mp_codes[a['id']]}")
             elif a["kind"] == "veto":
-                assert a["sourceUrl"].startswith("https://www.congressonacional.leg.br/materias/vetos/-/veto/detalhe/")
+                seen.add(a["id"])
+                assert a["sourceUrl"] == ("https://www.congressonacional.leg.br/materias/vetos/-/veto/detalhe/"
+                                          f"{veto_codes[a['id']]}")
             else:
                 assert a["sourceUrl"] == f"https://www.camara.leg.br/propostas-legislativas/{a['stages'][0]['propositionId']}"
+        assert seen == set(veto_codes)
         for j in pd.load(con, "joint-roll-calls.json"):
             assert j["sourceUrl"].startswith("https://")
         if name == "recorded":
