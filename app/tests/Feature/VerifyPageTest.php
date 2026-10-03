@@ -1,13 +1,14 @@
 <?php
 
 use App\Cards\Code;
+use App\Media\Photos;
 use App\Models\House;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\Jpeg;
 
-// share-cards S5: every code opens the data the card showed (C52-C56, C60, C74).
+// share-cards S5: every code opens the data the card showed (C52-C56, C60, C74, C82).
 
 beforeEach(function () {
     Storage::fake('media');
@@ -81,6 +82,24 @@ test('a stored code opens the card data', function () {
         expect($text)->toContain($value);
     }
     expect(array_map(fn ($a) => $a->getAttribute('href'), iterator_to_array($main->querySelectorAll('a'))))->toContain('/senado/votacoes/7001/');
+});
+
+test('the verification page prints the photo the card showed', function () {
+    requireSsr();
+    $photoValue = fn (string $code) => textOf(html($this->get("/verificar/{$code}/")->assertStatus(200))->querySelector('main h2 ~ p.ma-muted'));
+    $initials = serveCard('/deputados/101/legislatura/58/', Code::of(memberPayload(House::Camara, '101', 58)));
+
+    expect($photoValue($initials))->toBe('Sem foto oficial: o card mostra as iniciais do nome.');
+
+    fakePhotoHosts();
+    expect(runCommand('mandato:photos', ['--house' => 'camara', '--member' => '101'])['code'])->toBe(0);
+    $sha = Photos::currentOf(House::Camara, '101')->sha256;
+    $photo = serveCard('/deputados/101/legislatura/58/', Code::of(memberPayload(House::Camara, '101', 58)));
+
+    expect($photo)->not->toBe($initials)
+        ->and($photoValue($photo))->toBe("Foto oficial: arquivo {$sha}")
+        // the older code still prints what its own card showed
+        ->and($photoValue($initials))->toBe('Sem foto oficial: o card mostra as iniciais do nome.');
 });
 
 test('the verification page compares the card with current data', function () {
