@@ -1,4 +1,4 @@
-// share-cards S4 in a browser: every format's arrangement, fit and photo (C37, C43, C45, C46).
+// share-cards S4 in a browser: every format's arrangement, fit and photo (C37, C43, C45, C46, C78).
 import { expect, test, type Page } from "@playwright/test";
 
 // @ts-expect-error plain ES module shared with scripts/cards.mjs
@@ -42,6 +42,28 @@ test("card regions in order", async ({ page }) => {
     } else {
       expect(eyebrow.y + eyebrow.height, `${format} eyebrow above photo`).toBeLessThanOrEqual(photo.y);
       expect(photo.y + photo.height, `${format} photo above name`).toBeLessThanOrEqual(name.y);
+    }
+  }
+});
+
+test("feed and story stack the figures and size the score by its votes", async ({ page }) => {
+  for (const format of ["feed", "story"]) {
+    // a mandate of 240 votes fills the column; one of 2 draws 8 px per vote, from the left
+    for (const [name, votes] of [[`member-${format}`, 240], [`short-${format}`, 2]] as const) {
+      await open(page, name);
+      const figures = await page.locator(".ma-card__figure").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON()));
+      expect(figures, name).toHaveLength(3);
+      for (let i = 1; i < figures.length; i++) {
+        expect(figures[i].top, `${name} figure ${i + 1} below figure ${i}`).toBeGreaterThanOrEqual(figures[i - 1].bottom - 0.5);
+        expect(Math.abs(figures[i].left - figures[0].left), `${name} figures share a left edge`).toBeLessThan(0.5);
+      }
+      const { score, body, zoom } = await page.locator(".ma-card__body").evaluate((el) => ({
+        score: el.querySelector(".ma-card__score")!.getBoundingClientRect().toJSON(),
+        body: el.getBoundingClientRect().toJSON(),
+        zoom: Number(getComputedStyle(el).zoom),
+      }));
+      expect(Math.abs(score.left - body.left), `${name} score left-aligned`).toBeLessThan(0.5);
+      expect(Math.abs(score.width - Math.min(body.width, votes * 8 * zoom)), `${name} score width`).toBeLessThan(0.5);
     }
   }
 });

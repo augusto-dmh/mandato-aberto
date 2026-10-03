@@ -24,6 +24,10 @@ for (const format of Object.keys(FORMATS)) {
     kind: "member",
     props: { ...common, format, house: "senado", member: { name: NAME_48, party: "REPUBLICANOS", uf: "SP" }, figures: LABELS.map((label) => ({ count: 1234, total: 2345, label })), photo: "photo-480x600.svg" },
   };
+  pages[`short-${format}`] = {
+    kind: "member",
+    props: { ...common, format, votes: votes.slice(0, 2), member: { name: LONGEST, party: "PL", uf: "SP" }, figures: LABELS.map((label) => ({ count: 1, total: 2, label })), photo: "photo-480x600.svg" },
+  };
   pages[`nophoto-${format}`] = {
     kind: "member",
     props: { ...common, format, member: { name: LONGEST, party: "PL", uf: "SP" }, figures: LABELS.map((label) => ({ count: 0, total: 0, label })), photo: null },
