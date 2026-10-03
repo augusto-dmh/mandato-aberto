@@ -1,0 +1,5 @@
+/* Fonts served from this origin (SIL OFL), then the design system's tokens and component styles. */
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/source-serif-4/opsz.css";
+@import "mandato-design/tokens.css";
+@import "mandato-design/styles/components.css";

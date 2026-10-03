@@ -8,12 +8,14 @@ import sys
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
-from mandato_etl import compute, publish, readers, schema
+from mandato_etl import classify, compute, contract_v3, publish, readers, schema
 from mandato_etl.sources import camara, tse
 
 ROOT = Path(__file__).resolve().parents[3]
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "out"
+V3_DIR = ROOT / "data" / "v3"
+HOUSES = ("camara",)
 FIRST_YEAR = 2023
 SCHEMA_VERSION = 2
 BRASILIA = timezone(timedelta(hours=-3))
@@ -47,9 +49,16 @@ def _parser(current_year: int) -> tuple[_Parser, _Parser]:
         "--candidacy-json", type=Path, metavar="JSON",
         help="candidacy file written by --export-candidacy, read in place of --tse-csv",
     )
-    build.add_argument("--out", type=Path, default=OUT_DIR, help="output directory (default: data/out)")
+    build.add_argument(
+        "--contract", type=int, choices=(2, 3), default=2,
+        help="contract version to write; 3 takes no candidacy flag (default: 2)",
+    )
+    build.add_argument("--house", choices=HOUSES, default="camara", help="with --contract 3: the house (default: camara)")
+    build.add_argument(
+        "--out", type=Path, help="output directory (default: data/out, or data/v3/<house> with --contract 3)",
+    )
     build.add_argument("--quiet", action="store_true", help="print errors only")
-    validate = commands.add_parser("validate", help="validate a directory against etl/schema")
+    validate = commands.add_parser("validate", help="validate a directory against etl/schema, by its schema_version")
     validate.add_argument("dir", type=Path, nargs="?", default=OUT_DIR)
     return parser, build
 
@@ -74,6 +83,26 @@ def main(argv: list[str] | None = None) -> int:
         build_parser.print_usage(sys.stderr)
         print(f"{build_parser.prog}: error: --years must be within {FIRST_YEAR}-{started.year}", file=sys.stderr)
         return 1
+    if args.contract == 3:
+        given = [flag for flag, value in (("--tse-csv", args.tse_csv), ("--candidacy-json", args.candidacy_json),
+                                          ("--export-candidacy", args.export_candidacy)) if value is not None]
+        if given:
+            build_parser.print_usage(sys.stderr)
+            print(f"{build_parser.prog}: error: --contract 3 takes no {given[0]}", file=sys.stderr)
+            return 1
+        log = (lambda msg: None) if args.quiet else (lambda msg: print(msg, file=sys.stderr))
+        out = args.out if args.out is not None else V3_DIR / args.house
+        try:
+            build_v3(sorted(set(years)), args.refresh, args.house, out, started, log)
+        except camara.DownloadError as e:
+            print(f"error: could not download {e.url} ({e.args[0].split(': ', 1)[-1]})", file=sys.stderr)
+            return 2
+        except (schema.SchemaError, readers.SourceLayoutError, contract_v3.ContractError) as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        return 0
+    if args.out is None:
+        args.out = OUT_DIR
     if args.tse_csv is not None and args.candidacy_json is not None:
         build_parser.print_usage(sys.stderr)
         print(f"{build_parser.prog}: error: --tse-csv and --candidacy-json are mutually exclusive", file=sys.stderr)
@@ -166,3 +195,50 @@ def build(
     if export is not None:
         tse.export(export, tse_file, candidacies, ambiguous)
         log(f"wrote the candidacy file {export}")
+
+
+def build_v3(years: list[int], refresh: bool, house: str, out: Path, started: datetime, log) -> None:
+    """Writes `data/v3/<house>/` (contract v3); `data/out/` is not touched."""
+    from mandato_etl import full_texts
+
+    log(f"sources: {years[0]}-{years[-1]}")
+    sources = camara.sync(RAW_DIR, years, refresh, started, log)
+
+    def read(kind):
+        for year in years:
+            yield from readers.read(kind, RAW_DIR / f"{kind}-{year}.csv")
+
+    log("reading roll calls, votes and propositions")
+    data = contract_v3.load(read)
+    local_now = started.astimezone(BRASILIA).strftime("%Y-%m-%dT%H:%M:%S")
+    legislatures = contract_v3.started(local_now[:10])
+    lists, list_sources = camara.legislature_members(RAW_DIR, legislatures, refresh, started)
+    members = contract_v3.member_ids(data, lists)
+    log(f"fetching {len(members)} histories")
+    histories, history_sources = camara.histories_v3(RAW_DIR, sorted(members, key=int), refresh, started)
+    ruleset = classify.load_rules(house)
+    result = contract_v3.assemble(data, lists, histories, ruleset, local_now)
+    log(f"fetching the inteiro teor of {len(result['targets'])} propositions")
+    found, text_sources = camara.proposition_documents(RAW_DIR, result["targets"], refresh, started)
+    generated = started.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    meta = {
+        "schema_version": contract_v3.SCHEMA_VERSION,
+        "house": house,
+        "generatedAt": generated,
+        "legislatures": [
+            {"id": n, "start": contract_v3.LEGISLATURES[n][0], "end": contract_v3.LEGISLATURES[n][1],
+             "sourceUrl": contract_v3.LEGISLATURE_URL.format(id=n)}
+            for n in legislatures
+        ],
+        "coverage": result["coverage"],
+        "classification": {"version": ruleset["version"]},
+        "sources": sorted([*sources, *list_sources, *history_sources, *text_sources], key=lambda e: e["file"]),
+    }
+    files = {"meta.json": meta, **result["files"], **full_texts.documents(house, found, generated)}
+    log(f"writing {len(files)} files to {out}")
+    publish.write(out, files, version=3)
+    for row in result["coverage"]:
+        counts = row["rollCalls"]
+        log(f"{house} {row['legislature']}: {sum(n or 0 for n in counts.values())} roll calls "
+            f"({counts['nominal']} nominal, {counts['secret']} secret, {counts['symbolic']} symbolic), "
+            f"{row['unclassified']} unclassified")

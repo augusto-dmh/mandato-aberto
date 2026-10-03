@@ -1,0 +1,18 @@
+[
+  {
+    "description": "Decisão sobre a proposta: a descrição oficial menciona \"votação secreta\".",
+    "field": "descricao",
+    "house": "senado",
+    "id": "senado.01",
+    "kind": "final",
+    "pattern": "votacao secreta"
+  },
+  {
+    "description": "Procedimento: a descrição oficial começa com \"Requerimento\".",
+    "field": "descricao",
+    "house": "senado",
+    "id": "senado.02",
+    "kind": "procedural",
+    "pattern": "^requerimento"
+  }
+]

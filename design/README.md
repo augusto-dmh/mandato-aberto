@@ -34,6 +34,15 @@ Position and shape carry the option; colour never does (P6). Baseline at mid-hei
 | empty, secret ballot | gap | Votação secreta |
 | anything else | small hollow dot | the raw value |
 
+Contract v3 carries a `position` beside the official value, and `positionCase({house, position, official})` draws the same marks from it (`.specs/features/app-contract-v3/plan.md`, doors 5 and 6). Only the labels depend on the house:
+
+| Position | Mark | Câmara | Senado |
+| --- | --- | --- | --- |
+| `yes`, `no`, `abstention`, `obstruction` | as `Sim`, `Não`, `Abstenção`, `Obstrução` above | Sim, Não, Abstenção, Obstrução | the same |
+| `presiding` | small filled dot on the baseline | Art. 17 (presidente da sessão) | Presidente da sessão (art. 51 RISF) |
+| `secret` | gap | Votação secreta | Votou (votação secreta) |
+| `notVoting` | gap | Registro sem voto | Sem voto: the Senate's description of the code (`P-NRV`, `AP`, `MIS`, `NCom`, `NA`, `Licença`), or the code itself; without the official value, Não registrou voto |
+
 ## Components
 
 ### NDeM
@@ -50,13 +59,13 @@ Position and shape carry the option; colour never does (P6). Baseline at mid-hei
 
 ### VoteMark
 
-- **Inputs:** `vote` (contract value), `secret`, `who` ("Nome, PARTIDO-UF").
+- **Inputs:** `vote` (contract value), `secret`, `who` ("Nome, PARTIDO-UF"); for contract v3, `house`, `position`, `official` instead of `vote` and `secret`.
 - **Empty state:** an empty vote is a gap with its label ("Registro sem voto" or "Votação secreta").
 - **Principle:** P6. Shape and position carry the vote, every stroke is `currentColor`, and the option is always exposed as text.
 
 ### MandateScore
 
-- **Inputs:** `votes` (`rollCallId`, `date`, `title`, `vote`, `secret`), `href`, `compact`.
+- **Inputs:** `votes` (`rollCallId`, `date`, `title`, `vote`, `secret`), `href`, `compact`; for contract v3, `house` and votes carrying `position` and `official`, with the legend in that house's labels.
 - **Empty state:** with no votes it renders no row and an empty table.
 - **Principle:** P13 and P14. It shows one column per roll call, oldest first, one row per year, each linking to its roll call. The equivalent table carries the same data (P10, P11). The compact form is the card's.
 

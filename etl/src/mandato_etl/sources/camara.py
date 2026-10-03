@@ -65,13 +65,13 @@ def _iso(moment: datetime) -> str:
     return moment.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def _entry(path: Path, url: str, downloaded_at: str) -> dict:
+def _entry(path: Path, url: str, downloaded_at: str, name: str | None = None) -> dict:
     digest, size = hashlib.sha256(), 0
     with open(path, "rb") as f:
         while chunk := f.read(1 << 20):
             digest.update(chunk)
             size += len(chunk)
-    return {"file": path.name, "sourceUrl": url, "sha256": digest.hexdigest(), "bytes": size, "downloadedAt": downloaded_at}
+    return {"file": name or path.name, "sourceUrl": url, "sha256": digest.hexdigest(), "bytes": size, "downloadedAt": downloaded_at}
 
 
 def _redact(path: Path) -> bool:
@@ -173,3 +173,86 @@ def histories(ids, raw: Path, refresh: bool) -> dict[str, list[dict]]:
     ids = list(ids)
     with ThreadPoolExecutor(max_workers=HISTORY_WORKERS) as pool:
         return dict(zip(ids, pool.map(lambda i: history(i, raw, refresh), ids)))
+
+
+# --- contract v3: per-legislature lists, full histories, proposition records and inteiro teor PDFs.
+# Each is cached under `raw` by its relative path and recorded in the manifest under that path.
+
+LEGISLATURE_FIELDS = ("id", "nome", "siglaPartido", "siglaUf", "urlFoto", "idLegislatura")
+HISTORY_FIELDS = ("dataHora", "situacao", "descricaoStatus", "idLegislatura")
+
+
+def _fetch_all(raw: Path, items: list[tuple[str, str, object]], refresh: bool, now: datetime) -> tuple[dict, list[dict]]:
+    """Fetches `(relative, url, keep)` items not yet cached; returns `{relative: Path}` and their manifest entries.
+
+    `keep` maps the JSON response to the document stored, or is `None` for a file stored as received.
+    The manifest is written once, from this thread, after the pool returns.
+    """
+    def fetch(item):
+        relative, url, keep = item
+        dest = raw / relative
+        if dest.exists() and not refresh:
+            return False
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if keep is None:
+            _download(url, dest, now)
+        else:
+            doc = keep(_get(url, json.load, accept="application/json"))
+            part = dest.with_name(dest.name + ".part")
+            part.write_text(json.dumps(doc, ensure_ascii=False))
+            part.replace(dest)
+        return True
+
+    with ThreadPoolExecutor(max_workers=HISTORY_WORKERS) as pool:
+        fetched = list(pool.map(fetch, items))
+    manifest_path = raw / "manifest.json"
+    manifest = {e["file"]: e for e in json.loads(manifest_path.read_text())} if manifest_path.exists() else {}
+    for (relative, url, _), new in zip(items, fetched):
+        dest = raw / relative
+        if new or relative not in manifest:
+            at = _iso(now) if new else _iso(datetime.fromtimestamp(dest.stat().st_mtime, UTC))
+            manifest[relative] = _entry(dest, url, at, relative)
+    if items:
+        _write_manifest(manifest_path, manifest)
+    return {relative: raw / relative for relative, _, _ in items}, [manifest[relative] for relative, _, _ in items]
+
+
+def _api_items(dados, fields):
+    return [{k: d.get(k) for k in fields} for d in dados]
+
+
+def legislature_members(raw: Path, legislatures: list[int], refresh: bool, now: datetime):
+    """`/deputados?idLegislatura=<n>` per legislature, without e-mail; `({n: [deputy]}, entries)`."""
+    items = [
+        (f"deputados-legislatura-{n}.json", f"{API_URL}/deputados?idLegislatura={n}&itens=1000",
+         lambda doc: _api_items(doc["dados"], LEGISLATURE_FIELDS))
+        for n in legislatures
+    ]
+    paths, entries = _fetch_all(raw, items, refresh, now)
+    return {n: json.loads(paths[f"deputados-legislatura-{n}.json"].read_text()) for n in legislatures}, entries
+
+
+def histories_v3(raw: Path, ids: list[str], refresh: bool, now: datetime):
+    """Every status change of each deputy, all legislatures, under `historico-v3/{id}.json`."""
+    items = [
+        (f"historico-v3/{dep}.json", f"{API_URL}/deputados/{dep}/historico",
+         lambda doc: _api_items(doc["dados"], HISTORY_FIELDS))
+        for dep in ids
+    ]
+    paths, entries = _fetch_all(raw, items, refresh, now)
+    return {dep: json.loads(paths[f"historico-v3/{dep}.json"].read_text()) for dep in ids}, entries
+
+
+def proposition_documents(raw: Path, ids: list[int], refresh: bool, now: datetime):
+    """`urlInteiroTeor` of each proposition and its PDF; `({id: (url, pdf path)}, entries)`, skipping a null URL."""
+    items = [
+        (f"proposicao/{prop}.json", f"{API_URL}/proposicoes/{prop}",
+         lambda doc: {"id": doc["dados"]["id"], "urlInteiroTeor": doc["dados"].get("urlInteiroTeor")})
+        for prop in ids
+    ]
+    paths, entries = _fetch_all(raw, items, refresh, now)
+    urls = {prop: json.loads(paths[f"proposicao/{prop}.json"].read_text())["urlInteiroTeor"] for prop in ids}
+    pdfs = [(f"inteiro-teor/{prop}.pdf", url, None) for prop, url in urls.items() if url]
+    pdf_paths, pdf_entries = _fetch_all(raw, pdfs, refresh, now)
+    found = {prop: (url, pdf_paths[f"inteiro-teor/{prop}.pdf"]) for prop, url in urls.items() if url}
+    return found, entries + pdf_entries

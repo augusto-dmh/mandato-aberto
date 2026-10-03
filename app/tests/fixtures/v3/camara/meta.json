@@ -1,0 +1,55 @@
+{
+  "classification": {
+    "version": 1
+  },
+  "coverage": [
+    {
+      "legislature": 57,
+      "members": 3,
+      "rollCalls": {
+        "nominal": 4,
+        "secret": 2,
+        "symbolic": 1
+      },
+      "through": "2025-09-01",
+      "unclassified": 1
+    },
+    {
+      "legislature": 58,
+      "members": 1,
+      "rollCalls": {
+        "nominal": 1,
+        "secret": 0,
+        "symbolic": 0
+      },
+      "through": "2027-02-15",
+      "unclassified": 0
+    }
+  ],
+  "generatedAt": "2027-03-02T02:30:00Z",
+  "house": "camara",
+  "legislatures": [
+    {
+      "end": "2027-01-31",
+      "id": 57,
+      "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/legislaturas/57",
+      "start": "2023-02-01"
+    },
+    {
+      "end": "2031-01-31",
+      "id": 58,
+      "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/legislaturas/58",
+      "start": "2027-02-01"
+    }
+  ],
+  "schema_version": 3,
+  "sources": [
+    {
+      "bytes": 0,
+      "downloadedAt": "2027-03-02T02:30:00Z",
+      "file": "camara-votacoes.json",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "sourceUrl": "https://dadosabertos.camara.leg.br/arquivos/votacoes/json/votacoes-2027.json"
+    }
+  ]
+}

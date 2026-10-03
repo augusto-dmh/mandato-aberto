@@ -1,0 +1,154 @@
+[
+  {
+    "approved": true,
+    "ballot": "nominal",
+    "date": "2027-02-15",
+    "description": "Aprovado o Projeto de Lei nº 6, de 2027.",
+    "governmentOrientation": "yes",
+    "house": "camara",
+    "id": "300-1",
+    "kind": "final",
+    "kindRule": "camara.09",
+    "legislature": 58,
+    "organ": "PLEN",
+    "propositionId": 5006,
+    "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/300-1",
+    "tallies": {
+      "no": 0,
+      "others": 0,
+      "yes": 1
+    }
+  },
+  {
+    "approved": true,
+    "ballot": "secret",
+    "date": "2025-09-01",
+    "description": "Votação secreta.",
+    "governmentOrientation": null,
+    "house": "camara",
+    "id": "100-6",
+    "kind": "unclassified",
+    "kindRule": null,
+    "legislature": 57,
+    "organ": "PLEN",
+    "propositionId": null,
+    "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-6",
+    "tallies": {
+      "no": 1,
+      "others": 0,
+      "yes": 2
+    }
+  },
+  {
+    "approved": true,
+    "ballot": "secret",
+    "date": "2025-08-01",
+    "description": "Votação secreta em turno único.",
+    "governmentOrientation": null,
+    "house": "camara",
+    "id": "100-5",
+    "kind": "final",
+    "kindRule": "camara.11",
+    "legislature": 57,
+    "organ": "PLEN",
+    "propositionId": null,
+    "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-5",
+    "tallies": null
+  },
+  {
+    "approved": true,
+    "ballot": "symbolic",
+    "date": "2024-08-01",
+    "description": "Aprovada a Proposta de Emenda à Constituição nº 3, de 2024.",
+    "governmentOrientation": null,
+    "house": "camara",
+    "id": "100-4",
+    "kind": "final",
+    "kindRule": "camara.09",
+    "legislature": 57,
+    "organ": "PLEN",
+    "propositionId": 5003,
+    "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-4",
+    "tallies": null
+  },
+  {
+    "approved": null,
+    "ballot": "nominal",
+    "date": "2024-03-01",
+    "description": "Aprovado o Requerimento de Urgência.",
+    "governmentOrientation": "no",
+    "house": "camara",
+    "id": "100-3",
+    "kind": "procedural",
+    "kindRule": "camara.04",
+    "legislature": 57,
+    "organ": "PLEN",
+    "propositionId": 5001,
+    "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-3",
+    "tallies": {
+      "no": 1,
+      "others": 0,
+      "yes": 1
+    }
+  },
+  {
+    "approved": false,
+    "ballot": "nominal",
+    "date": "2023-05-10",
+    "description": "Rejeitada a Emenda nº 1.",
+    "governmentOrientation": "free",
+    "house": "camara",
+    "id": "100-2",
+    "kind": "amendment",
+    "kindRule": "camara.08",
+    "legislature": 57,
+    "organ": "PLEN",
+    "propositionId": null,
+    "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-2",
+    "tallies": {
+      "no": 0,
+      "others": 2,
+      "yes": 0
+    }
+  },
+  {
+    "approved": true,
+    "ballot": "nominal",
+    "date": "2023-04-01",
+    "description": "Aprovado o Requerimento nº 1.",
+    "governmentOrientation": null,
+    "house": "camara",
+    "id": "200-1",
+    "kind": "procedural",
+    "kindRule": "camara.04",
+    "legislature": 57,
+    "organ": "CCJC",
+    "propositionId": null,
+    "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/200-1",
+    "tallies": {
+      "no": 0,
+      "others": 0,
+      "yes": 1
+    }
+  },
+  {
+    "approved": true,
+    "ballot": "nominal",
+    "date": "2023-03-01",
+    "description": "Aprovado o Projeto de Lei nº 1, de 2023.",
+    "governmentOrientation": "yes",
+    "house": "camara",
+    "id": "100-1",
+    "kind": "final",
+    "kindRule": "camara.09",
+    "legislature": 57,
+    "organ": "PLEN",
+    "propositionId": 5001,
+    "sourceUrl": "https://dadosabertos.camara.leg.br/api/v2/votacoes/100-1",
+    "tallies": {
+      "no": 1,
+      "others": 1,
+      "yes": 1
+    }
+  }
+]

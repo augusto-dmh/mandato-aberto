@@ -1,0 +1,219 @@
+[
+  {
+    "house": "camara",
+    "id": 101,
+    "mandates": [
+      {
+        "authoredCount": 2,
+        "exercisePeriods": [
+          {
+            "end": "2024-06-01T00:00:00",
+            "start": "2023-02-01T00:00:00"
+          },
+          {
+            "end": "2027-02-01T00:00:00",
+            "start": "2024-09-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 1,
+        "governmentAlignment": {
+          "all": {
+            "count": 4,
+            "total": 6
+          },
+          "merit": {
+            "count": 2,
+            "total": 3
+          }
+        },
+        "legislature": 57,
+        "participation": {
+          "all": {
+            "count": 7,
+            "total": 10
+          },
+          "merit": {
+            "count": 3,
+            "total": 4
+          }
+        },
+        "party": "PSB",
+        "partyAlignment": {
+          "all": {
+            "count": 5,
+            "total": 8
+          },
+          "merit": {
+            "count": 1,
+            "total": 2
+          }
+        },
+        "requirementsCount": 1,
+        "symbolicMerit": 2,
+        "uf": "SP"
+      },
+      {
+        "authoredCount": 1,
+        "exercisePeriods": [
+          {
+            "end": "2027-03-01T09:00:00",
+            "start": "2027-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 1,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 58,
+        "participation": {
+          "all": {
+            "count": 1,
+            "total": 1
+          },
+          "merit": {
+            "count": 1,
+            "total": 1
+          }
+        },
+        "party": "PT",
+        "partyAlignment": {
+          "all": {
+            "count": 1,
+            "total": 1
+          },
+          "merit": {
+            "count": 1,
+            "total": 1
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": 0,
+        "uf": "SP"
+      }
+    ],
+    "name": "Ana Souza",
+    "party": "PT",
+    "photoUrl": "https://www.camara.leg.br/internet/deputado/bandep/101.jpg",
+    "sourceUrl": "https://www.camara.leg.br/deputados/101",
+    "uf": "SP"
+  },
+  {
+    "house": "camara",
+    "id": 102,
+    "mandates": [
+      {
+        "authoredCount": 1,
+        "exercisePeriods": [
+          {
+            "end": "2027-02-01T00:00:00",
+            "start": "2023-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 2,
+            "total": 4
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 57,
+        "participation": {
+          "all": {
+            "count": 3,
+            "total": 5
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "PL",
+        "partyAlignment": {
+          "all": {
+            "count": 3,
+            "total": 3
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 2,
+        "symbolicMerit": 1,
+        "uf": "RJ"
+      }
+    ],
+    "name": "Bruno Lima",
+    "party": "PL",
+    "photoUrl": "https://www.camara.leg.br/internet/deputado/bandep/102.jpg",
+    "sourceUrl": "https://www.camara.leg.br/deputados/102",
+    "uf": "RJ"
+  },
+  {
+    "house": "camara",
+    "id": 103,
+    "mandates": [
+      {
+        "authoredCount": 1,
+        "exercisePeriods": [
+          {
+            "end": "2027-02-01T00:00:00",
+            "start": "2023-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 1,
+        "governmentAlignment": {
+          "all": {
+            "count": 1,
+            "total": 2
+          },
+          "merit": {
+            "count": 1,
+            "total": 1
+          }
+        },
+        "legislature": 57,
+        "participation": {
+          "all": {
+            "count": 4,
+            "total": 4
+          },
+          "merit": {
+            "count": 2,
+            "total": 2
+          }
+        },
+        "party": "MDB",
+        "partyAlignment": {
+          "all": {
+            "count": 3,
+            "total": 3
+          },
+          "merit": {
+            "count": 2,
+            "total": 2
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": 0,
+        "uf": "MG"
+      }
+    ],
+    "name": "Carla Dias",
+    "party": "MDB",
+    "photoUrl": "https://www.camara.leg.br/internet/deputado/bandep/103.jpg",
+    "sourceUrl": "https://www.camara.leg.br/deputados/103",
+    "uf": "MG"
+  }
+]
