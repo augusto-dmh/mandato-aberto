@@ -255,6 +255,16 @@ def test_allowlist_additions(built_indicators):
     assert (link_only["type"], link_only["number"], link_only["year"]) == ("PL", 1, 2023)
 
 
+def test_proposition_summary_and_status_by_source(built_indicators):
+    props = {p["id"]: p for p in load3(built_indicators, "propositions.json")}
+    # 8002 has a row in the `proposicoes` bulk file: summary and status come from it, not from the roll-call link
+    bulk = props[8002]
+    assert (bulk["summary"], bulk["status"]) == ("Ementa 8002", "Aguardando Parecer")
+    # 8001 exists only through the roll-call link: summary from `proposicao_ementa`, status unknown
+    link_only = props[8001]
+    assert (link_only["summary"], link_only["status"]) == ("Institui o teste.", None)
+
+
 def test_manifest_hashes_match_stored_files(built_indicators):
     for entry in json.loads((built_indicators.raw / "manifest.json").read_text()):
         stored = (built_indicators.raw / entry["file"]).read_bytes()
