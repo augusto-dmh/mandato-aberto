@@ -288,6 +288,10 @@ Proof: `sail artisan test --filter="ci installs the browser of the locked playwr
 **C82** - After 101/58's card is served with no photo, `/verificar/{code}/` prints `Sem foto oficial: o card mostra as iniciais do nome.` as the muted paragraph after the name; after 101's photo is fetched, the new code's page prints `Foto oficial: arquivo {sha256}` with the current photo's sha256, and the older code's page still prints the initials sentence (AC 36, the payload's photo value)
 Proof: `sail artisan test --filter="the verification page prints the photo the card showed"`
 
+**C83** - No colour on a card belongs to a person: (design) across two members' cards and two roll-call cards in each format, the inline `style` attributes, once their `width`, `min-width` and `max-width` declarations are removed, are identical for every element of the same tag and class; (Chromium) across 5 member cards (different names, houses, legislatures, figures, vote counts and positions, with and without a photo) and 2 roll-call cards in each format, every element of the same tag and class has the same computed `color`, `background-color`, `border-color` and, outside the score marks, `fill`, and every score mark's `fill` and `stroke` is `none` or the strip's own `color` (plan door 4; a1 6.3 "nunca no card: cor própria por pessoa")
+Proof: `sail npm --prefix /var/www/design test -- tests/cards.test.ts -t "no card carries a style of its own per subject"`
+Proof: `sail npm --prefix /var/www/design run test:e2e -- -g "no card draws a colour of its own per subject"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -329,6 +333,7 @@ Proof: `sail artisan test --filter="the verification page prints the photo the c
 | roll-call results (3) | `Aprovada` C40 · `Rejeitada` C40 · `Resultado não informado` C40 | - |
 | roll-call tally states (3) | present C40, C59 · symbolic C40, C59 · null C40, C59 | - |
 | never on a card (7) | `%` C42 · 19 forbidden terms C42 · 5 extra words C42 · another member's name C42 · a member name on a roll-call card C42 · Senate absence labels C42 · a URL other than the AC 28 address C42 | - |
+| never on a card, by design (1) | a colour of its own per person C83 | - |
 | photo rules on a card (5) | whole in 3:4 mat C46 · at most native size C46 · no filter C46 · no blend or transform C46 · no cropping fit C46 | - |
 | share block links (4) | `Horizontal, 1200 × 630` C61 · `Feed, 1080 × 1350` C61 · `Stories, 1080 × 1920` C61 · `Código de verificação` C61 | - |
 | pages carrying a card image (6) | deputy C57 · deputy earlier legislature C58 · senator C58 · Câmara roll call C59 · Senate roll call C59 · verification C64 | - |
@@ -346,7 +351,7 @@ Proof: `sail artisan test --filter="the verification page prints the photo the c
 
 - Claims naming a status code, route or response shape: C15-C17, C22-C31, C52-C65, C74-C76, C82 - each proof crosses the HTTP boundary through Laravel's test client and reads headers, body or server-rendered HTML
 - Claims naming an exit code or a printed line: C1-C13, C35, C66, C67, C80 - each proof runs the command (Artisan or the CLI through `Process`) and reads exit code, stdout and stderr apart
-- Claims about a browser's layout or theme: C37 (second proof), C43, C45, C46, C78, C79 - Playwright in Chromium
+- Claims about a browser's layout or theme: C37 (second proof), C43, C45, C46, C78, C79, C83 (second proof) - Playwright in Chromium
 - No other check claims more than the single case its proof exercises
 
 ## Test policy
@@ -408,3 +413,4 @@ Size from `wc -c` on the files each slice reads and writes, divided by four. Rea
 - **Verification round 1, item 5 (C80, `6ffcdb7`):** dataset of 200 × 80, 80 × 200 and 100 × 100. Dropping `$size[1] < self::MIN_SIDE` at `FetchPhotos.php:216` failed `wide enough, too short`; dropping `$size[0] < …` failed `tall enough, too narrow`. C6 is unchanged
 - **Verification round 1, item 6 (C81, `8ef3457`):** `.github/workflows/ci.yml` runs `npx --no-install playwright-core install --with-deps --only-shell chromium`; in the Sail image that command's `--dry-run` resolves `chromium-headless-shell v1243` at `/opt/ms-playwright`, the revision the Dockerfile's `playwright@1.63.0` installed. C36's step matcher changed from `playwright install --with-deps …` to `install --with-deps …` to keep finding the step, at equal strength. Fault: the old `npx playwright install …` restored in `ci.yml` failed C81 (`:216`). Not run on GitHub (no push). Plan door 3 still spells the command `npx playwright install …`; both installs now pin the locked version, and the door's wording is the orchestrator's to update
 - **Verification round 1, item 7 (C82, `29410aa`):** `VerifyPageTest.php` reads the paragraph after the name before and after 101's photo is fetched. Fault: `v-if="false"` on the sha256 branch of `Verify/Show.vue`, with the client and SSR rebuilt and SSR restarted, failed it (`:100`); rebuilt and restarted after the restore. Gates at `29410aa` in Sail project `mandato-cards` with the design tokens, client, SSR and card bundles built and SSR up: `sail artisan test` twice, 282 passed (3070 assertions) each time; design 55 unit and 18 e2e passed; `pint --test` and `phpstan analyse` clean; `validate_checks` 0 errors, `validate_plan` 0 errors (1 warning: open question 1). Served through the running server on port 8094, `/deputados/101/legislatura/58/card/20270301-13HXC7H6/{1200x630,1080x1350,1080x1920}.png` answered 200 `image/png`, `file` 1200 × 630, 1080 × 1350, 1080 × 1920, `immutable, max-age=31536000, public`, no `Set-Cookie`; these added one snapshot and 3 PNGs to the dev database and the gitignored media disk
+- **Verification round 2, item 1 (C83, `8beb6d1`):** `design/tests/cards.test.ts:185` and `design/e2e/cards.spec.ts:142`, with `other-*` and `rollcall2-*` pages added to `design/e2e/cards.pages.mjs`. Fault: `:style="{ color: hsl(name length) }"` on the `<h1>` of `MemberCard.vue` failed both (unit: `H1.ma-card__name color:hsl(333 70% 40%),color:hsl(215 70% 40%): expected 2 to be 1`; e2e: `og member H1.ma-card__name`, `rgb(31, 90, 173)` against `rgb(173, 31, 95)`); restored with `git checkout -- design/components/MemberCard.vue`. C44 is unchanged; the app's HTML cards are not compared for colour (they render the same design components).
