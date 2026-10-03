@@ -56,3 +56,30 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+  design:
+    name: design tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: design
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            design/package-lock.json
+            site/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Install the site (tests read its forbidden-terms list)
+        run: npm ci --prefix ../site
+      - name: Build tokens
+        run: npm run build
+      - name: Test
+        run: npm test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Layout tests
+        run: npm run test:e2e

@@ -45,6 +45,7 @@ Reuses the ETL contract as-is (AD-002) and the MVP's forbidden-terms list (`site
 | 3. Playwright as a dev dependency for screenshots and layout checks | `"@playwright/test"` in `design/package.json` `devDependencies`, Chromium only | manual screenshots: no exit code, so no check can rest on them |
 | 4. Component names the app will copy | `NDeM`, `SourceNote`, `VoteMark`, `MandateScore`, `OfficialPhoto`, `TallyBar`, `AiSummaryFrame` | Portuguese component names: the project writes identifiers in English (`AGENTS.md`) |
 | 5. Vote encoding used across the product | `yes`: filled mark above the baseline; `no`: filled mark below; `abstention`: hollow short mark on the baseline; `obstruction`: hatched short mark on the baseline; `not-recorded`: gap; every mark in ink tones, never a hue, and always with a text label | green/red by option: reads as right and wrong and fails colour-blind readers (HIG Charts, research section 3 principle 6); party colours: more than twenty parties and colour becomes a flag |
+| 6. Vote values door 5 did not name, found in the contract while writing the checks (`Artigo 17`: 1,042 records; empty vote on a secret ballot) | `article-17`: small filled dot on the baseline, label "Art. 17 (presidente da sessão)"; empty vote with `secret: true`: gap, label "Votação secreta"; empty vote otherwise: `not-recorded`, label "Registro sem voto"; any other value: hollow dot on the baseline with the raw value as label | folding `Artigo 17` into `not-recorded`: the record says the session president did not vote by rule, which is not a missing record; labels follow the MVP's `voteLabel` (`site/src/lib/format.ts`) |
 
 - Nothing else in this change is hard to reverse
 
@@ -56,7 +57,7 @@ The two directions exist as tokens that pass the accessibility floor in light an
 
 **Acceptance Criteria**
 
-1. WHEN `npm run build` runs in `design/` THEN the system SHALL write `design/dist/tokens.css` defining every token of `design/tokens/*.json` as a `--ma-*` custom property, in four blocks: `diario` light, `diario` dark, `plenario` light, `plenario` dark
+1. WHEN `npm run build` runs in `design/` THEN the system SHALL write `design/dist/tokens.css` defining every token of `design/tokens/*.json` as a `--ma-*` custom property, in four blocks: `diario` light, `diario` dark, `plenario` light, `plenario` dark (after AD-015, on 2026-10-02, only the `plenario` light and dark blocks remain, per AC 25)
 2. The system SHALL give every text colour token, against each surface token it is declared for, a WCAG 2.2 contrast ratio of at least 4.5:1, and every graphic and focus token at least 3:1, in all four blocks
 3. IF a declared pair falls below its floor THEN the token build SHALL exit non-zero and print the pair and its ratio
 4. The system SHALL define exactly one accent colour per direction and no colour token named after a vote option, a party or a valence (`yes`, `no`, `good`, `bad`, `success`, `danger`, `warning`, any party acronym)
@@ -112,6 +113,30 @@ The comparison ends in a decision, not two living themes.
 
 **Independent test:** after the choice, list `design/tokens/` and read AD-015 and the README.
 
+### S5: gaps found by the Verifier in round 1 (P1)
+
+Added on 2026-10-02 from `verification.md` round 1; each line closes a gap the binding sources or the Observable table already implied.
+
+**Acceptance Criteria**
+
+27. IF an indicator shown in the profile lede or on the card has `total` 0 THEN the system SHALL render "Sem base de cálculo no período" in its place and no "0 de 0"
+28. WHEN the roll-call screen renders THEN the system SHALL list the deputies in groups ordered `Sim`, `Não`, `Abstenção`, `Obstrução`, `Artigo 17`, empty, then any other value alphabetically, with names in pt-BR alphabetical order inside a group, each heading showing its count and each row carrying a `VoteMark` with the deputy's sentence
+29. IF a roll call has no individual votes THEN the roll-call screen SHALL render "Nenhum voto individual registrado nesta votação" and no group
+30. WHEN the profile is laid out at 1280 px THEN the system SHALL place the photo left of the name and the regions top to bottom as hero, lede, indicators, score; and at 360 px it SHALL place the photo above the name
+31. WHILE the dark theme applies the system SHALL keep the mat around an official photo in the light theme's `raised` colour (research a1 principle 9)
+32. The system SHALL keep every accent colour at an OKLab distance of at least 0.1 from the gov.br blues `#1351B4` and `#155BCB` (research section 4, "parecer site oficial")
+33. The system SHALL compute `font-variant-numeric` with `tabular-nums` on every element of the six pages whose own text contains a digit
+34. The system SHALL attach a source-note marker to the numbers of the profile lede and to the roll-call tally, each linking to the official source
+35. WHEN `MandateScore` renders a row THEN the system SHALL draw a tick below the strip at the first vote of each month
+36. The card SHALL render no "%", no AI summary frame and no other deputy's name, and two cards for different deputies SHALL share the same element and class sequence
+37. WHEN the roll-call screen renders THEN the system SHALL stack its regions top to bottom as eyebrow, title, official summary when the roll call has a proposition, AI summary frame, result, utilities, groups (research a1 section 6.2)
+38. WHEN the card renders THEN the system SHALL place the photo left of the body and stack the body as eyebrow, name, party and UF, three figures, score caption, score, and the footer "Fonte: Câmara dos Deputados, dados de DD/MM/AAAA" (research a1 section 6.3)
+39. The system SHALL close the profile's score section with a source note carrying the official source and the collection date, and SHALL attach a marker to each statistic number pointing to its note (principles 1 and 2)
+40. IF a deputy has no exercise period THEN the system SHALL render no "desde" date on the profile or the card
+41. The system SHALL apply the accent colour only in rules for links, focus, hover and disclosure summaries (principle 7)
+
+**Independent test:** run the prototype for the fixture deputy with an empty base and for a roll call without votes; run the browser suite.
+
 ## Out of scope
 
 | Excluded | Why |
@@ -123,19 +148,26 @@ The comparison ends in a decision, not two living themes.
 | Quorum marker on the tally | the contract carries no required-quorum field (`etl/schema/roll-call.schema.json`) |
 | AI summary generation | the frame is designed here; generation waits for the association (grilling decision 7) |
 | "Gastos" block | research section 8, item 1, undecided |
+| Download buttons (CSV/JSON), "Citar este perfil", "Citar" and permalink formats | need the app's routes and a public domain (AD-012 deferred the domain); research a1 sections 6.1 to 6.2 |
+| Per-party orientation table on the roll call | the contract carries only the government orientation (`etl/schema/roll-call.schema.json`) |
+| Unit bar under each "n de m" (one cell per vote) | `MandateScore` already draws one column per vote; a second per-vote bar per indicator waits for the profile feature |
+| The card's short address | no public domain yet (AD-012); the footer names the site meanwhile |
 
 ## Assumptions
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Which directions are prototyped | "Diário" (Newsreader + Inter) with the score element, and "Plenário" (Archivo + Source Serif 4) as contrast | recommendation of `research/design-anexos/a1-referencias-de-design.md` section 5; "Instrumento" alone tends to generic SaaS | n |
-| Accent colour | not the MVP red; a dark blue-green in "Diário" and one accent in "Plenário", both chosen by the contrast rule | red reads as alarm and has strong party association in Brazil (research section 5) | n |
-| Which deputy and roll call the prototype shows | `--deputy` and `--roll-call` flags; defaults are the in-exercise deputy with the longest name and the plenary roll call with the most recorded votes | stresses the layout with the hardest real case | n |
-| Sample AI summary in the prototype | one hand-written sample marked "exemplo" in the prototype only | no AI runs before the association exists; the frame still needs content to be judged | n |
-| Verification profile | `ui` for this feature, declared in `AGENTS.md` next to the `etl-camara` line | the whole deliverable is screens; `light` would not open the binding sources nor enumerate copy per screen | n |
-| Package manager and runtime | npm and Node 24, as `site/` | one toolchain in the repository | n |
+| Which directions are prototyped | "Diário" (Newsreader + Inter) with the score element, and "Plenário" (Archivo + Source Serif 4) as contrast | recommendation of `research/design-anexos/a1-referencias-de-design.md` section 5; "Instrumento" alone tends to generic SaaS | y |
+| Accent colour | not the MVP red; a dark blue-green in "Diário" and one accent in "Plenário", both chosen by the contrast rule | red reads as alarm and has strong party association in Brazil (research section 5) | y |
+| Which deputy and roll call the prototype shows | `--deputy` and `--roll-call` flags; defaults are the in-exercise deputy with the longest name and the plenary roll call with the most recorded votes | stresses the layout with the hardest real case | y |
+| Sample AI summary in the prototype | one hand-written sample marked "exemplo" in the prototype only | no AI runs before the association exists; the frame still needs content to be judged | y |
+| Verification profile | `ui` for this feature, declared in `AGENTS.md` next to the `etl-camara` line | the whole deliverable is screens; `light` would not open the binding sources nor enumerate copy per screen | y |
+| Package manager and runtime | npm and Node 24, as `site/` | one toolchain in the repository | y |
+| Which pages AC 22 covers | `profile` and `roll-call`; the card is a fixed 1200 × 630 image template governed by AC 23 | a share image is not read in a 360 px browser | y |
+| Score layout | one row per year, oldest first, with month ticks (AC 35), instead of the single full-width strip of research a1 section 6.1 | at 1120 px a single strip gives 979 votes about 1 px each, too thin to read or to target; per-year rows keep about 4 px per vote | y |
+| Out of scope rows added in round 2 (download, citar, per-party orientation, unit bar, card short address) | excluded from this feature as listed | written by the builder after the plan review; each needs the app, a domain or data the contract lacks | y |
 
-**Open questions:** none - all resolved or logged above.
+**Open questions:** none - the maintainer answered all four on 2026-10-02: Plenário (AD-015), per-year score rows, the round-2 Out of scope rows, and the card outside the 360 px check.
 
 ## Observable
 
