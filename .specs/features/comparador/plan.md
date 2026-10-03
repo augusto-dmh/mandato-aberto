@@ -215,23 +215,26 @@ The new pages keep the skeleton's and app-home's guarantees and stay inside a by
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| Small-base threshold | 20 shared roll calls (AC 16) | below that one roll call moves the count by more than 5 of every 100; it flags substitutes and short exercise periods without hiding the number. TheyWorkForYou also withholds strong labels on thin records (a1 section 2) | n |
-| Default list and base on the comparison | `diferentes` on the `merit` base (AC 9, 10) | what readers come for is where they differed; `merit` first matches the profile's order and meus-eleitos' default scope | n |
-| Agreements listed too | yes, behind `lista=iguais` (AC 9) | without it `n` cannot be checked vote by vote, and move 1 asks that every number be recomputable by hand | n |
-| Robots policy | comparisons `noindex, follow`, picker `noindex, nofollow`, explorer `noindex, follow`, delegation pages indexed (AC 26, 36, 43, 45) | 600 deputies make about 180,000 pairs per legislature; following the picker's links would have crawlers run each comparison query, and indexed "A x B" pages would become search results in a campaign. Delegation pages are bounded (27 per roll call) and are the format research a1 section 6.3 calls the most shareable without judging anyone | n |
-| Counts in share previews | none: comparison head tags name members, house and legislature only (AC 45) | a preview shows a number without its base or list; under art. 57-C §1º I a legal-entity site must not read as "one is fitter" (Rp 355133-33.2010) | n |
-| Election-window behaviour (2028 municipal, 2030 general) | identical all year: no date switch, no feature turned off or on by the calendar; the safeguards (doors 2 to 4, AC 45 to 48) are permanent | the legal research says the substantive law is the same on every date and only the speed of litigation changes (research 01 section 2). A toggle that is off 46 months out of 48 is untested code when it matters. Divulging parliamentary acts without asking for votes is not propaganda (Lei 9.504 art. 36-A IV); the comparator asks for nothing, scores no one and is not an enquete, since it surveys no voter (A2 section 3) | n |
-| Party and UF of a vote | party = `votes.party` at the time of the vote; UF = the voter's membership UF in that legislature (AC 37, 38) | the contract records the vote's party; votes carry no UF, and the mandate's UF is what the member page shows | n |
-| Explorer default ballot | `nominais` (nominal and secret) (AC 30) | symbolic decisions outnumber them about five to one in the Câmara and record no vote; app-home's latest list made the same choice (its assumption "Recent roll calls") | n |
-| Page sizes | comparison list 100, picker and explorer 50 (AC 8, 23, 28) | 100 short rows fit the 30 KB budget; 50 matches app-home's search | n |
-| Verification profile | `ui` | screens whose risk is copy and arrangement (anti-ranking, empty and small-base states), as app-contract-v3 and app-home chose; `light` would not enumerate copy per screen | n |
+| Small-base threshold | 20 shared roll calls (AC 16) | below that one roll call moves the count by more than 5 of every 100; it flags substitutes and short exercise periods without hiding the number. TheyWorkForYou also withholds strong labels on thin records (a1 section 2) | y |
+| Default list and base on the comparison | `diferentes` on the `merit` base (AC 9, 10) | what readers come for is where they differed; `merit` first matches the profile's order and meus-eleitos' default scope | y |
+| Agreements listed too | yes, behind `lista=iguais` (AC 9) | without it `n` cannot be checked vote by vote, and move 1 asks that every number be recomputable by hand | y |
+| Robots policy | comparisons `noindex, follow`, picker `noindex, nofollow`, explorer `noindex, follow`, delegation pages indexed (AC 26, 36, 43, 45) | 600 deputies make about 180,000 pairs per legislature; following the picker's links would have crawlers run each comparison query, and indexed "A x B" pages would become search results in a campaign. Delegation pages are bounded (27 per roll call) and are the format research a1 section 6.3 calls the most shareable without judging anyone | y |
+| Counts in share previews | none: comparison head tags name members, house and legislature only (AC 45) | a preview shows a number without its base or list; under art. 57-C §1º I a legal-entity site must not read as "one is fitter" (Rp 355133-33.2010) | y |
+| Election-window behaviour (2028 municipal, 2030 general) | identical all year: no date switch, no feature turned off or on by the calendar; the safeguards (doors 2 to 4, AC 45 to 48) are permanent | the legal research says the substantive law is the same on every date and only the speed of litigation changes (research 01 section 2). A toggle that is off 46 months out of 48 is untested code when it matters. Divulging parliamentary acts without asking for votes is not propaganda (Lei 9.504 art. 36-A IV); the comparator asks for nothing, scores no one and is not an enquete, since it surveys no voter (A2 section 3) | y |
+| Party and UF of a vote | party = `votes.party` at the time of the vote; UF = the voter's membership UF in that legislature (AC 37, 38) | the contract records the vote's party; votes carry no UF, and the mandate's UF is what the member page shows | y |
+| Explorer default ballot | `nominais` (nominal and secret) (AC 30) | symbolic decisions outnumber them about five to one in the Câmara and record no vote; app-home's latest list made the same choice (its assumption "Recent roll calls") | y |
+| Page sizes | comparison list 100, picker and explorer 50 (AC 8, 23, 28) | 100 short rows fit the 30 KB budget; 50 matches app-home's search | y |
+| Verification profile | `ui` | screens whose risk is copy and arrangement (anti-ranking, empty and small-base states), as app-contract-v3 and app-home chose; `light` would not enumerate copy per screen | y |
 
 **Open questions:**
 
 | # | Kind | Question | Until answered |
 | --- | --- | --- | --- |
-| 1 | open | Should the explorer filter by proposition theme? It needs a contract bump with the Câmara's `proposicoesTemas` (and a Senate subject field, unverified) and an ETL feature of its own | the explorer filters by kind, ballot, result, year and proposition number (AC 29 to 32); nothing in this plan blocks adding a `tema` key to door 1's query later |
 | 2 | open | Before 2028-08-16 (start of the 2028 campaign, Lei 9.504 art. 36), with the site held by the association: does a lawyer confirm that the comparator, as specified, is not propaganda under art. 57-C §1º I, and may comparison share cards exist? | nothing in 2027; the comparator ships with the permanent safeguards and no card. Outside the orchestrator's delegation (legal identity), so it stays with the maintainer |
+
+Resolved on 2026-10-02 by the orchestrator under the maintainer's delegation (`research/decisions-log.md`): (1) the theme filter is out of this feature; it needs a contract version that carries proposition themes, planned when the explorer needs it. Question 2 (legal review before the 2028 window) is outside the delegation and stays with the maintainer.
+
+**Approval:** approved by the orchestrator under the maintainer's delegation on 2026-10-02, every assumption confirmed; door 4's refusals are AD-021. Build starts after app-contract-v3 and app-home.
 
 ## Observable
 
