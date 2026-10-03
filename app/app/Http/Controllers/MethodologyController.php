@@ -7,6 +7,7 @@ use App\Models\ContractImport;
 use App\Models\House;
 use App\Presenters\Dates;
 use App\Presenters\Labels;
+use App\Support\PublicUrl;
 use Carbon\CarbonImmutable;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,6 +26,8 @@ class MethodologyController extends Controller
                 'ofName' => Labels::ofHouse($house),
                 'imported' => $import !== null,
                 'version' => $import?->classification_version,
+                'sourceUrl' => Labels::openData($house),
+                'collectedAt' => $import?->generated_at->utc()->format('Y-m-d\\TH:i:s\\Z'),
                 'rules' => $import === null ? [] : ClassificationRule::query()->where('house', $house)->orderBy('position')->get()
                     ->map(fn (ClassificationRule $r) => [
                         'id' => $r->rule_id,
@@ -52,6 +55,7 @@ class MethodologyController extends Controller
                 'path' => '/metodologia/',
             ],
             'houses' => $houses,
+            'coverageMethodUrl' => PublicUrl::methodology('tipos-de-votacao', absolute: true),
             'sources' => Labels::sources(House::cases()),
         ]);
     }
