@@ -87,6 +87,23 @@ test('overview counts each house activity', function () {
         ->and(textsOf(houseSection($doc, 'Câmara dos Deputados'), '.ma-count'))->toBe(CAMARA_57_COUNTS)
         ->and(textsOf(houseSection($doc, 'Senado Federal'), '.ma-count'))->toBe(SENADO_57_COUNTS);
 
+    expect($doc->querySelector('h1')->nextElementSibling)->toBe($doc->querySelector('.ma-legislature__dates'));
+    $lastCount = fn ($section) => $section->querySelectorAll('.ma-count')->item($section->querySelectorAll('.ma-count')->length - 1);
+    foreach (['Câmara dos Deputados', 'Senado Federal'] as $house) {
+        $section = houseSection($doc, $house);
+        expectDocumentOrder([
+            'h1' => $doc->querySelector('h1'),
+            'dates line' => $doc->querySelector('.ma-legislature__dates'),
+            "{$house} heading" => $section->querySelector('h2'),
+            "{$house} first count" => $section->querySelector('.ma-count'),
+            "{$house} last count" => $lastCount($section),
+            "{$house} calendar" => $section->querySelector('.ma-cal'),
+            "{$house} table" => $section->querySelector('.ma-cal-table'),
+            "{$house} recent list" => $section->querySelector('.ma-recent'),
+        ]);
+    }
+    expectDocumentOrder(['Câmara section' => houseSection($doc, 'Câmara dos Deputados'), 'Senado section' => houseSection($doc, 'Senado Federal')]);
+
     expect(textsOf(houseSection(overviewDoc('58'), 'Câmara dos Deputados'), '.ma-count'))->toBe([
         '1 votação nominal no plenário',
         '0 votações secretas no plenário',

@@ -2,6 +2,7 @@
 
 use Dom\Element;
 use Dom\HTMLDocument;
+use Dom\Node;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -214,4 +215,27 @@ function importSearchFixture(): void
 function textsOf(?Element $root, string $selector): array
 {
     return $root === null ? [] : array_map(fn ($e) => textOf($e), iterator_to_array($root->querySelectorAll($selector)));
+}
+
+/**
+ * Asserts the named nodes appear in the document in the order given: each one exists and is followed
+ * by the next (the same node twice is allowed: one house block is both first and last). The failure
+ * names the pair that is out of order.
+ *
+ * @param  array<string, ?Node>  $nodes
+ */
+function expectDocumentOrder(array $nodes): void
+{
+    foreach ($nodes as $label => $node) {
+        expect($node)->not->toBeNull("{$label} is missing");
+    }
+    $labels = array_keys($nodes);
+    $nodes = array_values($nodes);
+    for ($i = 1; $i < count($nodes); $i++) {
+        if ($nodes[$i - 1]->isSameNode($nodes[$i])) {
+            continue;
+        }
+        expect($nodes[$i - 1]->compareDocumentPosition($nodes[$i]) & Node::DOCUMENT_POSITION_FOLLOWING)
+            ->toBeGreaterThan(0, "{$labels[$i]} must come after {$labels[$i - 1]}");
+    }
 }

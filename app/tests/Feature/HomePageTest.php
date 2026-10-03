@@ -1,7 +1,6 @@
 <?php
 
 use Dom\HTMLDocument;
-use Dom\Node;
 
 // Checks C1-C5 of .specs/features/app-home/checks.md.
 
@@ -87,6 +86,11 @@ test('home search form works without javascript', function () {
         ['value' => 'todos', 'label' => 'Todos', 'selected' => false],
     ]);
 
+    $lede = $doc->querySelector('h1')->nextElementSibling;
+    $firstBlock = $doc->querySelector('.ma-house');
+    expectDocumentOrder(['h1' => $doc->querySelector('h1'), 'lede' => $lede, 'search form' => $form, 'first house block' => $firstBlock]);
+    expect($form->contains($firstBlock))->toBeFalse();
+
     importSearchFixture(); // a later snapshot of both houses, adding the search members
     expect(array_column(selectOptions(html($this->get('/')), 'partido'), 'label'))
         ->toBe(['Todos os partidos', 'MDB', 'PL', 'PP', 'PSD', 'PSOL', 'PT']);
@@ -128,8 +132,8 @@ test('home counts the current legislature per house', function () {
         ->and(textOf($overview->item(0)))->toBe('Visão geral da 58ª legislatura');
     $blocks = $doc->querySelectorAll('.ma-house');
     $last = $blocks->item($blocks->length - 1);
-    expect($last->compareDocumentPosition($overview->item(0)) & Node::DOCUMENT_POSITION_FOLLOWING)->toBeGreaterThan(0)
-        ->and($last->contains($overview->item(0)))->toBeFalse();
+    expectDocumentOrder(['h1' => $doc->querySelector('h1'), 'lede' => $doc->querySelector('h1')->nextElementSibling, 'search form' => $doc->querySelector('form'), 'first house block' => $blocks->item(0), 'last house block' => $last, 'overview link' => $overview->item(0)]);
+    expect($last->contains($overview->item(0)))->toBeFalse();
 
     importSearchFixture(); // a later snapshot of both houses, adding the search members
     $senateNote = fn (string $anchor) => [
