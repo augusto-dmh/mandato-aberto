@@ -1,0 +1,504 @@
+{
+ "votacoes": [
+  {
+   "codigoVotacaoSve": 8622,
+   "sequencialVotacao": 4001,
+   "descricaoVotacao": "Regulamenta o inciso II do § 1º do art. 201 da Constituição Federal, que dispõe sobre a concessão de aposentadoria especial aos segurados do Regime Geral de Previdência Social, e dá outras providências.",
+   "dataInicioVotacao": "2023-05-10T17:32:12",
+   "dataTerminoVotacao": "2023-05-10T18:05:22",
+   "siglaTipoMateria": "PLP",
+   "descricaoMateria": "Emenda nº 48 (Substitutivo) ao Projeto de Lei Complementar nº 245, de 2019, nos termos do Parecer",
+   "numeroMateria": 245,
+   "anoMateria": 2019,
+   "dispositivo": "Emenda nº 48 (Substitutivo)",
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 44,
+   "presidenteSessao": "Rodrigo Pacheco",
+   "qtdVotosSim": 66,
+   "qtdVotosNao": 0,
+   "qtdVotosAbstencao": 0,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 62,
+   "quorumFinal": 70,
+   "orientacoesLideranca": [
+    {
+     "dataHora": "2023-05-10T17:34:37",
+     "partido": "Podemos",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:33:21",
+     "partido": "PL",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2023-05-10T17:33:27",
+     "partido": "MDB",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:34:24",
+     "partido": "PSB",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:35:28",
+     "partido": "REDE",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:42:52",
+     "partido": "PSDB",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:33:00",
+     "partido": "PSD",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:35:07",
+     "partido": "PDT",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:37:09",
+     "partido": "UNIÃO",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:33:38",
+     "partido": "PT",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:36:37",
+     "partido": "Governo",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-10T17:34:50",
+     "partido": "NOVO",
+     "voto": "SIM"
+    }
+   ],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  },
+  {
+   "codigoVotacaoSve": 8644,
+   "sequencialVotacao": 4002,
+   "descricaoVotacao": "Altera a Constituição Federal, para permitir a permuta entre juízes de direito vinculados a diferentes tribunais.\r\n\r\n",
+   "dataInicioVotacao": "2023-05-16T17:42:30",
+   "dataTerminoVotacao": "2023-05-16T17:54:56",
+   "siglaTipoMateria": "PEC",
+   "descricaoMateria": "PEC nº 162/2019, nos termos do Parecer, com adequação redacional de Plenário (1º Turno)",
+   "numeroMateria": 162,
+   "anoMateria": 2019,
+   "dispositivo": null,
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 48,
+   "presidenteSessao": "Rodrigo Pacheco",
+   "qtdVotosSim": 67,
+   "qtdVotosNao": 0,
+   "qtdVotosAbstencao": 0,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 68,
+   "quorumFinal": 72,
+   "orientacoesLideranca": [
+    {
+     "dataHora": "2023-05-16T17:43:26",
+     "partido": "UNIÃO",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:43:12",
+     "partido": "PL",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:44:20",
+     "partido": "PDT",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:44:01",
+     "partido": "Republica",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:42:47",
+     "partido": "PSD",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:44:06",
+     "partido": "Podemos",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:44:52",
+     "partido": "Oposição",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:45:03",
+     "partido": "MDB",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:44:43",
+     "partido": "Governo",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:44:26",
+     "partido": "PSDB",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:45:26",
+     "partido": "Minoria",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:43:58",
+     "partido": "PSB",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:43:39",
+     "partido": "PT",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-05-16T17:43:50",
+     "partido": "PP",
+     "voto": "SIM"
+    }
+   ],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  },
+  {
+   "codigoVotacaoSve": 8839,
+   "sequencialVotacao": 4030,
+   "descricaoVotacao": null,
+   "dataInicioVotacao": "2023-06-20T17:30:18",
+   "dataTerminoVotacao": "2023-06-20T18:03:07",
+   "siglaTipoMateria": "MPV",
+   "descricaoMateria": "Emenda nº 131 à Medida Provisória nº 1.165, de 2023, destacada",
+   "numeroMateria": 1165,
+   "anoMateria": 2023,
+   "dispositivo": "Emenda nº 131",
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 73,
+   "presidenteSessao": "Rodrigo Pacheco",
+   "qtdVotosSim": 29,
+   "qtdVotosNao": 47,
+   "qtdVotosAbstencao": 0,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 75,
+   "quorumFinal": 77,
+   "orientacoesLideranca": [
+    {
+     "dataHora": "2023-06-20T17:37:14",
+     "partido": "Oposição",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-06-20T17:38:28",
+     "partido": "Governo",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-06-20T17:32:47",
+     "partido": "UNIÃO",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-06-20T17:34:34",
+     "partido": "PSB",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-06-20T17:36:05",
+     "partido": "PDT",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-06-20T17:34:50",
+     "partido": "Republica",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2023-06-20T17:37:20",
+     "partido": "PL",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-06-20T17:33:49",
+     "partido": "PP",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-06-20T17:31:33",
+     "partido": "MDB",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-06-20T17:31:10",
+     "partido": "PSD",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-06-20T17:37:32",
+     "partido": "Banc Fem",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-06-20T17:36:24",
+     "partido": "PSDB",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2023-06-20T17:32:15",
+     "partido": "PT",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-06-20T17:34:17",
+     "partido": "Podemos",
+     "voto": "NÃO"
+    }
+   ],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  },
+  {
+   "codigoVotacaoSve": 9120,
+   "sequencialVotacao": 4069,
+   "descricaoVotacao": "Escolha do Senhor MARCOS DE BRITO CAMPOS JÚNIOR, para exercer o cargo de Diretor de Administração e Finanças do Departamento Nacional de Infraestrutura de Transportes - DNIT.",
+   "dataInicioVotacao": "2023-09-13T16:59:46",
+   "dataTerminoVotacao": "2023-09-13T17:27:12",
+   "siglaTipoMateria": "MSF",
+   "descricaoMateria": "Mensagem nº 56, de 2023 - Marcos de Brito Campos Júnior (DNIT)",
+   "numeroMateria": 56,
+   "anoMateria": 2023,
+   "dispositivo": null,
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 127,
+   "presidenteSessao": "Rodrigo Pacheco",
+   "qtdVotosSim": 50,
+   "qtdVotosNao": 4,
+   "qtdVotosAbstencao": 1,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 62,
+   "quorumFinal": 72,
+   "orientacoesLideranca": [],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  },
+  {
+   "codigoVotacaoSve": 9213,
+   "sequencialVotacao": 4076,
+   "descricaoVotacao": null,
+   "dataInicioVotacao": "2023-09-27T17:05:37",
+   "dataTerminoVotacao": "2023-09-27T17:28:31",
+   "siglaTipoMateria": "REQ",
+   "descricaoMateria": "Requerimento nº 31, de 2023, da CCJ - Solicita urgência para o PL nº 2.903/2023",
+   "numeroMateria": 31,
+   "anoMateria": 2023,
+   "dispositivo": null,
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 139,
+   "presidenteSessao": "Rodrigo Pacheco",
+   "qtdVotosSim": 41,
+   "qtdVotosNao": 20,
+   "qtdVotosAbstencao": 0,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 55,
+   "quorumFinal": 65,
+   "orientacoesLideranca": [
+    {
+     "dataHora": "2023-09-27T17:08:02",
+     "partido": "PP",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T17:11:05",
+     "partido": "Governo",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-09-27T17:08:24",
+     "partido": "PSB",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2023-09-27T17:08:58",
+     "partido": "NOVO",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T17:06:33",
+     "partido": "PL",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T17:11:25",
+     "partido": "Banc Fem",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2023-09-27T17:06:03",
+     "partido": "PSD",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2023-09-27T17:09:19",
+     "partido": "Maioria",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-09-27T17:06:59",
+     "partido": "UNIÃO",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T17:08:17",
+     "partido": "Republica",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T17:10:41",
+     "partido": "Minoria",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T17:07:07",
+     "partido": "Podemos",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T17:06:44",
+     "partido": "Oposição",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T17:06:19",
+     "partido": "MDB",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-09-27T17:11:34",
+     "partido": "PT",
+     "voto": "NÃO"
+    }
+   ],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  },
+  {
+   "codigoVotacaoSve": 9215,
+   "sequencialVotacao": 4078,
+   "descricaoVotacao": null,
+   "dataInicioVotacao": "2023-09-27T18:59:22",
+   "dataTerminoVotacao": "2023-09-27T19:12:36",
+   "siglaTipoMateria": "PL",
+   "descricaoMateria": "§ 4º do art. 16 do Projeto de Lei nº 2.903, de 2023, destacado",
+   "numeroMateria": 2903,
+   "anoMateria": 2023,
+   "dispositivo": "Destaque",
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 139,
+   "presidenteSessao": "Rodrigo Pacheco",
+   "qtdVotosSim": 34,
+   "qtdVotosNao": 22,
+   "qtdVotosAbstencao": 0,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 66,
+   "quorumFinal": 66,
+   "orientacoesLideranca": [
+    {
+     "dataHora": "2023-09-27T19:04:17",
+     "partido": "PSDB",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T19:01:51",
+     "partido": "PP",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T19:02:09",
+     "partido": "Republica",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T19:01:01",
+     "partido": "PT",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-09-27T18:59:42",
+     "partido": "PSD",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2023-09-27T19:03:38",
+     "partido": "PDT",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-09-27T19:01:46",
+     "partido": "UNIÃO",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T19:04:52",
+     "partido": "Minoria",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T19:00:28",
+     "partido": "PL",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T19:00:28",
+     "partido": "Oposição",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T19:00:02",
+     "partido": "MDB",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-09-27T19:01:40",
+     "partido": "Podemos",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2023-09-27T19:05:11",
+     "partido": "Governo",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2023-09-27T19:02:00",
+     "partido": "PSB",
+     "voto": "LIVRE"
+    }
+   ],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  }
+ ]
+}
