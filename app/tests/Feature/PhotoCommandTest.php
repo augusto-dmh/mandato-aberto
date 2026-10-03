@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Sleep;
 use Tests\Support\Jpeg;
 
-// share-cards S1: the official photo is cached from the house, byte for byte (C1-C14).
+// share-cards S1: the official photo is cached from the house, byte for byte (C1-C14, C80).
 
 beforeEach(function () {
     Storage::fake('media');
@@ -191,6 +191,28 @@ test('photos keeps the current photo when a fetch fails', function (mixed $answe
     'eighty pixels' => [fn () => Http::response(Jpeg::make(80, 80, 3)), 'smaller than 100 x 100'],
 ]);
 
+test('photos refuses a photo under 100 pixels on either side', function (int $width, int $height, ?string $reason) {
+    importFixtures();
+    $body = Jpeg::make($width, $height, 7);
+    $answers = [camaraPhotoUrl('101') => Http::response($body)];
+    fakePhotoHosts($answers);
+
+    $result = runCommand('mandato:photos', ['--house' => 'camara', '--member' => '101']);
+
+    if ($reason === null) {
+        expect($result['err'])->toBe('')
+            ->and(Photos::currentOf(House::Camara, '101')?->sha256)->toBe(hash('sha256', $body));
+    } else {
+        expect(trim($result['err']))->toBe("photo failed camara 101: {$reason}")
+            ->and(PhotoVersion::query()->count())->toBe(0)
+            ->and(Storage::disk('media')->allFiles())->toBe([]);
+    }
+})->with([
+    'wide enough, too short' => [200, 80, 'smaller than 100 x 100'],
+    'tall enough, too narrow' => [80, 200, 'smaller than 100 x 100'],
+    'one hundred square' => [100, 100, null],
+]);
+
 test('photos follows up to three redirects', function () {
     importFixtures();
     $url = camaraPhotoUrl('101');
@@ -365,4 +387,30 @@ test('a photo shared by two members is no one\'s photo', function () {
     runCommand('mandato:photos', ['--house' => 'senado']);
     expect(Photos::currentOf(House::Senado, '9104')?->sha256)->toBe(hash('sha256', $placeholder))
         ->and(Photos::currentOf(House::Senado, '9105')?->sha256)->toBe(hash('sha256', Jpeg::make(480, 600, 9105)));
+});
+
+test('a photo shared by two members leaves both cards without a photo', function () {
+    importFixtures();
+    $placeholder = Jpeg::make(480, 600, 4242);
+    $answers = [
+        senadoPhotoUrl('9104', final: true) => Http::response($placeholder),
+        senadoPhotoUrl('9105', final: true) => Http::response($placeholder),
+    ];
+    fakePhotoHosts($answers);
+    $payload = function (string $id) {
+        $member = DB::table('members')->where('house', 'senado')->where('source_id', $id)->value('id');
+
+        return memberPayload(House::Senado, $id, (int) DB::table('memberships')->where('member_id', $member)->max('legislature_number'));
+    };
+    runCommand('mandato:photos', ['--house' => 'senado']);
+
+    expect(PhotoVersion::query()->whereIn('member_source_id', ['9104', '9105'])->pluck('sha256')->unique()->all())->toBe([hash('sha256', $placeholder)])
+        ->and($payload('9104')['photoSha256'])->toBeNull()
+        ->and($payload('9105')['photoSha256'])->toBeNull()
+        ->and($payload('9106')['photoSha256'])->toBe(Photos::currentOf(House::Senado, '9106')->sha256);
+
+    $answers[senadoPhotoUrl('9105', final: true)] = Http::response(Jpeg::make(480, 600, 9105));
+    runCommand('mandato:photos', ['--house' => 'senado']);
+    expect($payload('9104')['photoSha256'])->toBe(hash('sha256', $placeholder))
+        ->and($payload('9105')['photoSha256'])->toBe(hash('sha256', Jpeg::make(480, 600, 9105)));
 });
