@@ -27,6 +27,8 @@ A feature `contract-v3` roda em `standard`: os indicadores e a classificação d
 
 A feature `app-contract-v3` roda em `ui`: perfis, votações do Senado e metodologia são telas.
 
+A feature `share-cards` roda em `ui`: a entrega são imagens cujo texto e arranjo são o risco, o que nunca pode aparecer num card.
+
 ## Convenções
 
 - Código, commits, branches, nomes de arquivo e identificadores em inglês. Copy do site, documentos de pesquisa e corpo de PR em português. Artefatos em `.specs/` em inglês.
