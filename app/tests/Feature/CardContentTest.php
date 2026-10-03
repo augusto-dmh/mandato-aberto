@@ -133,15 +133,16 @@ test('cards never carry what a card must not say', function () {
 
     foreach ($cards as $label => [$payload, $own]) {
         $text = cardText(cardHtml($payload));
-        expect($text)->not->toContain('%', $label)
+        // one needle per assertion: `toContain` reads every further argument as another needle, not a message
+        expect(str_contains($text, '%'))->toBeFalse("{$label}: %")
             ->and(ForbiddenTerms::inText($text, $terms))->toBe([], $label);
         foreach ($names as $id => $name) {
             if ((string) $id !== $own) {
-                expect($text)->not->toContain($name, $label);
+                expect(str_contains($text, $name))->toBeFalse("{$label}: {$name}");
             }
         }
         foreach ($absence as $a) {
-            expect($text)->not->toContain($a, $label);
+            expect(str_contains($text, $a))->toBeFalse("{$label}: {$a}");
         }
         preg_match_all('#\b(?:https?://|www\.)\S+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)+/\S*#i', $text, $urls);
         expect($urls[0])->toBe(['mandato.test/verificar/'], $label);
