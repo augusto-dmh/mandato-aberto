@@ -1,9 +1,10 @@
 <?php
 
 use Dom\HTMLDocument;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
-// Checks C51-C53 and C55-C59 of .specs/features/app-contract-v3/checks.md.
+// Checks C51-C53, C55-C59, C76 and C77 of .specs/features/app-contract-v3/checks.md.
 
 beforeEach(function () {
     requireSsr();
@@ -165,3 +166,30 @@ test('roll call pages 404', function (string $path) {
         ->and($doc->querySelectorAll('h1'))->toHaveCount(1)
         ->and(textOf($doc->querySelector('h1')))->toBe('Página não encontrada');
 })->with(['/votacoes/999-9/', '/votacoes/abc/', '/votacoes/6923/', '/senado/votacoes/100-1/', '/senado/votacoes/9999/', '/senado/votacoes/abc/', '/senado/votacoes/6923-1/']);
+
+test('roll call shows its result', function (?bool $approved, string $label) {
+    foreach (['camara' => '/votacoes/100-1/', 'senado' => '/senado/votacoes/6923/'] as $house => $path) {
+        DB::table('roll_calls')->where('house', $house)->where('source_id', basename($path))->update(['approved' => $approved]);
+        $result = html($this->get($path))->querySelector('.ma-result');
+        expect(array_map(fn ($p) => textOf($p), iterator_to_array($result->querySelectorAll('.ma-t-title-1'))))->toBe([$label], $path);
+    }
+})->with([
+    'approved' => [true, 'Aprovada'],
+    'rejected' => [false, 'Rejeitada'],
+    'not informed' => [null, 'Resultado não informado'],
+]);
+
+test('roll call shows the government orientation', function (?string $orientation, string $line) {
+    foreach (['camara' => '/votacoes/100-1/', 'senado' => '/senado/votacoes/6923/'] as $house => $path) {
+        DB::table('roll_calls')->where('house', $house)->where('source_id', basename($path))->update(['government_orientation' => $orientation]);
+        $lines = array_map(fn ($p) => textOf($p), iterator_to_array(html($this->get($path))->querySelectorAll('.ma-result > p.ma-t-small')));
+        expect($lines)->toBe([$line], $path);
+    }
+})->with([
+    'yes' => ['yes', 'Orientação do governo: Sim'],
+    'no' => ['no', 'Orientação do governo: Não'],
+    'abstention' => ['abstention', 'Orientação do governo: Abstenção'],
+    'obstruction' => ['obstruction', 'Orientação do governo: Obstrução'],
+    'free' => ['free', 'Orientação do governo: Liberado'],
+    'absent' => [null, 'Sem orientação do governo registrada'],
+]);

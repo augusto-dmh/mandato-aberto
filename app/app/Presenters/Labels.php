@@ -35,6 +35,12 @@ final class Labels
         return $house === House::Senado ? 'Senado Federal' : 'Câmara dos Deputados';
     }
 
+    /** The house's open-data portal: the official source of the counts its import brought (methodology `cobertura`). */
+    public static function openData(House $house): string
+    {
+        return $house === House::Senado ? 'https://legis.senado.leg.br/dadosabertos/' : 'https://dadosabertos.camara.leg.br/';
+    }
+
     /** "na Câmara dos Deputados", "no Senado Federal". */
     public static function inHouse(House $house): string
     {

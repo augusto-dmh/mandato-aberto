@@ -112,6 +112,7 @@ class MemberController extends Controller
             'votes' => $votes,
             'classificationUrl' => PublicUrl::methodology('classificacao'),
             'proposicoesMethodUrl' => PublicUrl::methodology('proposicoes', absolute: true),
+            'symbolicMethodUrl' => PublicUrl::methodology('votacoes-simbolicas', absolute: true),
             'scoreMethodUrl' => PublicUrl::methodology('participacao', absolute: true),
             'sources' => Labels::sources([$house]),
         ]);

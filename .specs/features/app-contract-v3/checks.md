@@ -3,7 +3,7 @@
 Profile: ui
 Plan: `.specs/features/app-contract-v3/plan.md`
 
-73 checks in 8 slices · 6 one-way doors (door 6 discovered while deriving these checks, from resolved open question 2) · 1 open, blocking go-live only (plan open question 1)
+82 checks in 8 slices (C74-C82 added at verification round 1) · 6 one-way doors (door 6 discovered while deriving these checks, from resolved open question 2) · 1 open, blocking go-live only (plan open question 1)
 
 All commands run from `app/` with this worktree's Sail project up: `app/.env` sets `COMPOSE_PROJECT_NAME=mandato-acv3`, `APP_PORT=8091`, `FORWARD_DB_PORT=54341`, `VITE_PORT=5181`; `sail` is `./vendor/bin/sail`. Pest proofs are `sail artisan test --filter="<test name>"`; page proofs read server-rendered HTML, so they need `sail npm run build` and `sail exec -d -u sail laravel.test php artisan inertia:start-ssr`, and a page test fails, never skips, when SSR is down (skeleton `requireSsr`). Design proofs are `sail npm --prefix /var/www/design test -- <file> -t "<name>"`. `{APP_URL}` is the value `phpunit.xml` sets, `https://mandato.test`.
 
@@ -125,6 +125,9 @@ Proof: `sail artisan test --filter="enforces the v3 keys cascades and nullabilit
 **C33** - Rolling back the door 3 migration, inserting one row into each of the 8 skeleton tables in the skeleton's shape, and migrating again leaves 0 rows in all 8, and a Câmara import then exits 0 (AC 21)
 Proof: `sail artisan test --filter="the v3 migration empties the v2 rows"`
 
+**C81** - Each of the 15 not-null columns of door 3 that C32 leaves out refuses a null with SQLSTATE `23502` and accepts the same row with a value, table-driven: `legislatures.starts_on`, `legislatures.ends_on`, `memberships.uf` and the 12 `memberships.{participation,government_alignment,party_alignment}_{all,merit}_{count,total}` (door 3). Added at verification round 1 under the maintainer's delegation.
+Proof: `sail artisan test --filter="refuses a null in each not-null column of door 3"`
+
 ### S4 - member pages for both houses · ~8 files · ~45 KB · ~11k
 
 **C34** - After importing the parent, `GET /deputados/101/` responds 200 with component `Members/Show`, exactly one `<h1>` reading `Ana Souza`, and the eyebrow `Câmara dos Deputados · 58ª legislatura · PT · SP`; `GET /deputados/101/legislatura/57/` responds 200 with eyebrow `Câmara dos Deputados · 57ª legislatura · PSB · SP` and `/deputados/101/legislatura/58/` with the 58th's eyebrow (AC 23, AC 25)
@@ -160,6 +163,12 @@ Proof: `sail artisan test --filter="member footer carries its house's collection
 **C44** - `/deputados/101/` and `/senadores/9101/` render `.ma-photo__initials` (`AS`, `RA`), contain 0 `<img>` elements, and do not contain the members' `photoUrl` (AC 33)
 Proof: `sail artisan test --filter="member page draws initials and no remote image"`
 
+**C78** - The 3 `.ma-stat` blocks read `Proposições de autoria`, `Como primeiro signatário`, `Requerimentos` with the rendered mandate's counts: `/deputados/101/legislatura/57/` `2`, `1`, `1`; `/deputados/101/` (58th) `1`, `1`, `0`; `/deputados/102/` `1`, `0`, `2`; `/senadores/9101/` `1`, `1`, `0`; their one shared marker points to a note whose method link is `https://mandato.test/metodologia/#proposicoes` (AC 1, AC 23; `design/screens/Profile.vue`, skeleton AC 12). Added at verification round 1 under the maintainer's delegation.
+Proof: `sail artisan test --filter="the profile counts the propositions of the rendered mandate"`
+
+**C82** - On `/deputados/101/`, `/deputados/103/`, `/senadores/9101/` and `/senadores/9103/` the `Votações do mandato` head holds exactly `Cada traço é uma votação do plenário com registro neste mandato, da mais antiga para a mais recente. Sim fica acima da linha, Não abaixo; as demais opções têm marca própria. Cada traço leva à votação.`, and no `main` text matches `deste|desta` followed by `deputad` or `senador` (AC 31). Added at verification round 1 under the maintainer's delegation.
+Proof: `sail artisan test --filter="the score caption names no gender"`
+
 ### S5 - both bases, described plainly · ~3 files · ~20 KB · ~5k
 
 **C45** - `/deputados/101/legislatura/57/` renders 3 indicator groups headed `Participação em votações nominais do plenário`, `Votos iguais à orientação do governo`, `Votos iguais à maioria do próprio partido`, each with 2 `.ma-ndem` labelled `nas votações sobre propostas e emendas` then `em todas as votações nominais do plenário`, the six values in order `3 de 4`, `7 de 10`, `2 de 3`, `4 de 6`, `1 de 2`, `5 de 8`, and each group's two method links `{APP_URL}/metodologia/#participacao`, `#alinhamento-governo`, `#alinhamento-partido` (AC 34)
@@ -176,6 +185,9 @@ Proof: `sail artisan test --filter="member page states the symbolic count"`
 
 **C49** - `/senadores/9101/` renders `O Senado Federal não publica votações simbólicas como registros de votação; por isso elas não aparecem aqui.` and no `votações simbólicas sobre propostas` sentence, and a Câmara (102, 57) membership with `symbolic_merit` set to null renders the sentence with `A Câmara dos Deputados` (AC 38)
 Proof: `sail artisan test --filter="member page says when a house publishes no symbolic votes"`
+
+**C74** - On `/deputados/101/legislatura/57/` (2), `/deputados/102/` (1) and `/deputados/101/` (0) the `.ma-symbolic` sentence holds one marker `#nota-7`, whose note links the member's `source_url` labelled `Câmara dos Deputados` and `https://mandato.test/metodologia/#votacoes-simbolicas` labelled `Como calculamos`, and the page's notes are `nota-1` .. `nota-9` in order; `/senadores/9101/` (null) has no marker in `.ma-symbolic`, no `#votacoes-simbolicas` note link and notes `nota-1` .. `nota-8` (AC 37, AC 38). Added at verification round 1 under the maintainer's delegation.
+Proof: `sail artisan test --filter="the symbolic count points to its source and method"`
 
 **C50** - The HTML of the 6 member pages, the 9 roll-call pages and `/metodologia/` of the fixtures contains, accent- and case-insensitively as whole words, none of `importante`, `importantes`, `relevante`, `relevantes` nor any of the 19 forbidden terms; the matcher flags `IMPORTANTE` and `Relevantes` and passes `importância` (AC 39)
 Proof: `sail artisan test --filter="no ranking word in rendered pages"`
@@ -209,6 +221,12 @@ Proof: `sail artisan test --filter="roll call head carries the share tags by bal
 **C59** - Each of 7 paths responds 404 with the skeleton's page: `/votacoes/999-9/`, `/votacoes/abc/`, `/votacoes/6923/`, `/senado/votacoes/100-1/`, `/senado/votacoes/9999/`, `/senado/votacoes/abc/`, `/senado/votacoes/6923-1/` (AC 47)
 Proof: `sail artisan test --filter="roll call pages 404"`
 
+**C76** - With `approved` set to true, false and null on `/votacoes/100-1/` and `/senado/votacoes/6923/`, the one `.ma-result .ma-t-title-1` reads `Aprovada`, `Rejeitada` and `Resultado não informado` on both, table-driven over the 3 values (`design/screens/RollCall.vue`, skeleton AC 18). Added at verification round 1 under the maintainer's delegation.
+Proof: `sail artisan test --filter="roll call shows its result"`
+
+**C77** - With `government_orientation` set to `yes`, `no`, `abstention`, `obstruction`, `free` and null on `/votacoes/100-1/` and `/senado/votacoes/6923/`, the one `.ma-result > p.ma-t-small` reads `Orientação do governo: Sim`, `Orientação do governo: Não`, `Orientação do governo: Abstenção`, `Orientação do governo: Obstrução`, `Orientação do governo: Liberado` and `Sem orientação do governo registrada` on both, table-driven over the 6 values (door 3 `government_orientation`, `design/screens/RollCall.vue`). Added at verification round 1 under the maintainer's delegation.
+Proof: `sail artisan test --filter="roll call shows the government orientation"`
+
 **C60** - `positionCase` returns, table-driven over all 14 (house, position) pairs, kinds `yes`, `no`, `abstention`, `obstruction`, `presiding`, `secret`, `not-voting` and labels `Sim`, `Não`, `Abstenção`, `Obstrução`, then `Art. 17 (presidente da sessão)`, `Votação secreta`, `Registro sem voto` for `camara` and `Presidente da sessão (art. 51 RISF)`, `Votou (votação secreta)` for `senado`; for `senado` `notVoting` with official `P-NRV`, `AP`, `MIS`, `NCom`, `NA`, `Licença` and `XYZ` the labels `Sem voto: Presente, não registrou voto`, `Sem voto: Atividade parlamentar`, `Sem voto: Missão da Casa no País ou no exterior`, `Sem voto: Não compareceu`, `Sem voto: Dispositivo não citado`, `Sem voto: Licença`, `Sem voto: XYZ`, and with official null `Não registrou voto`; for each Câmara position the label equals `voteCase` of the equivalent official (`Sim`, `Não`, `Abstenção`, `Obstrução`, `Artigo 17`, `` secret, `` open); `markShapes` draws `presiding` as the `article-17` dot and `secret`, `not-voting` as gaps (AC 48, door 5, door 6)
 Proof: `sail npm --prefix /var/www/design test -- tests/vote.test.ts -t "positionCase"`
 
@@ -231,6 +249,15 @@ Proof: `sail artisan test --filter="methodology shows coverage per house and leg
 
 **C66** - The head of `/metodologia/` holds title `Metodologia - Mandato Aberto`, `canonical` and `og:url` `{APP_URL}/metodologia/`; every `methodUrl` link on the 6 member pages starts with `https://mandato.test/metodologia/#`, and no page of C50 contains `augusto-dmh.github.io/mandato-aberto/metodologia` (AC 53, AC 54)
 Proof: `sail artisan test --filter="methodology head and every method link point to the app"`
+
+**C75** - With both fixtures imported, `cobertura` has 2 tables: each Câmara row's `Casa` cell holds marker `#nota-1` and the Senate row's `#nota-2`, no other cell holds one, and note 1 reads `Fonte: Câmara dos Deputados, dados de 01/03/2027 · Como calculamos` linking `https://dadosabertos.camara.leg.br/`, note 2 `Fonte: Senado Federal, dados de 05/03/2027 · Como calculamos` linking `https://legis.senado.leg.br/dadosabertos/`, both method links `https://mandato.test/metodologia/#tipos-de-votacao` (AC 52). Added at verification round 1 under the maintainer's delegation.
+Proof: `sail artisan test --filter="coverage counts point to their source and method"`
+
+**C79** - In `registros-sem-voto` the table is followed by the AD-018 sentence and then by exactly one more paragraph, `Na página de cada senador, os registros sem voto aparecem como "Não registrou voto"; o registro oficial aparece na página da votação, como "Registro do Senado".` (AC 49 copy table). Added at verification round 1 under the maintainer's delegation.
+Proof: `sail artisan test --filter="methodology says where senate non-votes appear"`
+
+**C80** - With the Câmara import's coverage entry for legislature 58 set to `through` null and 0 roll calls, its `cobertura` row reads `Câmara dos Deputados`, `58ª`, `sem votações`, `0`, `0`, `0`, `0` (AC 52). Added at verification round 1 under the maintainer's delegation.
+Proof: `sail artisan test --filter="coverage says when a legislature has no roll call"`
 
 ### S8 - new pages keep the skeleton's guarantees · ~5 files · ~25 KB · ~6k
 
@@ -285,15 +312,21 @@ Proof: `sail artisan test --filter="inertia visits answer with json"`
 | import write paths (4) | real run C1 · dry run C28 · failed write C21 · parent with a failing house C19 | - |
 | parent-directory runs (4) | both houses C18 · Câmara only C18 · Senate fails C19 · Câmara fails C19 | - |
 | new stored constraints of door 3 (17) | `ballot` check C31 · roll-call `kind` check C31 · tallies all-or-none C31 · `government_orientation` check C31 · `position` check C31 · `party_majority` check C31 · rule `house` check C31 · rule `kind` check C31 · import `house` check C31 · rule unique (house, rule id) C32 · full text unique per proposition C32 · exercise period unique (membership, start) C32 · import `house` not null C32 · mandate `party` not null C32 · exercise periods cascade C32 · full text cascade C32 · `kind_rule` without foreign key C32 | - |
+| door 3 not-null columns beyond C32 (15) | C81, table-driven over all 15 | - |
 | member page decisions (6) | latest mandate by default C34 · legislature path C34, C35 · two mandates nav C36 · one mandate text C37 · latest canonical C39 · earlier canonical C39 | - |
 | member 404 causes (6) | not digits C40 · unknown id C40 · other house's id C40 · legislature not held C40 · legislature not digits C40 · senate path with deputy id C40 | - |
 | houses on member pages (2) | `camara` C34, C38, C43 · `senado` C35, C38, C43 | - |
 | indicators × bases (6) | participation merit C45 · participation all C45 · government merit C45 · government all C45 · party merit C45 · party all C45 | - |
 | basis states (2) | total > 0 C45 · total 0 C47 | - |
 | `symbolicMerit` states (4) | n > 1 C48 · n = 1 C48 · 0 C48 · null C49 | - |
+| symbolic note by state (2) | count present, marker and note C74 · null, neither C74 | - |
+| profile stats per mandate (3) | authored C78 · first signer C78 · requirements C78, over 4 mandates | - |
+| score caption (1) | C82, on both houses | - |
 | ballot labels shown (3) | `Votação nominal` C52, C53 · `Votação secreta` C52, C53 · `Votação simbólica` C53 | - |
 | kind labels shown (4) | `final` C53 · `amendment` C53 · `procedural` C53 · `unclassified` C53 | - |
 | rule link forms (2) | `regra {kindRule}` C53 · `como as votações são classificadas` C53 | - |
+| roll-call result label (3) | C76, table-driven over all 3, both houses | - |
+| government orientation shown (6) | C77, table-driven over all 6 (`yes`, `no`, `abstention`, `obstruction`, `free`, absent), both houses | - |
 | roll-call heading (2) | proposition C52 · ballot and date C52 | - |
 | position groups and labels, camara (7) | C54, table-driven over all 7 · page C55 | - |
 | position groups and labels, senado (7) | C54, table-driven over all 7 · page C55 | - |
@@ -305,6 +338,9 @@ Proof: `sail artisan test --filter="inertia visits answer with json"`
 | methodology sections (10) | C62, table-driven over all 10 | - |
 | methodology house parts (4) | Câmara imported C63 · Senate imported C63 · Senate absent C64 · Câmara absent C64 | - |
 | coverage symbolic cell (2) | integer C65 · null C65 | - |
+| coverage `Dados até` cell (2) | date C65 · `through` null C80 | - |
+| coverage notes (2 houses) | Câmara C75 · Senado C75 | - |
+| `registros-sem-voto` paragraphs (2) | AD-018 sentence C62 · senator-page sentence C79 | - |
 | method links (1 origin) | `{APP_URL}/metodologia/#` C45, C66 | - |
 | cookie-free responses (15) | C67, table-driven over all 15 | - |
 | SSR states (2) | running C68 · unreachable C69 | - |
@@ -316,7 +352,7 @@ Proof: `sail artisan test --filter="inertia visits answer with json"`
 | startup config: `public` group (1 shared assembly) | `bootstrap/app.php`, read by the HTTP kernel and the test harness alike, C71 | - |
 | startup config: contract and schema dirs (1 shared assembly) | `config/mandato.php`, read by the command and the tests alike, C24, C27 | - |
 
-- Claims naming a status code, route or response shape: C34-C47, C51-C59, C62-C70, C73 - each proof crosses the HTTP boundary through Laravel's test client and reads the server-rendered HTML (C73 the Inertia JSON)
+- Claims naming a status code, route or response shape: C34-C47, C51-C59, C62-C70, C73-C80, C82 - each proof crosses the HTTP boundary through Laravel's test client and reads the server-rendered HTML (C73 the Inertia JSON)
 - Claims naming an exit code or a printed line: C8-C13, C18-C22, C27, C28 - each proof runs the Artisan command and reads its exit code, stdout and stderr apart
 - No other check claims more than the single case its proof exercises
 
@@ -339,7 +375,7 @@ Evidence (shapes the doors plan; the build may name files differently):
 - `positionCase`: 14 (house, position) rows plus 7 Senate officials plus the null official -> decides, reached across HTTP; own layer C60 (table-driven), boundary C41, C42, C55
 - `VoteGroups`: an ordering rule over 7 positions and a house-dependent heading -> decides, reached across HTTP; own layer C54, boundary C55
 - profile copy branches: basis empty (2 rows), symbolic sentence (4 rows), nav vs text (2 rows), canonical (2 rows) -> decides, reached across HTTP; every row asserted at the boundary (C36-C39, C47-C49), where the fixture reaches each row cheaply
-- roll-call presentation: heading (2), kind line (4 kinds + 2 link forms), tally (3), head title (6) -> decides; every row at the boundary (C52, C53, C56-C58)
+- roll-call presentation: heading (2), kind line (4 kinds + 2 link forms), tally (3), head title (6), result label (3), government orientation (5 + absent) -> decides; every row at the boundary (C52, C53, C56-C58, C76, C77)
 - controllers and `PublicUrl`: map rows to props and paths -> instrumentation except `PublicUrl`'s house branch, proven at its own layer by C71
 - closest analogue: the skeleton's `VoteGroups` (own layer C25 there, now C54) and `voteCase` (design components test, one case per value)
 
@@ -366,3 +402,9 @@ Size from `wc -c` on the files each slice reads and writes, divided by four. Rea
 - **Settled mid-build:** nothing asked or answered. C12 and its Coverage row said 13 references while listing 15 (the house check counts 6 records); corrected to 15 in this commit, the test covering all 15 plus the proposition reference. Door 6 landed in `plan.md` in the checks commit, before its code. Two reversible choices worth a look: the methodology's `registros-sem-voto` adds one sentence beyond the plan's copy (`Na página de cada senador, os registros sem voto aparecem como "Não registrou voto"; o registro oficial aparece na página da votação, como "Registro do Senado".`), and the member page drops the skeleton's participation lede, which the AC 35 paragraph replaces
 - **Abandoned:** importing `etl/tests/fixtures/v3/senado/` in place as the plan's Assumptions row says - its `roll-calls/6923.json` has votes by members 9103, 9104 and 9105, which its `members.json` does not list, so AC 10 refuses it; C25 validates every file in place and imports a copy completed with the three members instead (an ETL fixture gap to raise with contract-v3, `etl/` untouched here). Closures capturing the member set in `V3Reader` - Larastan read the numeric-string keys as never set and flagged the vote loop unreachable; a typed `has()` helper replaced them
 - **Merged app-skeleton:** `feat/app-skeleton` (`2bb22c1` tests, `66ccd67`, `8601d4a` reports) merged after the boundary; conflicts in `ImportTest`, `SchemaTest`, `SharedLinksTest` resolved keeping every app-contract-v3 test as it was and adopting the skeleton's three new proofs on v3 rows and fixtures (C27, C29, new C73); the v2 reader and `data/out` tests that came back in the conflict stay dropped (superseded, skeleton C15). Rerun in `mandato-acv3` with SSR up: 148 Pest tests green, `pint --test` and `phpstan analyse` clean, `npm run build` writes both bundles, the C67 `curl` prints `0`
+- **Verification round 1, item 1 (symbolic count and coverage notes):** C74, C75. The member page gives the symbolic sentence note 7 when `symbolicMerit` is not null (stats and score move to 8 and 9) and no marker when it is null, since that sentence has no number (AC 38); the coverage rows carry one marker per house in the `Casa` cell and a note after each house's table, sourced to the house's open-data portal (`Labels::openData`) with method `#tipos-de-votacao`. C66's test now expects 9 method links on a deputy page of the fixtures and 8 on a senator's; its claim is unchanged. Both new tests failed before the change (no `#nota-7` marker; no coverage marker)
+- **Verification round 1, item 2 (result and orientation labels):** C76, C77, table-driven over 3 and 6 values on a Câmara and a Senate roll call. Already built; shown to fail under a temporary fault (`false => 'Aprovada'` in `RollCallController`, `obstruction => 'Abstenção'` in `Labels::ORIENTATIONS`): exactly the `rejected` and `obstruction` data sets failed, then the fault was reverted
+- **Verification round 1, item 3 (profile stats per mandate):** C78 over 4 mandates with distinct fixture counts. Already built; failed under a temporary fault (`firstSignerCount` fed from `authored_count`), then reverted
+- **Verification round 1, item 4 (methodology copy outside the plan):** kept; AC 49's copy table now carries the senator-page sentence and AC 52 the `sem votações` cell, both marked as added at verification round 1. C79, C80. Already built; both failed under a temporary fault (sentence removed, `?? ""` for a null `through`), then reverted
+- **Verification round 1, item 5 (door 3 not-null columns):** C81, table-driven over the 15 columns. Failed under a temporary fault (`starts_on`, `uf` and the 6 `_total` columns made nullable in the door 3 migration): exactly those 8 data sets failed, the 7 untouched passed; reverted
+- **Verification round 1, item 6 (gendered score caption):** C82. The caption now reads `... com registro neste mandato, ...` for every member, and AC 31 carries it. The test failed before the change on `deste deputado`

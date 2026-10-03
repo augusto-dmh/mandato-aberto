@@ -6,7 +6,7 @@ use Dom\HTMLDocument;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 
-// Checks C34-C49 of .specs/features/app-contract-v3/checks.md.
+// Checks C34-C49, C74, C78 and C82 of .specs/features/app-contract-v3/checks.md.
 
 beforeEach(function () {
     requireSsr();
@@ -231,4 +231,66 @@ test('member page says when a house publishes no symbolic votes', function () {
 
     expect(textOf(html($this->get('/deputados/102/'))->querySelector('.ma-symbolic')))
         ->toBe('A Câmara dos Deputados não publica votações simbólicas como registros de votação; por isso elas não aparecem aqui.');
+});
+
+/** The note `#nota-{n}` a marker points to: its source link, its method link and its text. */
+function noteOf(HTMLDocument $doc, string $href): array
+{
+    $note = $doc->getElementById(ltrim($href, '#'));
+    $links = iterator_to_array($note->querySelectorAll('a'));
+
+    return [
+        'source' => [$links[0]->getAttribute('href'), textOf($links[0])],
+        'method' => isset($links[1]) ? [$links[1]->getAttribute('href'), textOf($links[1])] : null,
+    ];
+}
+
+test('the symbolic count points to its source and method', function () {
+    $ana = DB::table('members')->where('house', 'camara')->where('source_id', '101')->value('source_url');
+    $bruno = DB::table('members')->where('house', 'camara')->where('source_id', '102')->value('source_url');
+
+    foreach (['/deputados/101/legislatura/57/' => $ana, '/deputados/102/' => $bruno, '/deputados/101/' => $ana] as $path => $source) {
+        $doc = html($this->get($path));
+        $markers = attrs($doc, '.ma-symbolic .ma-note-ref', 'href');
+        expect($markers)->toBe(['#nota-7'], $path)
+            ->and(noteOf($doc, $markers[0]))->toBe([
+                'source' => [$source, 'Câmara dos Deputados'],
+                'method' => ['https://mandato.test/metodologia/#votacoes-simbolicas', 'Como calculamos'],
+            ], $path)
+            ->and(attrs($doc, 'p.ma-note', 'id'))->toBe(array_map(fn ($i) => "nota-{$i}", range(1, 9)), $path);
+    }
+
+    $senate = html($this->get('/senadores/9101/'));
+    expect($senate->querySelectorAll('.ma-symbolic .ma-note-ref'))->toHaveCount(0)
+        ->and(attrs($senate, '.ma-note a', 'href'))->not->toContain('https://mandato.test/metodologia/#votacoes-simbolicas')
+        ->and(attrs($senate, 'p.ma-note', 'id'))->toBe(array_map(fn ($i) => "nota-{$i}", range(1, 8)));
+});
+
+test('the profile counts the propositions of the rendered mandate', function () {
+    $cases = [
+        '/deputados/101/legislatura/57/' => ['2', '1', '1'],
+        '/deputados/101/' => ['1', '1', '0'],
+        '/deputados/102/' => ['1', '0', '2'],
+        '/senadores/9101/' => ['1', '1', '0'],
+    ];
+    foreach ($cases as $path => $values) {
+        $doc = html($this->get($path));
+        $stats = iterator_to_array($doc->querySelectorAll('.ma-stat'));
+        expect(array_map(fn ($s) => textOf($s->querySelector('.ma-muted')), $stats))->toBe(['Proposições de autoria', 'Como primeiro signatário', 'Requerimentos'], $path)
+            ->and(array_map(fn ($s) => textOf($s->querySelector('.ma-num')), $stats))->toBe($values, $path);
+        $markers = array_unique(attrs($doc, '.ma-stat .ma-note-ref', 'href'));
+        expect($markers)->toHaveCount(1, $path)
+            ->and(noteOf($doc, $markers[0])['method'][0])->toBe('https://mandato.test/metodologia/#proposicoes', $path);
+    }
+});
+
+test('the score caption names no gender', function () {
+    $caption = 'Cada traço é uma votação do plenário com registro neste mandato, da mais antiga para a mais recente. Sim fica acima da linha, Não abaixo; as demais opções têm marca própria. Cada traço leva à votação.';
+    foreach (['/deputados/101/', '/deputados/103/', '/senadores/9101/', '/senadores/9103/'] as $path) {
+        $doc = html($this->get($path));
+        $head = array_values(array_filter(iterator_to_array($doc->querySelectorAll('.ma-section__head')), fn ($h) => textOf($h->querySelector('h2')) === 'Votações do mandato'));
+        expect($head)->toHaveCount(1, $path)
+            ->and(textOf($head[0]->querySelector('p')))->toBe($caption, $path)
+            ->and(textOf($doc->querySelector('main')))->not->toMatch('/\b(deste|desta) (deputad|senador)/u', $path);
+    }
 });
