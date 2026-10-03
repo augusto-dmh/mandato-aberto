@@ -90,3 +90,25 @@ Ranked; none changes a result.
    - `astro.config.mjs:6` still documents `_redirects` as "for Cloudflare Pages". The base build writes `https://www.augusto-dmh.github.io/* https://augusto-dmh.github.io/:splat 301` into `dist/_redirects`, which GitHub Pages serves as a plain public file (harmless, as plan `Out of scope` says).
 7. **Plan/launch paragraph inconsistency on launch C69.** Plan `Impact` lists C69 among the launch checks that "stand". The dated paragraph in `.specs/features/launch/checks.md` (the `C63, C64, C69` bullet) rewrites C69's proof, and `checks.md` Coverage says "launch 69 by C18". The rewrite is needed (the old proof assumed root paths), so the plan's `Impact` row is the stale one. This matters for round 2's scope.
 8. **Sampling note (C2, C7).** The base-path claims read profile 101 and roll call 100-1 out of 3 profiles and 8 roll calls in the fixture. The pages share one template each and C3 scans every main-build page, so this is acceptable. The base build itself is never scanned whole; only the 9 listed pages are.
+
+## Round 2 - scoped, live site
+
+**Verdict**: PASS
+**Profile**: light
+**Site**: `https://augusto-dmh.github.io/mandato-aberto/`
+**Run**: `publish.yml` run `36359746320` (event `push`, head `1bede0c43a35c17c6690bdfedb92a9db6a7fc46e`, conclusion `success`, completed `2026-09-28T00:19:45Z`) - the first green `publish.yml` run on `main`, confirmed with `gh run list --workflow publish.yml --limit 15 --json databaseId,conclusion,status,headSha,createdAt,event` (the prior run, `36349392312`, concluded `failure`)
+**Verifier**: independent sub-agent (author != verifier)
+
+Every proof below is C16-C19 exactly as written in `checks.md`, run once through `sh -c` against the live host.
+
+| Check | Claim | Proof run | Evidence | Result |
+| --- | --- | --- | --- | --- |
+| C16 | home answers `200`; `/nada/` answers `404` with `Página não encontrada` in the body | `sh -c` proof, `checks.md:92` - exit 0 | `curl -s -o /dev/null -w "%{http_code}" .../` -> `200`; `.../nada/` -> `404`; body of `/nada/` contains `Página não encontrada` | PASS |
+| C17 | `http://` answers `301` to the `https://` URL | `sh -c` proof, `checks.md:95` - exit 0 | raw `curl -s -o /dev/null -w "%{http_code} %{redirect_url}\n" http://augusto-dmh.github.io/mandato-aberto/` -> `301 https://augusto-dmh.github.io/mandato-aberto/` | PASS |
+| C18 | home and the first linked profile: no `Set-Cookie`, `og:image` under the base, `og:image` answers `200` | `sh -c` proof, `checks.md:98` - exit 0 | first linked id `204379`; home `og:image` `https://augusto-dmh.github.io/mandato-aberto/cards/site.png` -> `200`; profile `og:image` `https://augusto-dmh.github.io/mandato-aberto/cards/deputados/204379.png` -> `200`; no `set-cookie` header on either response | PASS |
+| C19 | deployed `/reportar-erro/`, `/correcoes/`, `/dados-e-privacidade/` contain no `[a definir]` | `sh -c` proof, `checks.md:101` - exit 0 | `grep -qF "[a definir]"` found no match on any of the three pages | PASS |
+
+## Findings (Round 2)
+
+1. **Precision note - C19's page set.** C19 covers only `/reportar-erro/`, `/correcoes/` and `/dados-e-privacidade/`; it does not cover `/quem-somos/`. That page is checked separately by launch C68, which **fails** in this round: `/quem-somos/` still renders `<li>[a definir], [a definir]</li>` for the maintainers list. This is not a gap in C19 - the two checks were scoped to different page sets on purpose - but a reader of this file alone should know the go-live is not placeholder-free; see `.specs/features/launch/verification.md` Round 2 for the failing check and evidence. Both `checks.md`'s header line ("2 open, of which 1 blocks a placeholder-free go-live (maintainers' names, plan question 1)") and `plan.md:132` (open question 1) already record the maintainers' names as an undecided input, so this is expected, not a regression.
+2. No other finding. All four checks in this feature's round-2 scope (C16-C19) pass with the evidence above.
