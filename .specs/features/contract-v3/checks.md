@@ -31,7 +31,7 @@ Proof: `P tests/test_v3_cli.py::test_v3_out_flag_overrides_default`
 **C3** - `--contract 3` with `--tse-csv`, `--candidacy-json` or `--export-candidacy` exits `1`, prints `usage:` on stderr, issues 0 HTTP requests and creates no output directory (AC 3)
 Proof: `P tests/test_v3_cli.py -k test_v3_rejects_candidacy_flags`
 
-**C4** - `--contract 4`, `--contract x` and `--house senado` each exit `1` with `usage:` on stderr and 0 HTTP requests (AC 4)
+**C4** - `--contract 4`, `--contract x` and `--house presidencia` (any value outside the houses the build knows) each exit `1` with `usage:` on stderr and 0 HTTP requests (AC 4)
 Proof: `P tests/test_v3_cli.py -k test_bad_contract_or_house_exits_1`
 
 **C5** - `mandato-etl validate` exits `0` on a v2 build and on a v3 build; exits `1` when a v3 directory's `meta.json` says `schema_version: 2` (its files are unknown to the v2 set); exits `1` with `unsupported schema_version 4` on stderr when `meta.json` says `4` (AC 5)
