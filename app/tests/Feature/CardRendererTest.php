@@ -5,7 +5,7 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 use Tests\Support\Jpeg;
 
-// share-cards door 3: the render CLI, its sources, its network and its weight (C32-C36).
+// share-cards door 3: the render CLI, its sources, its network, its weight and its theme (C32-C36, C79).
 
 /**
  * Runs the built render CLI with `$input` as JSON on stdin.
@@ -101,6 +101,54 @@ test('cards stay under their weight budget', function () {
         $bytes = strlen($process->getOutput());
         expect($bytes)->toBeLessThanOrEqual($limit, "{$format}: {$bytes} bytes");
     }
+});
+
+test('a card keeps the light theme when the reader asks for dark', function () {
+    requireCardRenderer();
+    $tokens = File::get(base_path('../design/dist/tokens.css'));
+    preg_match('/--ma-color-paper: ([^;]+);/', $tokens, $paper);
+    preg_match('/--ma-color-ink: ([^;]+);/', $tokens, $ink);
+
+    // the page as the CLI builds it, and the same page without its theme, each in a dark-scheme context and through `capture`
+    $script = <<<'JS'
+        const m = await import(process.argv[2]);
+        const { chromium } = await import("playwright-core");
+        const page = await m.cardPage(JSON.parse(process.argv[1]));
+        const pages = { card: page, unthemed: page.replace(' data-theme="light"', "") };
+        const browser = await chromium.launch();
+        const out = {};
+        try {
+          const context = await browser.newContext({ viewport: { width: 1200, height: 630 }, colorScheme: "dark" });
+          const tab = await context.newPage();
+          for (const [name, html] of Object.entries(pages)) {
+            await tab.setContent(html);
+            const seen = await tab.evaluate(() => {
+              const s = getComputedStyle(document.querySelector(".ma-card"));
+              return { dark: matchMedia("(prefers-color-scheme: dark)").matches, paper: s.getPropertyValue("--ma-color-paper").trim(), ink: s.getPropertyValue("--ma-color-ink").trim() };
+            });
+            const { png } = await m.capture(html, m.FORMATS.og);
+            out[name] = { ...seen, png: png.toString("base64") };
+          }
+        } finally {
+          await browser.close();
+        }
+        console.log(JSON.stringify(out));
+        JS;
+    $node = new Process(['node', '--input-type=module', '-e', $script, json_encode(longestNameInput('og', null, 3), JSON_UNESCAPED_UNICODE), base_path('bootstrap/cards/render.mjs')], base_path(), null, null, 60);
+    $node->run();
+    expect($node->getExitCode())->toBe(0, $node->getErrorOutput());
+    $out = json_decode($node->getOutput(), true);
+    $corner = fn (string $png) => imagecolorsforindex($image = imagecreatefromstring(base64_decode($png)), imagecolorat($image, 10, 10));
+
+    expect([$paper[1], $ink[1]])->toBe(['oklch(1 0 0)', 'oklch(0.16 0 0)'])
+        // the dark request reaches the page: without its theme the card turns dark
+        ->and($out['unthemed']['dark'])->toBeTrue()
+        ->and($out['unthemed']['paper'])->not->toBe($paper[1])
+        // the card page holds the light tokens under that request
+        ->and([$out['card']['dark'], $out['card']['paper'], $out['card']['ink']])->toBe([true, $paper[1], $ink[1]])
+        // and the screenshot is light even for a page without the theme: the renderer asks for the light scheme
+        ->and($corner($out['card']['png']))->toBe(['red' => 255, 'green' => 255, 'blue' => 255, 'alpha' => 0])
+        ->and($corner($out['unthemed']['png']))->toBe(['red' => 255, 'green' => 255, 'blue' => 255, 'alpha' => 0]);
 });
 
 test('the render cli exit codes', function () {
