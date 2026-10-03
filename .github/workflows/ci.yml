@@ -34,6 +34,8 @@ jobs:
         run: uv run pytest
       - name: Validate the site fixture against the contract
         run: uv run mandato-etl validate ../site/tests/fixtures/out
+      - name: Validate the presidency v4 fixture against the contract
+        run: uv run mandato-etl validate tests/fixtures/v4/presidencia
   site:
     name: site tests and build
     runs-on: ubuntu-latest

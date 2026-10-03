@@ -334,3 +334,9 @@ def test_allowlist_additions(r):
     # `tipoAutor` and the deputy author's name are in the served rows but outside the allowlist
     assert "Órgão do Poder Executivo" not in text and "Fulano Deputado" not in text
     assert json.loads((pd.out(r) / "meta.json").read_text())["scope"] == "presidencia"
+
+
+def test_term_listed_from_its_start_date():
+    """Door 3: a term is listed once its start is on or before the build date (Brasília)."""
+    assert [t["id"] for t in presidency.terms("2027-01-04")] == ["2023-2026"]
+    assert [t["id"] for t in presidency.terms("2027-01-05")] == ["2023-2026", "2027-2030"]
