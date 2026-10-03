@@ -170,6 +170,36 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification round 2: plan.md Assumptions (.specs)
 - last seen: 2026-10-02T22:16:42Z
 
+### L-027 - A file the build or tests read must be committed; run the full suite in a clean git worktree before handing back, because an ignore rule can hide an input that exists only on the builder's machine.
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `etl/inputs` · harmful: 0
+- features: etl-presidencia
+- evidence: verification round 1: .gitignore:4, etl/inputs/joint-vote-aliases.json (etl/inputs)
+- last seen: 2026-10-03T14:01:33Z
+
+### L-028 - When a field has two sources (bulk file and link fallback), give each source its own fixture case with distinct values; a fixture where both sources agree lets a swapped or nulled branch pass.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `etl` · harmful: 0
+- features: contract-v3
+- evidence: verification rounds 1-2: etl/src/mandato_etl/contract_v3.py:217-231 (etl)
+- last seen: 2026-10-03T14:01:33Z
+
+### L-029 - When the plan fixes the order of a screen's regions, assert the order itself (node positions); per-selector presence tests stay green when sections are moved.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `app/tests` · harmful: 0
+- features: app-home
+- evidence: verification round 1: app/tests/Feature/LegislaturePageTest.php, HomePageTest.php (app/tests)
+- last seen: 2026-10-03T14:01:33Z
+
+### L-030 - When a merge replaces tests for superseded criteria, map every assertion of the old tests to a successor or to an explicit retirement; label and count assertions get dropped silently otherwise.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `app/tests` · harmful: 0
+- features: app-contract-v3
+- evidence: verification round 1: app/app/Presenters/Labels.php:25, MemberController.php:101 (app/tests)
+- last seen: 2026-10-03T14:01:34Z
+
+### L-031 - Prove protocol behaviours in the shape the research observed (a 301 with headers), not a convenient shape (a 200 with the same headers); urllib follows redirects silently.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `etl/sources` · harmful: 0
+- features: etl-senado
+- evidence: verification round 1: etl/src/mandato_etl/sources/senado.py:24-26 (etl/sources)
+- last seen: 2026-10-03T14:01:34Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
