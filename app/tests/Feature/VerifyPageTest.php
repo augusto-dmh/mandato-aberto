@@ -126,6 +126,30 @@ test('a verification page whose subject is gone shows no card image', function (
         ->and($doc->querySelectorAll('body img'))->toHaveCount(0);
 });
 
+test('a verification page whose subject is gone points at nothing that answers 404', function () {
+    requireSsr();
+    $code = serveCard('/deputados/101/legislatura/58/', Code::of(memberPayload(House::Camara, '101', 58)));
+    $hrefs = fn ($doc) => array_map(fn ($a) => (string) $a->getAttribute('href'), iterator_to_array($doc->querySelectorAll('a[href]')));
+    $content = fn ($doc, string $selector) => array_map(fn ($m) => (string) $m->getAttribute('content'), iterator_to_array($doc->querySelectorAll($selector)));
+
+    $before = html($this->get("/verificar/{$code}/"));
+    expect($content($before, 'head meta[property="og:image"]'))->toHaveCount(1)
+        ->and($hrefs($before))->toContain('/deputados/101/legislatura/58/');
+
+    deleteAna();
+    $response = $this->get("/verificar/{$code}/");
+
+    $response->assertStatus(200);
+    $doc = html($response);
+    $subjectHrefs = array_filter($hrefs($doc), fn (string $h) => str_contains($h, '/deputados/101/'));
+    expect($content($doc, 'head meta[property^="og:image"]'))->toBe([])
+        ->and($content($doc, 'head meta[name="twitter:image:alt"]'))->toBe([])
+        ->and($content($doc, 'head meta[name="twitter:card"]'))->toBe(['summary'])
+        ->and($content($doc, 'head meta[name="robots"]'))->toBe(['noindex'])
+        ->and($subjectHrefs)->toBe([])
+        ->and(textOf($doc->querySelector('main h2')))->toBe('Ana Souza');
+});
+
 test('a recoverable code variant redirects to its canonical form', function () {
     $code = serveCard('/deputados/101/legislatura/58/', Code::of(memberPayload(House::Camara, '101', 58)));
     $variants = [

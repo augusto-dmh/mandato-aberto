@@ -9,7 +9,7 @@ const props = defineProps({
   image: { type: Object, default: null }, // { src, alt }, or null when the subject is gone (S5 amendment)
   state: { type: String, default: null }, // equal | changed | gone (AC 37)
   dataDate: { type: String, default: null }, // DD/MM/AAAA, the Brasília day of the card's data
-  subjectUrl: { type: String, default: null },
+  subjectUrl: { type: String, default: null }, // null when the subject is gone: its page answers 404 (S5 amendment)
   collected: { type: String, default: null },
   card: { type: Object, default: null }, // the payload's values: a member's or a roll call's
   howACodeLooks: { type: String, default: null },
@@ -75,7 +75,7 @@ const voteLabel = (v) => positionCase({ house: props.card.house, position: v.pos
       </section>
 
       <p class="ma-t-small">{{ collected }}</p>
-      <p class="ma-t-small"><a :href="subjectUrl">{{ card.kind === "member" ? `Página de ${card.name}` : `Página da votação ${card.heading}` }}</a></p>
+      <p v-if="subjectUrl" class="ma-t-small"><a :href="subjectUrl">{{ card.kind === "member" ? `Página de ${card.name}` : `Página da votação ${card.heading}` }}</a></p>
     </main>
   </PublicLayout>
 </template>

@@ -60,21 +60,23 @@ class VerifyController extends Controller
         $house = House::from((string) $payload['house']);
         $current = $this->current($payload);
         $subjectPath = Share::subjectPath($payload);
+        // A gone subject's card and page answer 404 (AC 20): its verification page shows the values as
+        // text only, with no card image in the head or the body and no link to the page (S5 amendments).
+        $gone = $current === null;
 
         return Inertia::render('Verify/Show', [
             'meta' => [
                 'title' => "Código {$canonical}",
                 'description' => 'Os dados que o card de código '.$canonical.' mostrou, '.Labels::ofHouse($house).', e se ainda são os atuais.',
                 'path' => PublicUrl::verify($canonical),
-                'image' => Share::image($payload, $canonical),
+                'image' => $gone ? null : Share::image($payload, $canonical),
                 'noindex' => true,
             ],
             'code' => $canonical,
-            // A gone subject's card answers 404 (AC 20): its page shows the values as text only (S5 amendment).
-            'image' => $current === null ? null : ['src' => PublicUrl::card($subjectPath, $canonical, '1200x630'), 'alt' => Share::alt($payload, $canonical)],
-            'state' => $current === null ? 'gone' : (Code::of($current) === $canonical ? 'equal' : 'changed'),
+            'image' => $gone ? null : ['src' => PublicUrl::card($subjectPath, $canonical, '1200x630'), 'alt' => Share::alt($payload, $canonical)],
+            'state' => $gone ? 'gone' : (Code::of($current) === $canonical ? 'equal' : 'changed'),
             'dataDate' => Share::dataDate($payload),
-            'subjectUrl' => $subjectPath,
+            'subjectUrl' => $gone ? null : $subjectPath,
             'collected' => 'Dados abertos '.Labels::ofHouse($house).', coletados em '.Share::dataDate($payload).'.',
             'card' => $this->values($payload),
             'sources' => [],
