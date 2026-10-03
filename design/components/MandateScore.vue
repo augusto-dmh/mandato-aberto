@@ -84,7 +84,7 @@ const monthStarts = (votes) => votes.flatMap((v, i) => (i === 0 || v.date.slice(
         <li v-for="item in legend" :key="item.key"><VoteMark v-bind="item.mark" />{{ item.label }}</li>
       </ul>
       <details class="ma-score__table">
-        <summary>Ver as {{ ordered.length }} votações como tabela</summary>
+        <summary>{{ ordered.length === 1 ? "Ver a 1 votação como tabela" : `Ver as ${ordered.length} votações como tabela` }}</summary>
         <table>
           <thead>
             <tr><th scope="col">Data</th><th scope="col">Proposição</th><th scope="col">Voto</th></tr>

@@ -42,7 +42,7 @@ const houseName = computed(() => HOUSE_NAMES[props.house]);
         </p>
       </div>
       <template v-if="votes.length">
-        <p class="ma-card__score-label ma-t-micro"><span class="ma-num">{{ formatNumber(votes.length) }}</span> votações nominais do plenário com registro, da mais antiga à mais recente</p>
+        <p class="ma-card__score-label ma-t-micro"><span class="ma-num">{{ formatNumber(votes.length) }}</span> {{ votes.length === 1 ? "votação nominal" : "votações nominais" }} do plenário com registro, da mais antiga à mais recente</p>
         <!-- at most 8 px per roll call, so a short mandate is not drawn as a few stretched bars -->
         <div class="ma-card__score" :style="{ maxWidth: `${votes.length * 8}px` }"><MandateScore :votes="votes" :house="house" compact /></div>
       </template>

@@ -111,6 +111,15 @@ describe("share cards", () => {
     }
   });
 
+  it("member card names one vote in the singular", async () => {
+    for (const format of FORMATS) {
+      const { doc } = await render(MemberCard, { ...ANA, format, votes: ANA.votes.slice(0, 1) });
+      expect(clean(doc.querySelector(".ma-card__score-label")!.textContent), format).toBe(
+        "1 votação nominal do plenário com registro, da mais antiga à mais recente",
+      );
+    }
+  });
+
   it("roll-call card text in order", async () => {
     const regions = [".ma-card__eyebrow", "h1", ".ma-card__body > p.ma-muted", ".ma-card__result", ".ma-card__tally", ".ma-card__foot"];
     const cases: [Record<string, unknown>, string, string | null][] = [
