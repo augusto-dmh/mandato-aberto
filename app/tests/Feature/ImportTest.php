@@ -312,6 +312,22 @@ test('defaults the contract directory', function () {
     expect(config('mandato.contract_dir'))->toBe(base_path('../data/out'));
 });
 
+test('imports from the configured directory when none is given', function () {
+    config(['mandato.contract_dir' => fixtureDir()]);
+
+    $result = runImport([]);
+
+    expect($result['code'])->toBe(0)
+        ->and($result['out'])->toContain('Imported schema_version 2 generated 2026-09-27T12:00:00Z: 3 members, 8 roll calls, 16 votes, 7 propositions')
+        ->and(DB::table('members')->count())->toBe(3);
+
+    config(['mandato.contract_dir' => '/nonexistent-contract-dir']);
+    $missing = runImport([]);
+
+    expect($missing['code'])->toBe(2)
+        ->and($missing['err'])->toContain('contract directory not found: /nonexistent-contract-dir');
+});
+
 test('validates against the schema directory', function () {
     expect(config('mandato.schema_dir'))->toBe(base_path('../etl/schema'));
 

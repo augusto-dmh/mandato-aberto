@@ -7,7 +7,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
-// Checks C31-C38 of .specs/features/app-skeleton/checks.md.
+// Checks C31-C38 and C49 of .specs/features/app-skeleton/checks.md.
 
 beforeEach(function () {
     expect(runImport(['dir' => fixtureDir()])['code'])->toBe(0);
@@ -51,6 +51,21 @@ test('head tags survive an ssr outage', function () {
             ->and($doc->getElementById('app')->childElementCount)->toBe(0);
     }
 });
+
+test('inertia visits answer with json', function (string $path, string $component) {
+    $version = (string) app(HandleInertiaRequests::class)->version(request());
+
+    $response = $this->get($path, ['X-Inertia' => 'true', 'X-Inertia-Version' => $version]);
+
+    $response->assertOk()->assertHeader('X-Inertia', 'true');
+    expect($response->headers->get('Content-Type'))->toContain('application/json')
+        ->and($response->json('component'))->toBe($component)
+        ->and($response->json('props.meta'))->toBeArray()->not->toBeEmpty()
+        ->and($response->json('props.meta.title'))->toBeString()->not->toBeEmpty();
+})->with([
+    'profile' => ['/deputados/101/', 'Deputies/Show'],
+    'roll call' => ['/votacoes/100-1/', 'RollCalls/Show'],
+]);
 
 test('public pages set no cookie', function (string $path, int $status) {
     $response = $this->get($path);

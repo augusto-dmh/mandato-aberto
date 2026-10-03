@@ -3,7 +3,7 @@
 Profile: standard
 Plan: `.specs/features/app-skeleton/plan.md`
 
-48 checks in 5 slices · 12 one-way doors (plus door 13, discovered while writing these checks: the Sail mounts the tests need) · 0 open
+49 checks in 5 slices · 12 one-way doors (plus door 13, discovered while writing these checks: the Sail mounts the tests need) · 0 open
 
 All commands run from `app/` with Sail up (`./vendor/bin/sail up -d`); `sail` below is `./vendor/bin/sail`. Pest proofs are `sail artisan test --filter="<test name>"`. The page proofs read server-rendered HTML, so they need the client and SSR bundles built (`sail npm run build`) and the SSR server running (`sail artisan inertia:start-ssr`, or `sail exec -d laravel.test php artisan inertia:start-ssr`); a page test fails, never skips, when the SSR server is down. "The fixture" is `site/tests/fixtures/out` read in place (plan, Assumptions). `{APP_URL}` is the value the tests set, `https://mandato.test`.
 
@@ -50,12 +50,14 @@ Proof: `sail artisan test --filter="dry run validates and writes nothing"`
 **C13** - No column of the 8 tables has a name containing `cpf`, `candidacy`, `office`, `ballot` or `situation`, and a dump of every row of the 8 tables after the fixture import contains none of `DEPUTADO FEDERAL`, `SENADOR`, `1313`, `APTO`, `consulta_cand_2026_BRASIL.csv` (AC 11)
 Proof: `sail artisan test --filter="persists no candidacy field and no cpf"`
 
-**C14** - Each of the 6 natural keys of door 4 (`members` house + source_id, `roll_calls` house + source_id, `propositions` house + source_id, `memberships` member + legislature, `votes` roll call + member, `authorships` membership + proposition) rejects a duplicate with a unique violation, `members.house` rejects `presidencia` and accepts `senado`, and every `source_id` column has type `text` (door 4)
-Proof: `sail artisan test --filter="enforces the natural keys and the house check"`
+**C14** - Each of the 6 natural keys of door 4 (`members` house + source_id, `roll_calls` house + source_id, `propositions` house + source_id, `memberships` member + legislature, `votes` roll call + member, `authorships` membership + proposition) rejects a duplicate with a unique violation, each of `members`, `propositions` and `roll_calls` accepts house `senado` and rejects `presidencia`, `Camara` and the empty string with a check violation naming `{table}_house_check`, and every `source_id` column has type `text` (door 4)
+Proof: `sail artisan test --filter="enforces the natural keys and text source ids"`
+Proof: `sail artisan test --filter="rejects a house outside camara and senado"`
 
-**C15** - `SUPPORTED_SCHEMA_VERSIONS` is `[2]`, version 2 resolves to its own reader and versions 1 and 3 resolve to none, and `config('mandato.contract_dir')` defaults to `base_path('../data/out')` (door 5)
+**C15** - `SUPPORTED_SCHEMA_VERSIONS` is `[2]`, version 2 resolves to its own reader and versions 1 and 3 resolve to none, `config('mandato.contract_dir')` defaults to `base_path('../data/out')`, and `mandato:import` with no `dir` argument reads that directory: pointed at the fixture it exits 0 with the line of C3, pointed at `/nonexistent-contract-dir` it exits 2 naming that path (door 5)
 Proof: `sail artisan test --filter="resolves one reader per supported version"`
 Proof: `sail artisan test --filter="defaults the contract directory"`
+Proof: `sail artisan test --filter="imports from the configured directory when none is given"`
 
 **C16** - `config('mandato.schema_dir')` defaults to `base_path('../etl/schema')`, and with it pointed at a copy of `etl/schema` whose `deputies.schema.json` requires `uf` to match `^ZZ$`, the fixture import exits 1 naming `deputies.json` and `/0/uf` (door 7)
 Proof: `sail artisan test --filter="validates against the schema directory"`
@@ -133,6 +135,9 @@ Proof: `sail artisan test --filter="public routes use the cookie-free group"`
 **C38** - `deputies.show` only matches digits and `roll-calls.show` only `digits-digits`, and `public/.htaccess` holds no trailing-slash redirect rule (door 10)
 Proof: `sail artisan test --filter="keeps the mvp url shapes"`
 
+**C49** - With `X-Inertia: true` and the `X-Inertia-Version` the app computes, `GET /deputados/101/` and `GET /votacoes/100-1/` respond 200 with `X-Inertia: true`, a JSON content type, `component` `Deputies/Show` and `RollCalls/Show` respectively, and a non-empty `props.meta` array holding a non-empty `title` (Surface)
+Proof: `sail artisan test --filter="inertia visits answer with json"`
+
 ### S5 - quality gates · ~8 files · ~15 KB · ~4k
 
 **C39** - `.github/workflows/ci.yml` job `app` has a `postgres:18` service, sets up PHP 8.5 with `pdo_pgsql` and `intl` and Node 24, runs `npm ci` and `npm run build` in `design/`, `composer install`, `pint --test`, `phpstan analyse`, `npm ci` and `npm run build` in `app/`, starts `inertia:start-ssr` and runs `php artisan test`, and no step sets `continue-on-error`; `phpstan.neon` sets level 6 (AC 29, door 12)
@@ -171,6 +176,7 @@ Proof: `sail artisan test --filter="sail runs php 8.5 with the sibling mounts"`
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | `GET /deputados/{id}/` statuses (2) | 200 C18 · 404 C23 | - |
+| Surface outputs of both routes (3 each) | HTML C18, C24 · `meta` prop C20, C29, C49 · `X-Inertia` JSON C49 | - |
 | `GET /votacoes/{id}/` statuses (2) | 200 C24 · 404 C30 | - |
 | `mandato:import` exit codes (3) | 0 C1 · 1 C4 · 2 C7 | - |
 | import refusal causes (6) | unsupported version C4 · missing file C5 · schema failure C6 · missing directory C7 · failed write C10 · lock held C11 | - |
@@ -179,7 +185,7 @@ Proof: `sail artisan test --filter="sail runs php 8.5 with the sibling mounts"`
 | entities of Relations (9) | `Member` C1 · `Membership` C1 · `Legislature` C1 · `RollCall` C1 · `Proposition` C1 · `Authorship` C1 · `Vote` C2 · `ContractImport` C3 · `House` C14 | - |
 | swept on a smaller snapshot (4) | roll call C9 · vote C9 · membership C9 · authorship C9 | - |
 | never swept (2) | member C9 · proposition C9 | - |
-| one-way constraints of door 4 (8) | `members` key C14 · `roll_calls` key C14 · `propositions` key C14 · `memberships` key C14 · `votes` key C14 · `authorships` key C14 · house check C14 · `text` source ids C14 | - |
+| one-way constraints of door 4 (10) | `members` key C14 · `roll_calls` key C14 · `propositions` key C14 · `memberships` key C14 · `votes` key C14 · `authorships` key C14 · house check on `members` C14 · house check on `propositions` C14 · house check on `roll_calls` C14 · `text` source ids C14 | - |
 | import write path (3) | real run C1 · dry run C12 · failed run C10 | - |
 | profile figures (6) | participation C18 · governmentAlignment C18 · partyAlignment C18 · authored C18 · first signer C18 · requirements C18 | - |
 | indicator base (2) | total > 0 C18 · total 0 C21 | - |
@@ -199,12 +205,13 @@ Proof: `sail artisan test --filter="sail runs php 8.5 with the sibling mounts"`
 | forbidden-term roots (3) | `app/` C43 · `resources/` C43 · `lang/` C43 | - |
 | forbidden terms (19) | C44, table-driven over all 19 | - |
 | README commands (4) | Sail C45 · import C45 · SSR C45 · tests C45 | - |
+| `mandato:import` `dir` argument (2) | given C1-C12 · omitted, falls back to `contract_dir` C15 | - |
 | Landing doors (13) | 1 C46 · 2 C47 · 3 C17 · 4 C14 · 5 C15 · 6 C8, C9, C10, C11 · 7 C16 · 8 C20, C32, C36 · 9 C33, C37 · 10 C35, C38 · 11 C48 · 12 C39 · 13 C48 | - |
 | startup config: `public` group (1 shared assembly) | `bootstrap/app.php`, read by the HTTP kernel and the test harness alike, C37 | - |
 | startup config: SSR URL (1 shared assembly) | `config/inertia.php`, read by the app and the tests alike, C31, C32 | - |
 
-- Claims naming a status code, route or response shape: C18, C20, C23, C24, C29, C30, C31, C32, C33, C35 - each proof crosses the HTTP boundary through Laravel's test client
-- Claims naming an exit code or a printed line: C3, C4, C5, C6, C7, C11, C12 - each proof runs the Artisan command and reads its exit code and output
+- Claims naming a status code, route or response shape: C18, C20, C23, C24, C29, C30, C31, C32, C33, C35, C49 - each proof crosses the HTTP boundary through Laravel's test client
+- Claims naming an exit code or a printed line: C3, C4, C5, C6, C7, C11, C12, C15 - each proof runs the Artisan command and reads its exit code and output
 - No other check claims more than the single case its proof exercises
 
 ## Test policy
@@ -249,3 +256,4 @@ Cost: 1 proof at its own layer (C25) beyond the boundary proofs. Without these r
 - **Boundary:** C1-C48 closed at `edb2511` (scaffold `e8b5952`, import `0ae8353`, design export `1b3cbfc`, pages `a36c27d`, gates `edb2511`); every named proof run at that commit inside Sail with the SSR server up: 62 Pest tests green, `pint --test` and `phpstan analyse` (level 6) clean, `npm run build` writes both bundles, the C33 `curl` prints `0`
 - **Settled mid-build:** nothing asked or answered; door 13 (Sail mounts `../site` and `../.github` for the tests) was found while writing these checks and landed in `plan.md` in the checks commit, before any code
 - **Abandoned:** loading the ETL schemas into opis as they are - their `$id` is relative and opis requires an absolute root id, so the in-memory copy is anchored at its file URI, the files themselves untouched; reading the `public` group from the router in C37's test - the router only receives groups when the HTTP kernel handles a request, so the test reads them from the kernel `bootstrap/app.php` configures; a second request in one test reusing Inertia's scoped `SsrState` (it answered with the first page's body) - `tests/TestCase.php` forgets scoped instances before each request, as a fresh production request does
+- **Proof gaps of verification round 1:** added `rejects a house outside camara and senado` (C14, table-driven over `members`, `propositions`, `roll_calls`; the natural-key test lost its house half and is now `enforces the natural keys and text source ids`), `imports from the configured directory when none is given` (C15) and `inertia visits answer with json` (new C49, Surface); each failed when its behaviour was broken (check dropped from `propositions` and from `roll_calls`; `dir` fallback pointed elsewhere; `meta` prop renamed; component renamed) and passed once restored; production code untouched

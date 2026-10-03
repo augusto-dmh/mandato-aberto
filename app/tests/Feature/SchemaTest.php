@@ -11,7 +11,7 @@ function insertRow(string $table, array $row): int
     return DB::transaction(fn () => DB::table($table)->insertGetId([...$row, 'created_at' => now(), 'updated_at' => now()]));
 }
 
-test('enforces the natural keys and the house check', function () {
+test('enforces the natural keys and text source ids', function () {
     DB::table('legislatures')->insert(['number' => 57]);
     $member = ['house' => 'camara', 'source_id' => '1', 'name' => 'A', 'party' => 'P', 'uf' => 'SP', 'source_url' => 'https://x'];
     $memberId = insertRow('members', $member);
@@ -45,19 +45,33 @@ test('enforces the natural keys and the house check', function () {
         expect(fn () => insertRow($table, $row))->toThrow(UniqueConstraintViolationException::class);
     }
 
-    expect(insertRow('members', [...$member, 'house' => 'senado']))->toBeInt();
-    try {
-        insertRow('members', [...$member, 'house' => 'presidencia', 'source_id' => '2']);
-        $this->fail('a member of house presidencia was accepted');
-    } catch (QueryException $e) {
-        expect($e->getCode())->toBe('23514'); // check_violation
-    }
-
     foreach (['members', 'roll_calls', 'propositions'] as $table) {
         $type = DB::selectOne('select data_type from information_schema.columns where table_name = ? and column_name = ?', [$table, 'source_id'])->data_type;
         expect($type)->toBe('text');
     }
 });
+
+test('rejects a house outside camara and senado', function (string $table, array $row) {
+    DB::table('legislatures')->insert(['number' => 57]);
+
+    expect(insertRow($table, [...$row, 'house' => 'senado']))->toBeInt();
+    foreach (['presidencia', 'Camara', ''] as $house) {
+        try {
+            insertRow($table, [...$row, 'house' => $house, 'source_id' => "bad-{$house}"]);
+            $this->fail("a {$table} row of house '{$house}' was accepted");
+        } catch (QueryException $e) {
+            expect($e->getCode())->toBe('23514') // check_violation
+                ->and($e->getMessage())->toContain("{$table}_house_check");
+        }
+    }
+})->with([
+    'members' => ['members', ['source_id' => '1', 'name' => 'A', 'party' => 'P', 'uf' => 'SP', 'source_url' => 'https://x']],
+    'propositions' => ['propositions', ['source_id' => '9']],
+    'roll_calls' => ['roll_calls', [
+        'source_id' => '1-1', 'legislature_number' => 57, 'date' => '2025-01-01', 'organ' => 'PLEN', 'description' => 'd',
+        'secret' => false, 'tally_yes' => 0, 'tally_no' => 0, 'tally_others' => 0, 'source_url' => 'https://x',
+    ]],
+]);
 
 test('runs on postgresql 18', function () {
     expect(DB::connection()->getDriverName())->toBe('pgsql')
