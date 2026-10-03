@@ -121,5 +121,6 @@ def test_contract_layout(built):
     expected = {"meta.json", "deputies.json", "roll-calls.json"}
     expected |= {f"deputies/{i}.json" for i in ids} | {f"roll-calls/{i}.json" for i in rcs}
     assert set(_tree(built.out)) == expected
-    # AD-017 / contract-v3 door 1: the v3 schemas live in the `v3/` subdirectory; the v2 files stay exactly these five
-    assert sorted(p.name for p in schema.SCHEMA_DIR.iterdir()) == sorted([*(f"{k}.schema.json" for k in KINDS), "v3"])
+    # AD-017 / contract-v3 door 1: the v3 schemas live in the `v3/` subdirectory; the v2 files stay exactly these five.
+    # etl-presidencia door 1 adds `v4/` beside it (AD-020).
+    assert sorted(p.name for p in schema.SCHEMA_DIR.iterdir()) == sorted([*(f"{k}.schema.json" for k in KINDS), "v3", "v4"])

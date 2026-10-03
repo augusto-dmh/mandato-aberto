@@ -11,6 +11,7 @@ Pesquisa e decisões que precedem o código. Leitura na ordem numérica.
 | [`05-grilling-escopo-v2.md`](05-grilling-escopo-v2.md) | 11 decisões de escopo da v2, 11 premissas, fora de escopo |
 | [`06-pesquisa-design-e-concorrentes.md`](06-pesquisa-design-e-concorrentes.md) | Posicionamento "registro, não nota", princípios de design, armadilhas, três direções visuais e decisões levantadas. Anexos em [`design-anexos/`](design-anexos/) |
 | [`07-fontes-senado.md`](07-fontes-senado.md) | Dados abertos do Senado verificados por chamada: senadores e exercícios, votações nominais e vocabulário de voto, orientação do Governo, autoria, fotos, dados pessoais a descartar |
+| [`09-fontes-presidencia.md`](09-fontes-presidencia.md) | Fontes da Presidência: medidas provisórias, vetos e dispositivos, projetos do Executivo, votações em sessão do Congresso e limites dos dados |
 | [`decisions-log.md`](decisions-log.md) | Decisões de produto e processo posteriores ao grilling, uma linha cada |
 | [`HANDOFF-mvp.md`](HANDOFF-mvp.md) | Prompt pronto para a sessão que constrói o MVP |
 

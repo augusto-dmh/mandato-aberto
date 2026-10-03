@@ -1,0 +1,102 @@
+{
+ "ResultadoVetoMateriaCN": {
+  "noNamespaceSchemaLocation": "https://legis.senado.leg.br/dadosabertos/dados/cn/ResultadoVetoMateriaCNv7.xsd",
+  "Metadados": {
+   "Versao": "02/10/2026 20:20:34",
+   "VersaoServico": "7",
+   "DataVersaoServico": "2018-08-06",
+   "DescricaoDataSet": "Resultado da votação nominal de vetos de uma matéria."
+  },
+  "Veto": {
+   "Codigo": "17089",
+   "Materia": {
+    "Codigo": "166980",
+    "SiglaCasa": "CN",
+    "NomeCasa": "Congresso Nacional",
+    "Sigla": "VET",
+    "Numero": "3",
+    "Ano": "2025",
+    "EmTramitacao": "Sim",
+    "Ementa": "Veto parcial aposto ao Projeto de Lei nº 576, de 2021, que \"Disciplina o aproveitamento de potencial energético offshore; e altera a Lei nº 9.427, de 26 de dezembro de 1996, a Lei nº 9.478, de 6 de agosto de 1997, a Lei nº 10.438, de 26 de abril de 2002, a Lei nº 14.182, de 12 de julho de 2021, e a Lei nº 14.300, de 6 de janeiro de 2022\".",
+    "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/166980"
+   },
+   "MateriaVetada": {
+    "Codigo": "146793",
+    "SiglaCasa": "CN",
+    "NomeCasa": "Congresso Nacional",
+    "Sigla": "PL",
+    "Numero": "576",
+    "Ano": "2021",
+    "DescricaoObjetivoProcesso": "Iniciadora",
+    "EmTramitacao": "Sim",
+    "Ementa": "Disciplina a outorga de autorizações para aproveitamento de potencial energético offshore.",
+    "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/146793",
+    "UrlRelatorias": "https://legis.senado.leg.br/dadosabertos/materia/relatorias/146793",
+    "NormaGerada": {
+     "NomeNorma": "Lei nº 15.097 de 10/01/2025",
+     "UrlNorma": "https://legis.senado.leg.br/norma/40151309",
+     "CodigoNorma": "40151309",
+     "SiglaTipoNorma": "LEI-n",
+     "DescricaoTipoNorma": "Lei Numerada",
+     "NumeroNorma": "15097",
+     "AnoNorma": "2025",
+     "DataAssinatura": "2025-01-10",
+     "DataPublicacao": "2025-01-10",
+     "SiglaVeiculoPublicacao": "DOUE",
+     "DescricaoVeiculoPublicacao": "[Diário Oficial da União - Edição Extra  de 10/01/2025 - nº 7-B] (p. 1, col. 1)"
+    }
+   },
+   "Mensagem": {
+    "Sigla": "MSG",
+    "Numero": "44",
+    "Ano": "2025",
+    "UrlPlanalto": "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2025/Msg/Vep/VEP-44-25.htm"
+   },
+   "Total": "Não",
+   "DataRecebimentoCongresso": "2025-01-14",
+   "DataSobrestacaoPauta": "2025-03-05",
+   "DataPublicacao": "2025-01-10",
+   "SobrestandoPauta": "Sim",
+   "Assunto": "Marco Regulatório de Energia \"Offshore\"",
+   "Comentario": "Os dispositivos vetados tratam de regras atinentes: a) à contratação de reserva de capacidade de geração termelétrica movida a gás natural; b) à prorrogação dos contratos de Pequenas Centrais Hidrelétricas (PCHs), centrais a biomassa e centrais eólicas do Programa de Incentivos às Fontes Alternativas de Energia Elétrica (Proinfa); c) à contratação de reserva de capacidade e energia associada de centrais hidrelétricas de até 50 MW; d) à contratação de termelétricas a carvão natural nacional; e) à contratação de energia proveniente de hidrogênio líquido e de eólicas; f) à utilização de pagamento da Eletrobras à Conta de Desenvolvimento Energético; g) à utilização dos recursos aportados pela concessionária signatária do Contrato de Concessão nº 007/2004 da ANEEL-Eletronorte; h) aos prazos para o início da injeção de energia pelos microgeradores e minigeradores de fonte solar (§ 3º do art. 26 da Lei nº 14.300/2022).",
+   "PdfsResultadoVotacao": {
+    "PdfResultadoVotacao": [
+     {
+      "URL": "https://legis.senado.leg.br/siscon/api/portalcn/pdfResultadoNominal/457/17089",
+      "Descricao": "Resultado da cédula apurada na Sessão Conjunta em 17/06/2025"
+     }
+    ]
+   },
+   "Dispositivos": {
+    "Dispositivo": [
+     {
+      "Codigo": "45465",
+      "Identificador": "03.25.001",
+      "Descricao": "§ 1º do art. 1º da Lei nº 14.182, de 12 de julho de 2021, com a redação dada pelo art. 22 do projeto",
+      "Conteudo": "A desestatização da Eletrobras será executada na modalidade de aumento do capital social, por meio da subscrição pública de ações ordinárias com renúncia do direito de subscrição pela União, e serão realizadas a outorga de novas concessões de geração de energia elétrica pelo prazo de 30 (trinta) anos, contado da data de assinatura dos novos contratos referidos no caput deste artigo, e a contratação, pelo poder concedente, de geração termelétrica movida a gás natural, na modalidade de contratação de reserva de capacidade, com inflexibilidade de, no mínimo, 70% (setenta por cento), com período de suprimento de 15 (quinze) anos, ao preço máximo de disponibilidade de potência equivalente ao preço-teto para geração a gás natural do Leilão A-6 de 2019, com atualização desse valor até a data de publicação do edital específico pelo mesmo critério de correção do Leilão A-6 de 2019, considerado na composição do preço de geração a ser calculado pela Empresa de Pesquisa Energética (EPE) o valor da molécula de gás entregue na central de geração, o qual será obtido mediante chamada pública a ser realizada pelos governos estaduais, por meio de sua distribuidora de gás local, no montante de 1.250 MW (mil, duzentos e cinquenta megawatts) na Região Nordeste, nas regiões metropolitanas das unidades federativas ou na Região Integrada de Desenvolvimento (Ride), constituída de agrupamento de Municípios abrangidos por diferentes unidades federativas, que não possuam na sua capital ponto de suprimento de gás canalizado na data de publicação desta Lei; no montante de 1.000 MW (mil megawatts) na Região Norte, distribuídos nas capitais dos Estados ou na região metropolitana ou na Ride, constituída de agrupamento de Municípios abrangidos por diferentes unidades federativas; no montante de 1.000 MW (mil megawatts) na Região Centro-Oeste, nas capitais dos Estados ou na região metropolitana ou na Ride, constituída de agrupamento de Municípios que não possuam ponto de suprimento de gás canalizado na data de publicação desta Lei, abrangidos por diferentes unidades federativas; no montante de 1.000 MW (mil megawatts) na Região Sudeste, divididos igualmente no Triângulo Mineiro e em região atendida pela Superintendência de Desenvolvimento do Nordeste (Sudene), além da prorrogação dos contratos de Pequenas Centrais Hidrelétricas (PCHs), centrais a biomassa e centrais eólicas do Programa de Incentivos às Fontes Alternativas de Energia Elétrica (Proinfa) por 20 (vinte) anos, ao preço máximo equivalente ao teto estabelecido para geração da fonte específica do Leilão A-6 de 2019 para empreendimentos sem outorga, bem como a contratação até 2025 de reserva de capacidade e energia associada proveniente de centrais hidrelétricas de até 50 MW (cinquenta megawatts) no montante de 3.000 MW (três mil megawatts) na Região Centro-Oeste, 1.500 MW (mil e quinhentos megawatts) nas Regiões Sul e Sudeste e 400 MW (quatrocentos megawatts) nas Regiões Norte e Nordeste, com período de suprimento de 25 (vinte e cinco) anos, ao preço máximo equivalente ao teto estabelecido para geração da fonte específica do Leilão A-6 de 2019 para empreendimentos sem outorga, com atualização desse valor até a data de publicação do edital específico pelo mesmo critério de correção do Leilão A-6 de 2019, respeitado o estabelecido no art. 23 desta Lei, e deverá também considerar que a contratação de reserva de capacidade estabelecida no art. 3º-A da Lei nº 10.848, de 15 de março de 2004, contemplará a contratação das termelétricas a carvão mineral nacional alcançadas pelo inciso V do caput do art. 13 da Lei nº 10.438, de 26 de abril de 2002, e termelétricas a carvão mineral nacional que possuem Contrato de Comercialização de Energia no Ambiente Regulado (CCEAR) vigente em 31 de dezembro de 2022 e com previsão de término de CCEAR não superior a 31 de dezembro de 2028, sendo que os contratos destas termelétricas a carvão mineral nacional terão seu termo final em 31 de dezembro de 2050, ficando determinado que caso os montantes definidos neste artigo não sejam contratados integralmente nos anos previstos por inexistência de oferta, as diferenças deverão ser contratadas nos anos subsequentes até que seja atingido o valor total de capacidade definido para cada objetivo.",
+      "Assunto": "Desestatização da Eletrobras e contratação de geração de energia e reserva de capacidade",
+      "Origem": "PRLP nº 1 (Deputado Zé Vitor – PL/MG) e PRLP nº 3 (Deputado Zé Vitor – PL/MG)",
+      "Justificativa": "O dispositivo em tela trata da desestatização da Eletrobras e da contratação de geração de energia e reserva de capacidade, inovando em relação à norma vigente nos seguintes pontos principais: a) prevê mudanças na contratação de geração termelétrica a gás natural quanto aos montantes e à distribuição geográfica e introduz a chamada pública para precificação do gás natural pelos governos estaduais, via distribuidoras locais; b) explicita os contratos prorrogados do Programa de Incentivos às Fontes Alternativas de Energia Elétrica (Proinfa) e define seu preço máximo; c) prevê a contratação até 2025 de reserva de capacidade e energia associada proveniente de centrais hidrelétricas de até 50 MW, especificando montantes e distribuição geográfica; d) prevê a contratação de reserva de capacidade com termelétricas a carvão mineral; e) estabelece que, caso os montantes de capacidade não sejam contratados nos anos previstos devido à falta de oferta, as contratações deverão ser realizadas nos anos seguintes até atingir os volumes estabelecidos.",
+      "RazaoVeto": "“Em que pese a boa intenção do legislador, o dispositivo contraria o interesse público por aumentar as tarifas dos consumidores de energia elétrica, tanto os residenciais como os do setor produtivo, com efeitos negativos para os índices de preço e para a competitividade do setor produtivo nacional. Esses efeitos poderiam ser ocasionados diante da proposição em cujos termos se prevê contratações compulsórias da totalidade dos montantes de energia e especifica critérios para essas contratações. Ademais, a redação do dispositivo pode resultar em investimentos adicionais obrigatórios em infraestrutura logística, com impactos nos preços das tarifas de energia, a serem custeados pelos consumidores residenciais e pelo setor produtivo, sem que os custos decorrentes tenham sido explicitados. Por fim, a possível ampliação da contratação de fontes fósseis não é compatível com os compromissos internacionais assumidos pelo País ou com as políticas públicas voltadas à transição energética, à mitigação das mudanças climáticas e à descarbonização da matriz energética brasileira.” Ouvidos o Ministério da Fazenda, o Ministério do Desenvolvimento, Indústria, Comércio e Serviços, o Ministério de Minas e Energia, o Ministério da Justiça e Segurança Pública e o Ministério do Meio Ambiente e Mudança do Clima.",
+      "Situacao": "Não Apreciado",
+      "PossuiVotos": "Não"
+     },
+     {
+      "Codigo": "45468",
+      "Identificador": "03.25.004",
+      "Descricao": "§ 14 do art. 1º da Lei nº 14.182, de 12 de julho de 2021, com a redação dada pelo art. 22 do projeto",
+      "Conteudo": "A contratação de 3.000 MW (três mil megawatts) de capacidade e energia associada de centrais hidrelétricas de até 50 MW (cinquenta megawatts) na Região Centro-Oeste será inicialmente de 2.000 MW (dois mil megawatts) até o segundo semestre de 2024, com entrega até 31 de dezembro de 2029, e de 1.000 MW (mil megawatts) até o primeiro trimestre de 2025, com entrega até 13 de dezembro de 2030; a contratação de 1.500 MW (mil e quinhentos megawatts) de capacidade e energia associada de centrais hidrelétricas de até 50 MW (cinquenta megawatts) nas Regiões Sul e Sudeste será inicialmente de 1.000 MW (mil megawatts), até o segundo semestre de 2024, com entrega até 31 de dezembro de 2029, e de 500 MW (quinhentos megawatts) até o primeiro trimestre de 2025, com entrega até 31 de dezembro de 2030; e a contratação de 400 MW (quatrocentos megawatts) de capacidade e energia associada de centrais hidrelétricas de até 50 MW (cinquenta megawatts) nas Regiões Norte e Nordeste será realizada até o segundo semestre de 2024, com entrega até 31 de dezembro de 2029.",
+      "Assunto": "Contratação de capacidade e energia associada de centrais hidrelétricas de até 50 MW",
+      "Origem": "PRLP nº 1 (Deputado Zé Vitor – PL/MG)",
+      "Justificativa": "O dispositivo em tela estabelece os valores em megawatts de capacidade e energia associada de centrais hidrelétricas de até 50 MW a ser contratados para as Regiões Centro-Oeste, Sul e Sudeste e Norte e Nordeste e os respectivos prazos de contratação e entrega.",
+      "RazaoVeto": "“Em que pese a boa intenção do legislador e a origem renovável da fonte de energia, o dispositivo contraria o interesse público em decorrência dos possíveis impactos sobre o preço das tarifas a serem custeadas pelos consumidores de energia elétrica.” Ouvidos o Ministério da Fazenda, o Ministério do Desenvolvimento, Indústria, Comércio e Serviços, o Ministério de Minas e Energia, o Ministério da Justiça e Segurança Pública e o Ministério do Meio Ambiente e Mudança do Clima.",
+      "Situacao": "Rejeitado",
+      "PossuiVotos": "Sim",
+      "TipoVotacao": "Cédula",
+      "DataSessao": "2025-06-17"
+     }
+    ]
+   }
+  }
+ }
+}

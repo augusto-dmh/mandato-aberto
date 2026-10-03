@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 27,
+  "next_id": 32,
   "lessons": [
     {
       "id": "L-001",
@@ -472,6 +472,96 @@
       ],
       "created": "2026-10-02T22:16:42Z",
       "last_seen": "2026-10-02T22:16:42Z"
+    },
+    {
+      "id": "L-027",
+      "key": "gate_fail::a file the build or tests read must be committed run the full suite in a clean git worktree before handing back because an ignore rule can hide an input that exists only on the builder s machine",
+      "text": "A file the build or tests read must be committed; run the full suite in a clean git worktree before handing back, because an ignore rule can hide an input that exists only on the builder's machine.",
+      "signal": "gate_fail",
+      "scope": "etl/inputs",
+      "status": "candidate",
+      "features": [
+        "etl-presidencia"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 1: .gitignore:4, etl/inputs/joint-vote-aliases.json (etl/inputs)"
+      ],
+      "created": "2026-10-03T14:01:33Z",
+      "last_seen": "2026-10-03T14:01:33Z"
+    },
+    {
+      "id": "L-028",
+      "key": "surviving_mutant::when a field has two sources bulk file and link fallback give each source its own fixture case with distinct values a fixture where both sources agree lets a swapped or nulled branch pass",
+      "text": "When a field has two sources (bulk file and link fallback), give each source its own fixture case with distinct values; a fixture where both sources agree lets a swapped or nulled branch pass.",
+      "signal": "surviving_mutant",
+      "scope": "etl",
+      "status": "candidate",
+      "features": [
+        "contract-v3"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification rounds 1-2: etl/src/mandato_etl/contract_v3.py:217-231 (etl)"
+      ],
+      "created": "2026-10-03T14:01:33Z",
+      "last_seen": "2026-10-03T14:01:33Z"
+    },
+    {
+      "id": "L-029",
+      "key": "ac_gap::when the plan fixes the order of a screen s regions assert the order itself node positions per selector presence tests stay green when sections are moved",
+      "text": "When the plan fixes the order of a screen's regions, assert the order itself (node positions); per-selector presence tests stay green when sections are moved.",
+      "signal": "ac_gap",
+      "scope": "app/tests",
+      "status": "candidate",
+      "features": [
+        "app-home"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 1: app/tests/Feature/LegislaturePageTest.php, HomePageTest.php (app/tests)"
+      ],
+      "created": "2026-10-03T14:01:33Z",
+      "last_seen": "2026-10-03T14:01:33Z"
+    },
+    {
+      "id": "L-030",
+      "key": "ac_gap::when a merge replaces tests for superseded criteria map every assertion of the old tests to a successor or to an explicit retirement label and count assertions get dropped silently otherwise",
+      "text": "When a merge replaces tests for superseded criteria, map every assertion of the old tests to a successor or to an explicit retirement; label and count assertions get dropped silently otherwise.",
+      "signal": "ac_gap",
+      "scope": "app/tests",
+      "status": "candidate",
+      "features": [
+        "app-contract-v3"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 1: app/app/Presenters/Labels.php:25, MemberController.php:101 (app/tests)"
+      ],
+      "created": "2026-10-03T14:01:34Z",
+      "last_seen": "2026-10-03T14:01:34Z"
+    },
+    {
+      "id": "L-031",
+      "key": "ac_gap::prove protocol behaviours in the shape the research observed a 301 with headers not a convenient shape a 200 with the same headers urllib follows redirects silently",
+      "text": "Prove protocol behaviours in the shape the research observed (a 301 with headers), not a convenient shape (a 200 with the same headers); urllib follows redirects silently.",
+      "signal": "ac_gap",
+      "scope": "etl/sources",
+      "status": "candidate",
+      "features": [
+        "etl-senado"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification round 1: etl/src/mandato_etl/sources/senado.py:24-26 (etl/sources)"
+      ],
+      "created": "2026-10-03T14:01:34Z",
+      "last_seen": "2026-10-03T14:01:34Z"
     }
   ]
 }

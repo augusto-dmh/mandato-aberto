@@ -1,0 +1,51 @@
+{
+ "ResultadoVetoDispositivoCN": {
+  "noNamespaceSchemaLocation": "https://legis.senado.leg.br/dadosabertos/dados/cn/ResultadoVetoDispotivoCNv7.xsd",
+  "Metadados": {
+   "Versao": "02/10/2026 20:27:02",
+   "VersaoServico": "7",
+   "DataVersaoServico": "2018-08-06",
+   "DescricaoDataSet": "Resultado da votação nominal de um dispositivo de veto."
+  },
+  "Votacao": {
+   "ParteVetada": "inciso III do \"caput\" do art. 8º",
+   "TipoVotacao": "Cédula",
+   "Sessao": "Sessão Conjunta nº 4 de 09/05/2024 às 10:00h",
+   "Camara": {
+    "Voto": [
+     {
+      "NomeParlamentar": "Adriana Ventura",
+      "PartidoParlamentar": "NOVO",
+      "UfParlamentar": "SP",
+      "TipoVoto": "Não"
+     },
+     {
+      "NomeParlamentar": "Afonso Hamm",
+      "PartidoParlamentar": "PP",
+      "UfParlamentar": "RS",
+      "TipoVoto": "Sim"
+     },
+     {
+      "NomeParlamentar": "Airton Faleiro",
+      "PartidoParlamentar": "PT",
+      "UfParlamentar": "PA",
+      "TipoVoto": "Sim"
+     },
+     {
+      "NomeParlamentar": "aj Albuquerque",
+      "PartidoParlamentar": "PP",
+      "UfParlamentar": "CE",
+      "TipoVoto": "Sim"
+     },
+     {
+      "NomeParlamentar": "Alexandre Guimarães",
+      "PartidoParlamentar": "MDB",
+      "UfParlamentar": "TO",
+      "TipoVoto": "Branco"
+     }
+    ]
+   },
+   "Senado": null
+  }
+ }
+}

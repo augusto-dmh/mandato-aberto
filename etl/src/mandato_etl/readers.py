@@ -55,8 +55,9 @@ ALLOWLIST = {
         "ementa",
         "dataApresentacao",
         "ultimoStatus_descricaoSituacao",
+        "ultimoStatus_dataHora",
     ],
-    "proposicoesAutores": ["idProposicao", "idDeputadoAutor", "ordemAssinatura", "proponente"],
+    "proposicoesAutores": ["idProposicao", "idDeputadoAutor", "ordemAssinatura", "proponente", "codTipoAutor", "nomeAutor"],
     "deputados": ["uri", "nomeCivil", "dataNascimento"],
     # TSE `consulta_cand` layout; the only place that names its columns.
     "tse": [

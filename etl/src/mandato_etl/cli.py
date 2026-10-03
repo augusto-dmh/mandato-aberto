@@ -4,19 +4,22 @@ Exit codes: 0 success, 1 usage or invalid output, 2 a source could not be downlo
 """
 
 import argparse
+import json
 import sys
 from collections import defaultdict
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
-from mandato_etl import classify, compute, contract_v3, publish, readers, schema
-from mandato_etl.sources import camara, senado, tse
+from mandato_etl import classify, compute, contract_v3, presidency, publish, readers, schema
+from mandato_etl.sources import camara, congresso, senado, tse
 
 ROOT = Path(__file__).resolve().parents[3]
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "out"
 V3_DIR = ROOT / "data" / "v3"
+V4_DIR = ROOT / "data" / "v4"
 HOUSES = ("camara", "senado")
+PRESIDENCY = "presidencia"
 FIRST_YEAR = 2023
 SCHEMA_VERSION = 2
 BRASILIA = timezone(timedelta(hours=-3))
@@ -51,12 +54,17 @@ def _parser(current_year: int) -> tuple[_Parser, _Parser]:
         help="candidacy file written by --export-candidacy, read in place of --tse-csv",
     )
     build.add_argument(
-        "--contract", type=int, choices=(2, 3), default=2,
-        help="contract version to write; 3 takes no candidacy flag (default: 2)",
+        "--contract", type=int, choices=(2, 3, 4), default=2,
+        help="contract version to write; 3 and 4 take no candidacy flag (default: 2)",
     )
-    build.add_argument("--house", choices=HOUSES, default="camara", help="with --contract 3: the house (default: camara)")
     build.add_argument(
-        "--out", type=Path, help="output directory (default: data/out, or data/v3/<house> with --contract 3)",
+        "--house", choices=(*HOUSES, PRESIDENCY), default="camara",
+        help="with --contract 3 or 4: the house; presidencia only with --contract 4 (default: camara)",
+    )
+    build.add_argument(
+        "--out", type=Path,
+        help="output directory (default: data/out, or data/v<contract>/<house> with --contract 3 or 4); "
+             "the presidencia build reads the house directories beside it",
     )
     build.add_argument("--quiet", action="store_true", help="print errors only")
     validate = commands.add_parser("validate", help="validate a directory against etl/schema, by its schema_version")
@@ -84,26 +92,35 @@ def main(argv: list[str] | None = None) -> int:
         build_parser.print_usage(sys.stderr)
         print(f"{build_parser.prog}: error: --years must be within {FIRST_YEAR}-{started.year}", file=sys.stderr)
         return 1
-    if args.house != "camara" and args.contract != 3:
+    if args.house == PRESIDENCY and args.contract != 4:
+        build_parser.print_usage(sys.stderr)
+        print(f"{build_parser.prog}: error: --house {args.house} needs --contract 4", file=sys.stderr)
+        return 1
+    if args.house != "camara" and args.contract == 2:
         build_parser.print_usage(sys.stderr)
         print(f"{build_parser.prog}: error: --house {args.house} needs --contract 3", file=sys.stderr)
         return 1
-    if args.contract == 3:
+    if args.contract in (3, 4):
         given = [flag for flag, value in (("--tse-csv", args.tse_csv), ("--candidacy-json", args.candidacy_json),
                                           ("--export-candidacy", args.export_candidacy)) if value is not None]
         if given:
             build_parser.print_usage(sys.stderr)
-            print(f"{build_parser.prog}: error: --contract 3 takes no {given[0]}", file=sys.stderr)
+            print(f"{build_parser.prog}: error: --contract {args.contract} takes no {given[0]}", file=sys.stderr)
             return 1
         log = (lambda msg: None) if args.quiet else (lambda msg: print(msg, file=sys.stderr))
-        out = args.out if args.out is not None else V3_DIR / args.house
+        out = args.out if args.out is not None else (V3_DIR if args.contract == 3 else V4_DIR) / args.house
         try:
-            build_v3(sorted(set(years)), args.refresh, args.house, out, started, log)
+            if args.house == PRESIDENCY:
+                build_presidency(sorted(set(years)), args.refresh, out, started, log)
+            else:
+                build_v3(sorted(set(years)), args.refresh, args.house, out, started, log, args.contract)
         except camara.DownloadError as e:
             print(f"error: could not download {e.url} ({e.args[0].split(': ', 1)[-1]})", file=sys.stderr)
             return 2
-        except (schema.SchemaError, readers.SourceLayoutError, contract_v3.ContractError) as e:
-            print(f"error: {e}", file=sys.stderr)
+        except (schema.SchemaError, readers.SourceLayoutError, contract_v3.ContractError,
+                presidency.PresidencyError) as e:
+            for line in str(e).splitlines():
+                print(f"error: {line}", file=sys.stderr)
             return 1
         return 0
     if args.out is None:
@@ -202,12 +219,15 @@ def build(
         log(f"wrote the candidacy file {export}")
 
 
-def build_v3(years: list[int], refresh: bool, house: str, out: Path, started: datetime, log) -> None:
-    """Writes `data/v3/<house>/` (contract v3); `data/out/` is not touched."""
+def build_v3(years: list[int], refresh: bool, house: str, out: Path, started: datetime, log, version: int = 3) -> None:
+    """Writes `data/v3/<house>/` (contract v3), or the same files at `schema_version` 4 for contract v4.
+
+    `data/out/` is not touched.
+    """
     from mandato_etl import full_texts
 
     if house == "senado":
-        build_senado(years, refresh, out, started, log)
+        build_senado(years, refresh, out, started, log, version)
         return
 
     log(f"sources: {years[0]}-{years[-1]}")
@@ -231,7 +251,7 @@ def build_v3(years: list[int], refresh: bool, house: str, out: Path, started: da
     found, text_sources = camara.proposition_documents(RAW_DIR, result["targets"], refresh, started)
     generated = started.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     meta = {
-        "schema_version": contract_v3.SCHEMA_VERSION,
+        "schema_version": version,
         "house": house,
         "generatedAt": generated,
         "legislatures": [
@@ -245,7 +265,7 @@ def build_v3(years: list[int], refresh: bool, house: str, out: Path, started: da
     }
     files = {"meta.json": meta, **result["files"], **full_texts.documents(house, found, generated)}
     log(f"writing {len(files)} files to {out}")
-    publish.write(out, files, version=3)
+    publish.write(out, files, version=version)
     for row in result["coverage"]:
         counts = row["rollCalls"]
         log(f"{house} {row['legislature']}: {sum(n or 0 for n in counts.values())} roll calls "
@@ -253,7 +273,7 @@ def build_v3(years: list[int], refresh: bool, house: str, out: Path, started: da
             f"{row['unclassified']} unclassified")
 
 
-def build_senado(years: list[int], refresh: bool, out: Path, started: datetime, log) -> None:
+def build_senado(years: list[int], refresh: bool, out: Path, started: datetime, log, version: int = 3) -> None:
     """Writes `data/v3/senado/` from the Senate open data; nothing else under `data/` changes."""
     warn = lambda msg: print(msg, file=sys.stderr)  # noqa: E731
     local_now = started.astimezone(BRASILIA).strftime("%Y-%m-%dT%H:%M:%S")
@@ -293,7 +313,7 @@ def build_senado(years: list[int], refresh: bool, out: Path, started: datetime, 
         warn(f"warning: senado {legislature}: {count} vote records disagree with the exercise periods "
              "(a record outside every period, or none in a roll call inside one)")
     meta = {
-        "schema_version": contract_v3.SCHEMA_VERSION,
+        "schema_version": version,
         "house": "senado",
         "generatedAt": started.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "legislatures": [
@@ -307,8 +327,100 @@ def build_senado(years: list[int], refresh: bool, out: Path, started: datetime, 
     }
     files_out = {"meta.json": meta, **result["files"]}
     log(f"writing {len(files_out)} files to {out}")
-    publish.write(out, files_out, version=3)
+    publish.write(out, files_out, version=version)
     for row in result["coverage"]:
         counts = row["rollCalls"]
         log(f"senado {row['legislature']}: {counts['nominal'] + counts['secret']} roll calls "
             f"({counts['nominal']} nominal, {counts['secret']} secret, 0 symbolic), {row['unclassified']} unclassified")
+
+
+def _house_members(out: Path) -> dict[str, list[dict]]:
+    """`members.json` of the v4 house directories beside `out`, which must exist and validate (door 6, AC 38)."""
+    members = {}
+    for house in HOUSES:
+        directory = out.parent / house
+        if not (directory / "meta.json").is_file():
+            raise presidency.PresidencyError(
+                f"{house}: no v4 house directory at {directory} (run build --contract 4 --house {house} first)")
+        if schema.version_of(directory) != 4 or schema.scope_of(directory) is not None:
+            raise presidency.PresidencyError(f"{house}: {directory} is not a v4 house directory")
+        error = schema.validate_dir(directory)
+        if error:
+            raise presidency.PresidencyError(f"{house}/{error}")
+        members[house] = json.loads((directory / "members.json").read_text())
+    return members
+
+
+def build_presidency(years: list[int], refresh: bool, out: Path, started: datetime, log) -> None:
+    """Writes `data/v4/presidencia/` from the Congress open data, the Câmara yearly files and the v4 house members."""
+    members = _house_members(out)
+    local_day = started.astimezone(BRASILIA).strftime("%Y-%m-%d")
+    log(f"sources: presidencia {years[0]}-{years[-1]}")
+    camara_sources = camara.sync(RAW_DIR, years, refresh, started, log)
+    read_kinds = {f"{kind}-{year}.csv" for kind in ("proposicoes", "proposicoesAutores") for year in years}
+    sources = [e for e in camara_sources if e["file"] in read_kinds]
+    propositions = [r for y in years for r in readers.read("proposicoes", RAW_DIR / f"proposicoes-{y}.csv")]
+    authors = [r for y in years for r in readers.read("proposicoesAutores", RAW_DIR / f"proposicoesAutores-{y}.csv")]
+
+    lists = [item for year in years for item in (congresso.mp_list(year), congresso.veto_list(year))]
+    sources += congresso.fetch(RAW_DIR, lists, set(), started)
+    mp_records, veto_entries = [], []
+    for year in years:
+        found = congresso.read(RAW_DIR, congresso.mp_list(year)[0])
+        if not isinstance(found, list):
+            raise readers.SourceLayoutError(f"{congresso.mp_list(year)[0]}: expected a JSON list")
+        mp_records += found
+        doc = congresso.read(RAW_DIR, congresso.veto_list(year)[0])
+        try:
+            vetos = doc["ListaVetosAnoCN"].get("Vetos") or {}
+        except (KeyError, AttributeError, TypeError):
+            raise readers.SourceLayoutError(f"{congresso.veto_list(year)[0]}: missing ListaVetosAnoCN") from None
+        veto_entries += readers.as_list(vetos.get("Veto"))
+
+    results = [congresso.veto_result(e["Materia"]["Codigo"]) for e in veto_entries]
+    log(f"fetching {len(results)} veto results")
+    sources += congresso.fetch(RAW_DIR, results, set(), started)
+    vetoes = [(e, congresso.read(RAW_DIR, relative)) for e, (relative, _) in zip(veto_entries, results)]
+    voted, reuse = [], set()
+    for _, result in vetoes:
+        for d in readers.as_list((result["ResultadoVetoMateriaCN"]["Veto"].get("Dispositivos") or {})
+                                 .get("Dispositivo")):
+            if d.get("PossuiVotos") == "Sim" and d.get("Codigo"):
+                item = congresso.device_votes(d["Codigo"])
+                voted.append((d["Codigo"], item))
+                if not refresh and d.get("Situacao") in ("Mantido", "Rejeitado"):
+                    reuse.add(item[0])
+    log(f"fetching the votes of {len(voted)} veto devices ({len(reuse)} decided, from the cache when present)")
+    sources += congresso.fetch(RAW_DIR, [item for _, item in voted], reuse, started)
+    device_docs = {codigo: congresso.read(RAW_DIR, item[0]) for codigo, item in voted}
+
+    bills = [b for b in presidency.executive_bills(propositions, authors)
+             if b["dataApresentacao"][:10] >= presidency.TERMS[0]["start"]]
+    processes = {b["id"]: congresso.bill_process(b["siglaTipo"], int(b["numero"]), int(b["ano"])) for b in bills}
+    log(f"fetching the Senate process of {len(processes)} Executive bills")
+    sources += congresso.fetch(RAW_DIR, list(processes.values()), set(), started)
+    bill_processes = {}
+    for bill, (relative, _) in processes.items():
+        found = congresso.read(RAW_DIR, relative)
+        if not isinstance(found, list):
+            raise readers.SourceLayoutError(f"{relative}: expected a JSON list")
+        bill_processes[bill] = found
+
+    result = presidency.assemble(local_day, mp_records, vetoes, device_docs,
+                                 presidency.executive_bills(propositions, authors), bill_processes, propositions,
+                                 members, presidency.load_aliases())
+    meta = {
+        "schema_version": 4,
+        "scope": PRESIDENCY,
+        "generatedAt": started.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "terms": result["terms"],
+        "coverage": result["coverage"],
+        "statusRules": {"version": presidency.STATUS_RULES_VERSION},
+        "sources": sorted({e["file"]: e for e in sources}.values(), key=lambda e: e["file"]),
+    }
+    files = {"meta.json": meta, **result["files"]}
+    log(f"writing {len(files)} files to {out}")
+    publish.write(out, files, version=4, scope=schema.PRESIDENCY)
+    for term, n in result["summary"].items():
+        log(f"presidencia {term}: {n['mps']} MPs, {n['vetoes']} vetoes ({n['devices']} devices), {n['bills']} bills, "
+            f"{n['joint']} joint roll calls, 0 unmatched votes")

@@ -12,7 +12,7 @@ def dumps(doc) -> str:
     return json.dumps(doc, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n"
 
 
-def write(out: Path, files: dict[str, object], version: int = 2) -> None:
+def write(out: Path, files: dict[str, object], version: int = 2, scope: str | None = None) -> None:
     """Publishes `files` (relative path -> document) as the whole content of `out`.
 
     Nothing touches `out` until every document has passed its schema, so a failure leaves the
@@ -23,7 +23,9 @@ def write(out: Path, files: dict[str, object], version: int = 2) -> None:
     tmp = Path(tempfile.mkdtemp(prefix=f".{out.name}-", dir=out.parent))
     try:
         for relative, doc in files.items():
-            kind = schema.kind_of(relative, version)
+            kind = schema.kind_of(relative, version, scope)
+            if kind is None:
+                raise schema.SchemaError(f"{relative}: not part of the contract")
             if kind not in schemas:
                 schemas[kind] = schema.load(kind, version)
             error = schema.first_error(doc, schemas[kind])

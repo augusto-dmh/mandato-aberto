@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from mandato_etl import cli
-from mandato_etl.sources import camara, senado
+from mandato_etl.sources import camara, congresso, senado
 
 PINNED = datetime(2026, 9, 27, 12, 0, 0, tzinfo=UTC)  # 2026-09-27T09:00:00 in Brasília
 YEARLY = camara.YEARLY
@@ -342,4 +342,12 @@ def built(fake):
 def sen(fake, monkeypatch):
     """The fake server with `sources.senado` pointed at it, under `/dadosabertos`."""
     monkeypatch.setattr(senado, "API_URL", fake.base + "/dadosabertos")
+    return fake
+
+
+@pytest.fixture
+def con(fake, monkeypatch):
+    """The fake server with `sources.congresso` pointed at it, under `/dadosabertos`, and no pause between calls."""
+    monkeypatch.setattr(congresso, "API_URL", fake.base + "/dadosabertos")
+    monkeypatch.setattr(congresso, "MIN_INTERVAL", 0)
     return fake

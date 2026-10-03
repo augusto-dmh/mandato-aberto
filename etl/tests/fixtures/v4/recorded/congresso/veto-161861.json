@@ -1,0 +1,98 @@
+{
+ "ResultadoVetoMateriaCN": {
+  "noNamespaceSchemaLocation": "https://legis.senado.leg.br/dadosabertos/dados/cn/ResultadoVetoMateriaCNv7.xsd",
+  "Metadados": {
+   "Versao": "02/10/2026 20:15:09",
+   "VersaoServico": "7",
+   "DataVersaoServico": "2018-08-06",
+   "DescricaoDataSet": "Resultado da votação nominal de vetos de uma matéria."
+  },
+  "Veto": {
+   "Codigo": "16269",
+   "Materia": {
+    "Codigo": "161861",
+    "SiglaCasa": "CN",
+    "NomeCasa": "Congresso Nacional",
+    "Sigla": "VET",
+    "Numero": "49",
+    "Ano": "2023",
+    "EmTramitacao": "Não",
+    "Ementa": "Veto Parcial aposto ao Projeto de Lei nº 3.626, de 2023, que \"Dispõe sobre a modalidade lotérica denominada apostas de quota fixa; altera as Leis nºs 5.768, de 20 de dezembro de 1971, e 13.756, de 12 de dezembro de 2018, e a Medida Provisória nº 2.158-35, de 24 de agosto de 2001; revoga dispositivos do Decreto-Lei nº 204, de 27 de fevereiro de 1967; e dá outras providências\".",
+    "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/161861"
+   },
+   "MateriaVetada": {
+    "Codigo": "160197",
+    "SiglaCasa": "CN",
+    "NomeCasa": "Congresso Nacional",
+    "Sigla": "PL",
+    "Numero": "3626",
+    "Ano": "2023",
+    "DescricaoObjetivoProcesso": "Revisora",
+    "EmTramitacao": "Não",
+    "Ementa": "Dispõe sobre a modalidade lotérica denominada apostas de quota fixa; altera as Leis nºs 5.768, de 20 de dezembro de 1971, e 13.756, de 12 de dezembro de 2018, e a Medida Provisória nº 2.158-35, de 24 de agosto de 2001; revoga dispositivos do Decreto-Lei nº 204, de 27 de fevereiro de 1967; e dá outras providências.",
+    "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/160197",
+    "UrlRelatorias": "https://legis.senado.leg.br/dadosabertos/materia/relatorias/160197",
+    "NormaGerada": {
+     "NomeNorma": "Lei nº 14.790 de 29/12/2023",
+     "UrlNorma": "https://legis.senado.leg.br/norma/38067061",
+     "CodigoNorma": "38067061",
+     "SiglaTipoNorma": "LEI-n",
+     "DescricaoTipoNorma": "Lei Numerada",
+     "NumeroNorma": "14790",
+     "AnoNorma": "2023",
+     "DataAssinatura": "2023-12-29",
+     "Observacao": "Quanto à produção de efeitos desta Lei, vide o Art. 58.",
+     "DataPublicacao": "2023-12-30",
+     "SiglaVeiculoPublicacao": "DOUE",
+     "DescricaoVeiculoPublicacao": "[Diário Oficial da União - Edição Extra  de 30/12/2023 - nº 247-J] (p. 1, col. 1)"
+    }
+   },
+   "Mensagem": {
+    "Sigla": "MSG",
+    "Numero": "749",
+    "Ano": "2023",
+    "UrlPlanalto": "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2023/msg/vep/VEP-749-23.htm"
+   },
+   "Total": "Não",
+   "DataRecebimentoCongresso": "2024-01-03",
+   "DataSobrestacaoPauta": "2024-03-03",
+   "DataPublicacao": "2023-12-30",
+   "SobrestandoPauta": "Não",
+   "Assunto": "Apostas de quota fixa",
+   "PdfsResultadoVotacao": {
+    "PdfResultadoVotacao": [
+     {
+      "URL": "https://legis.senado.leg.br/siscon/api/portalcn/pdfResultadoNominal/455/16269",
+      "Descricao": "Resultado da cédula apurada na Sessão Conjunta em 09/05/2024"
+     }
+    ]
+   },
+   "Dispositivos": {
+    "Dispositivo": [
+     {
+      "Codigo": "43825",
+      "Identificador": "49.23.001",
+      "Descricao": "§ 1º do art. 31",
+      "Conteudo": "Para os efeitos do disposto neste artigo, considera-se prêmio líquido o resultado positivo auferido nas apostas de quota fixa realizadas a cada ano, após a dedução das perdas incorridas com apostas da mesma natureza.",
+      "RazaoVeto": "“A manutenção dos §§1º e 3º do art. 31 do PL ensejaria uma tributação de imposto de renda distinta daquela verificada em outras modalidades lotéricas, havendo assim distinção de conduta tributária sem razão motivadora para tal. Outrossim, a manutenção do §2º do art. 31 do PL também iria de encontro à isonomia tributária, nos termos do art. 150, II, da Constituição Federal, já que traria uma lógica de isenção de imposto de renda em desacordo com o regramento ordinário existente no âmbito do recebimento de prêmios das loterias em geral, estabelecido pelo art. 56 da Lei nº 11.941, de 2008.”",
+      "Situacao": "Rejeitado",
+      "PossuiVotos": "Sim",
+      "TipoVotacao": "Cédula",
+      "DataSessao": "2024-05-09"
+     },
+     {
+      "Codigo": "43828",
+      "Identificador": "49.23.004",
+      "Descricao": "art. 53",
+      "Conteudo": "O Anexo I da Medida Provisória nº 2.158-35, de 24 de agosto de 2001, passa a vigorar na forma do Anexo I desta Lei.",
+      "RazaoVeto": "“Embora se reconheça a boa intenção do legislador, a inovação baseou-se em dispositivo que havia sido previsto na proposição originariamente encaminhada pelo Poder Executivo ao Congresso Nacional. Naquele arranjo legislativo, a autorização para distribuição gratuita de prêmios de até R$ 10.000,00 (dez mil reais) relativa a promoções comerciais independia de autorização do Ministério da Fazenda. Por isso, a taxa de autorização considerava valores de prêmios apenas a partir de R$ 10.001,00 (dez mil e um reais). Entretanto, houve, no decorrer do processo legislativo, exclusão do dispositivo que isentava tais distribuições de prêmios. Destarte, caso houvesse manutenção do art. 53 e Anexo I do Projeto de Lei não haveria fixação de valor de taxa de autorização para as distribuições de prêmio de até R$ 10.000,00 (dez mil reais). Sendo assim, o veto se impõe como medida necessária para a manutenção da coerência normativa da nova regulamentação.”",
+      "Situacao": "Mantido",
+      "PossuiVotos": "Sim",
+      "TipoVotacao": "Cédula",
+      "DataSessao": "2024-05-09"
+     }
+    ]
+   }
+  }
+ }
+}

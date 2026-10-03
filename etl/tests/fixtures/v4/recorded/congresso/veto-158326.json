@@ -1,0 +1,89 @@
+{
+ "ResultadoVetoMateriaCN": {
+  "noNamespaceSchemaLocation": "https://legis.senado.leg.br/dadosabertos/dados/cn/ResultadoVetoMateriaCNv7.xsd",
+  "Metadados": {
+   "Versao": "02/10/2026 20:18:08",
+   "VersaoServico": "7",
+   "DataVersaoServico": "2018-08-06",
+   "DescricaoDataSet": "Resultado da votação nominal de vetos de uma matéria."
+  },
+  "Veto": {
+   "Codigo": "15750",
+   "Materia": {
+    "Codigo": "158326",
+    "SiglaCasa": "CN",
+    "NomeCasa": "Congresso Nacional",
+    "Sigla": "VET",
+    "Numero": "17",
+    "Ano": "2023",
+    "EmTramitacao": "Não",
+    "Ementa": "Veto Parcial aposto ao Projeto de Lei de Conversão nº 12, de 2023 (oriundo da MPV nº 1.154/2023), que \"Estabelece a organização básica dos órgãos da Presidência da República e dos Ministérios; altera as Leis nºs 9.984, de 17 de julho de 2000, 9.433, de 8 de janeiro de 1997, 8.001, de 13 de março de 1990, 14.204, de 16 de setembro de 2021, 11.445, de 5 de janeiro de 2007, 13.334, de 13 de setembro de 2016, 12.897, de 18 de dezembro de 2013, 8.745, de 9 de dezembro de 1993, 9.069, de 29 de junho de 1995, e 10.668, de 14 de maio de 2003; e revoga dispositivos das Leis nºs 13.844, de 18 de junho de 2019, 13.901, de 11 de novembro de 2019, 14.261, de 16 de dezembro de 2021, e as Leis nºs 8.028, de 12 de abril de 1990, e 14.074, de 14 de outubro de 2020\".",
+    "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/158326"
+   },
+   "MateriaVetada": {
+    "Codigo": "155651",
+    "SiglaCasa": "CN",
+    "NomeCasa": "Congresso Nacional",
+    "Sigla": "MPV",
+    "Numero": "1154",
+    "Ano": "2023",
+    "EmTramitacao": "Não",
+    "Ementa": "Estabelece a organização básica dos órgãos da Presidência da República e dos Ministérios.",
+    "UrlMovimentacoes": "https://legis.senado.leg.br/dadosabertos/materia/movimentacoes/155651",
+    "UrlRelatorias": "https://legis.senado.leg.br/dadosabertos/materia/relatorias/155651",
+    "NormaGerada": {
+     "NomeNorma": "Lei nº 14.600 de 19/06/2023",
+     "UrlNorma": "https://legis.senado.leg.br/norma/37200471",
+     "CodigoNorma": "37200471",
+     "SiglaTipoNorma": "LEI-n",
+     "DescricaoTipoNorma": "Lei Numerada",
+     "NumeroNorma": "14600",
+     "AnoNorma": "2023",
+     "DataAssinatura": "2023-06-19",
+     "DataPublicacao": "2023-06-20",
+     "SiglaVeiculoPublicacao": "DOU",
+     "DescricaoVeiculoPublicacao": "[Diário Oficial da União  de 20/06/2023] (p. 7, col. 1)"
+    }
+   },
+   "Mensagem": {
+    "Sigla": "MSG",
+    "Numero": "279",
+    "Ano": "2023",
+    "UrlPlanalto": "https://www.planalto.gov.br/ccivil_03/_ato2023-2026/2023/Msg/Vep/VEP-0279-23.htm"
+   },
+   "Total": "Não",
+   "DataRecebimentoCongresso": "2023-06-21",
+   "DataSobrestacaoPauta": "2023-07-21",
+   "DataPublicacao": "2023-06-20",
+   "SobrestandoPauta": "Não",
+   "Assunto": "Organização básica dos órgãos da Presidência da República e dos Ministérios",
+   "PdfsResultadoVotacao": {
+    "PdfResultadoVotacao": [
+     {
+      "URL": "https://legis.senado.leg.br/siscon/api/portalcn/pdfResultadoNominal/452/15750",
+      "Descricao": "Resultado da cédula apurada na Sessão Conjunta em 14/12/2023"
+     },
+     {
+      "URL": "https://legis.senado.leg.br/siscon/api/portalcn/pdfResultadoNominal/455/15750",
+      "Descricao": "Resultado da cédula apurada na Sessão Conjunta em 09/05/2024"
+     }
+    ]
+   },
+   "Dispositivos": {
+    "Dispositivo": [
+     {
+      "Codigo": "43265",
+      "Identificador": "17.23.001",
+      "Descricao": "inciso III do \"caput\" do art. 8º",
+      "Conteudo": "coordenar as atividades de inteligência federal;",
+      "RazaoVeto": "“A proposição legislativa estabelece que competiria ao Gabinete de Segurança Institucional da Presidência da República coordenar as atividades de inteligência federal.\nEm que pese a boa intenção do legislador, a proposição legislativa contraria o interesse público, pois a Lei nº 9.883, de 7 de dezembro de 1999, estabelece que a Agência Brasileira de Inteligência - ABIN é o órgão central do Sistema Brasileiro de Inteligência, responsável por planejar, executar, coordenar, supervisionar e controlar as atividades de inteligência do País. A supressão do inciso elide, assim, o conflito de competência.”",
+      "Situacao": "Mantido",
+      "PossuiVotos": "Sim",
+      "TipoVotacao": "Cédula",
+      "DataSessao": "2024-05-09"
+     }
+    ]
+   }
+  }
+ }
+}
