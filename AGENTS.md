@@ -29,7 +29,7 @@ A feature `design-system` roda em `ui`: a entrega inteira são telas, e só esse
 ## Commits e PRs
 
 - Nunca commite em `main`; trabalhe em `<type>/<slug>` a partir de `main` atualizado.
-- Mensagem em inglês: `type(scope): description`, minúscula, imperativo, cabeçalho de até 72 caracteres, corpo explica o porquê. Tipos: build chore ci docs feat fix perf refactor revert style test. Escopo: `etl`, `site`, `research`, `specs`, `ci`.
+- Mensagem em inglês: `type(scope): description`, minúscula, imperativo, cabeçalho de até 72 caracteres, corpo explica o porquê. Tipos: build chore ci docs feat fix perf refactor revert style test. Escopo: `etl`, `site`, `app`, `design`, `research`, `specs`, `ci`.
 - Trailer de IA: `Assisted-by: Claude Code`, gerado por `.claude/settings.json`. Nunca `Co-Authored-By`, "Generated with" ou link de sessão. `scripts/check-commit-msg.sh` barra os três e a CI roda o mesmo script em cada commit do PR.
 - Um PR por feature ou por tema. Título com a mesma regra do commit. Corpo em português com as seções: Descrição, Contexto, Arquitetura, Mudanças Principais, Testes, Configuração, Dependências, Impactos, Como Validar, Checklist, Assistência de IA (o que o agente escreveu, o que foi revisado por humano e como).
 - Não faça push nem abra PR sem pedido explícito; nunca force-push em `main`.
