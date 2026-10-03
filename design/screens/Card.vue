@@ -1,46 +1,36 @@
 <script setup>
-// The share card template: identical for every deputy, only the content changes.
-import { NO_BASE, formatCollected, formatDate, formatNumber } from "../components/format.js";
-import MandateScore from "../components/MandateScore.vue";
-import OfficialPhoto from "../components/OfficialPhoto.vue";
+// The prototype's share card: the package's MemberCard in its Open Graph format (share-cards door 4).
+// The prototype reads contract v2, a Câmara-only 57th legislature with official vote strings, so its votes are mapped to positions here.
+import { computed } from "vue";
+import MemberCard from "../components/MemberCard.vue";
 
 defineOptions({ inheritAttrs: false });
 
-defineProps({
+const props = defineProps({
   generatedAt: { type: String, required: true },
   deputy: { type: Object, required: true },
   figures: { type: Array, required: true }, // [{ count, total, label }]
-  votes: { type: Array, required: true },
+  votes: { type: Array, required: true }, // [{ rollCallId, date, title, vote, secret }]
   photo: { type: String, default: null },
 });
-const LONG_NAME = 40;
+
+const POSITIONS = { Sim: "yes", "Não": "no", "Abstenção": "abstention", "Obstrução": "obstruction", "Artigo 17": "presiding" };
+const positioned = computed(() =>
+  props.votes.map((v) => ({ rollCallId: v.rollCallId, date: v.date, position: v.secret ? "secret" : POSITIONS[v.vote] ?? "notVoting", official: v.vote })),
+);
 </script>
 
 <template>
   <div class="ma-card-page">
-    <article class="ma-card" :aria-label="`Card de ${deputy.name}`">
-      <OfficialPhoto :src="photo" :name="deputy.name" />
-      <div class="ma-card__body">
-        <p class="ma-t-micro ma-eyebrow">Mandato Aberto · Câmara dos Deputados</p>
-        <h1 :class="['ma-card__name', { 'ma-card__name--long': deputy.name.length > LONG_NAME }]">{{ deputy.name }}</h1>
-        <p class="ma-t-small ma-muted">{{ deputy.party }} · {{ deputy.uf }}<template v-if="deputy.since"> · desde <span class="ma-num">{{ formatDate(deputy.since) }}</span></template></p>
-        <div class="ma-card__figures">
-          <p v-for="f in figures" :key="f.label" class="ma-card__figure">
-            <template v-if="f.total > 0">
-              <span class="ma-card__n ma-num">{{ formatNumber(f.count) }}</span>{{ " " }}<span class="ma-card__m">de <span class="ma-num">{{ formatNumber(f.total) }}</span></span>{{ " " }}<span class="ma-card__label ma-t-small">{{ f.label }}</span>
-            </template>
-            <template v-else>
-              <span class="ma-card__label ma-t-small">{{ f.label }}:</span>{{ " " }}<span class="ma-card__m ma-empty">{{ NO_BASE }}</span>
-            </template>
-          </p>
-        </div>
-        <p class="ma-card__score-label ma-t-micro">{{ formatNumber(votes.length) }} votações nominais com registro, da mais antiga à mais recente</p>
-        <MandateScore :votes="votes" compact />
-        <p class="ma-card__foot ma-t-micro">
-          <span>Fonte: Câmara dos Deputados, dados de <span class="ma-num">{{ formatCollected(generatedAt) }}</span></span>
-          <span>mandato aberto</span>
-        </p>
-      </div>
-    </article>
+    <MemberCard
+      format="og"
+      house="camara"
+      :legislature="57"
+      :member="{ name: deputy.name, party: deputy.party, uf: deputy.uf }"
+      :figures="figures"
+      :votes="positioned"
+      :photo="photo"
+      :generated-at="generatedAt"
+    />
   </div>
 </template>

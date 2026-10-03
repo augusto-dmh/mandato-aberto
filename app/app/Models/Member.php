@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $party
  * @property string $uf
- * @property string $photo_url stored, never rendered until a photo cache exists (plan, out of scope)
+ * @property string $photo_url fetched by `mandato:photos`; pages show our cached copy (share-cards)
  * @property string $source_url
  */
 class Member extends Model

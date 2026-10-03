@@ -30,7 +30,8 @@ test('ci job app runs every gate', function () {
     }
     expect($job)->not->toHaveKey('continue-on-error')
         ->and(Yaml::parseFile(base_path('phpstan.neon'))['parameters']['level'])->toBe(6)
-        ->and(File::get(base_path('package.json')))->toContain('"build": "vite build && vite build --ssr"');
+        // the client and SSR bundles, then the card renderer beside them (share-cards door 3)
+        ->and(File::get(base_path('package.json')))->toContain('"build": "vite build && vite build --ssr && vite build --config vite.cards.config.js"');
 });
 
 test('readme names the commands', function () {
@@ -85,7 +86,8 @@ test('consumes the design package', function () {
 test('sail runs php 8.5 with the sibling mounts', function () {
     $services = Yaml::parseFile(base_path('compose.yaml'))['services'];
 
-    expect($services['laravel.test']['build']['context'])->toBe('./vendor/laravel/sail/runtimes/8.5')
+    // The published Sail runtime adds the card renderer's browser shell (share-cards door 3, C36).
+    expect($services['laravel.test']['build']['context'])->toBe('./docker/8.5')
         ->and($services['pgsql']['image'])->toBe('postgres:18-alpine')
         ->and($services['laravel.test']['volumes'])->toContain(
             '../design:/var/www/design',

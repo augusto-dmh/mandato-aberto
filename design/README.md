@@ -86,3 +86,15 @@ Contract v3 carries a `position` beside the official value, and `positionCase({h
 - **Inputs:** `text`, `reviewedAt`, `officialUrl`, `reportUrl`, `sample`.
 - **Empty state:** without `reviewedAt` it renders nothing. An unreviewed summary is never shown.
 - **Principle:** research section 4. The frame is distinct and labelled "Resumo gerado por IA a partir do texto oficial, revisado em DD/MM/AAAA", with links to the full text and to the error report.
+
+### MemberCard
+
+- **Inputs:** `format` (`og` 1200 × 630, `feed` 1080 × 1350, `story` 1080 × 1920), `house`, `legislature`, `member` (`name`, `party`, `uf`), `figures` (`count`, `total`, `label`, the merit basis), `votes` (`rollCallId`, `date`, `position`, `official`), `photo`, `photoCredit` (default by house), `generatedAt`, `code`, `verifyHost`.
+- **Empty state:** a figure with `total` 0 writes "Sem base de cálculo no período"; with no votes it writes "Nenhuma votação nominal do plenário com registro nesta legislatura." and draws no score; without `photo`, the initials frame.
+- **Principle:** P9, P14 and P15, research a1 section 6.3: one template for everyone in three sizes, the photo whole and credited, the name as stored, no percentage and no ranking word, and a code the reader checks at `{verifyHost}/verificar/`. `screens/Card.vue` is this card in `og`.
+
+### RollCallCard
+
+- **Inputs:** `format`, `house`, `heading`, `date`, `ballot`, `kind` (contract values), `approved` (true, false or null), `tallies` (`yes`, `no`, `others`, or null), `generatedAt`, `code`, `verifyHost`.
+- **Empty state:** a symbolic ballot writes "Votação simbólica: não há registro do voto de cada parlamentar nem placar."; null tallies write "Placar não publicado pela Casa."; a null result writes "Resultado não informado".
+- **Principle:** P5 and a1 section 6.3: the result and the written counts with one cell per vote, and never a member's name.

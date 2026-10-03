@@ -48,7 +48,7 @@ const monthStarts = (votes) => votes.flatMap((v, i) => (i === 0 || v.date.slice(
         preserveAspectRatio="none"
         :style="{ width: `${(row.votes.length / widest) * 100}%` }"
         role="img"
-        :aria-label="`${row.votes.length} votações nominais${row.year ? ` em ${row.year}` : ''}`"
+        :aria-label="`${row.votes.length} ${row.votes.length === 1 ? 'votação nominal' : 'votações nominais'}${row.year ? ` em ${row.year}` : ''}`"
       >
         <line x1="0" :x2="row.votes.length * COLUMN" y1="12" y2="12" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.4" vector-effect="non-scaling-stroke" />
         <template v-if="!compact">
@@ -84,7 +84,7 @@ const monthStarts = (votes) => votes.flatMap((v, i) => (i === 0 || v.date.slice(
         <li v-for="item in legend" :key="item.key"><VoteMark v-bind="item.mark" />{{ item.label }}</li>
       </ul>
       <details class="ma-score__table">
-        <summary>Ver as {{ ordered.length }} votações como tabela</summary>
+        <summary>{{ ordered.length === 1 ? "Ver a 1 votação como tabela" : `Ver as ${ordered.length} votações como tabela` }}</summary>
         <table>
           <thead>
             <tr><th scope="col">Data</th><th scope="col">Proposição</th><th scope="col">Voto</th></tr>

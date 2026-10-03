@@ -6,10 +6,12 @@ import VoteMark from "mandato-design/components/VoteMark.vue";
 import { formatDate, formatNumber } from "mandato-design/components/format.js";
 import { senateDescription } from "mandato-design/components/vote.js";
 import PublicLayout from "../../Components/PublicLayout.vue";
+import ShareImages from "../../Components/ShareImages.vue";
 
 defineProps({
   rollCall: { type: Object, required: true },
   groups: { type: Array, required: true }, // [{ position, label, entries: [{ memberId, name, party, uf, href, position, official }] }]
+  card: { type: Object, required: true }, // share-cards AC 42
   sources: { type: Array, default: () => [] },
 });
 </script>
@@ -69,6 +71,8 @@ defineProps({
           </section>
         </div>
       </section>
+
+      <ShareImages :card="card" />
     </main>
   </PublicLayout>
 </template>

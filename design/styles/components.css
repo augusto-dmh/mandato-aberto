@@ -625,7 +625,8 @@
   vertical-align: -4px;
 }
 
-/* Share card: fixed 1200 x 630, identical template for everyone (research 6.3) */
+/* Share cards: one template for everyone in three fixed sizes (research 6.3, share-cards door 4).
+   og 1200 x 630 puts the photo beside the text; feed 1080 x 1350 and story 1080 x 1920 put it above the name. */
 .ma-card-page {
   padding: var(--ma-space-6);
 }
@@ -633,7 +634,10 @@
 .ma-card {
   display: grid;
   grid-template-columns: 236px minmax(0, 1fr);
-  gap: var(--ma-space-7);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "photo eyebrow" "photo body";
+  column-gap: var(--ma-space-7);
+  row-gap: var(--ma-space-3);
   width: 1200px;
   height: 630px;
   padding: 56px;
@@ -643,20 +647,79 @@
   border: 1px solid var(--ma-color-rule);
 }
 
-.ma-card .ma-photo {
+.ma-card--feed,
+.ma-card--story {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-areas: "eyebrow" "photo" "body";
+  row-gap: var(--ma-space-6);
+  width: 1080px;
+  padding: 72px;
+}
+
+.ma-card--feed {
+  height: 1350px;
+}
+
+.ma-card--story {
+  height: 1920px;
+  padding: 120px 72px;
+}
+
+/* A feed or story image is seen at phone width: its text is set larger, the photo never above its native size. */
+.ma-card--feed > .ma-card__eyebrow,
+.ma-card--feed > .ma-card__body {
+  zoom: 1.4;
+}
+
+.ma-card--story > .ma-card__eyebrow,
+.ma-card--story > .ma-card__body {
+  zoom: 1.6;
+}
+
+.ma-card--roll-call {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "eyebrow" "body";
+}
+
+.ma-card__eyebrow {
+  grid-area: eyebrow;
+}
+
+.ma-card > .ma-photo {
+  grid-area: photo;
   align-self: start;
   max-width: 236px;
 }
 
+.ma-card--feed > .ma-photo {
+  max-width: 236px;
+}
+
+.ma-card--story > .ma-photo {
+  max-width: var(--ma-photo-width);
+}
+
 .ma-card__body {
+  grid-area: body;
   display: grid;
   grid-template-rows: auto auto auto 1fr auto auto auto;
   gap: var(--ma-space-3);
   min-width: 0;
+  min-height: 0;
+}
+
+.ma-card--roll-call .ma-card__body {
+  grid-template-rows: auto auto auto 1fr auto;
 }
 
 .ma-card__score-label {
   margin-top: var(--ma-space-3);
+  color: var(--ma-color-muted);
+}
+
+.ma-card__basis {
   color: var(--ma-color-muted);
 }
 
@@ -667,11 +730,20 @@
   font-weight: var(--ma-type-title-1-weight);
   letter-spacing: var(--ma-type-title-1-tracking);
   font-stretch: var(--ma-type-title-1-stretch, 100%);
+  text-transform: none;
 }
 
 .ma-card__name--long {
   font-size: var(--ma-type-title-2-size);
   line-height: var(--ma-type-title-2-line);
+}
+
+.ma-card__result {
+  font-family: var(--ma-type-title-2-family);
+  font-size: var(--ma-type-title-2-size);
+  line-height: var(--ma-type-title-2-line);
+  font-weight: var(--ma-type-title-2-weight);
+  font-stretch: var(--ma-type-title-2-stretch, 100%);
 }
 
 .ma-card__figure .ma-card__m {
@@ -686,10 +758,26 @@
   padding: var(--ma-space-4) 0;
 }
 
+.ma-card--og .ma-card__figures {
+  gap: var(--ma-space-3);
+  padding: 0;
+}
+
+.ma-card--og .ma-card__figure .ma-card__n {
+  font-size: var(--ma-type-title-1-size);
+}
+
+.ma-card--feed .ma-card__figures,
+.ma-card--story .ma-card__figures {
+  align-content: start;
+  padding: var(--ma-space-2) 0;
+}
+
 .ma-card__figure {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--ma-space-2);
+  gap: 0 var(--ma-space-2);
   white-space: nowrap;
 }
 
@@ -706,10 +794,23 @@
   color: var(--ma-color-muted);
 }
 
+.ma-card__tally {
+  display: grid;
+  gap: var(--ma-space-3);
+  align-content: center;
+  min-height: 0;
+}
+
+/* The card writes the counts in one line above the bar, so the bar's own counts stay out of sight. */
+.ma-card__tally .ma-tally__counts {
+  display: none;
+}
+
 .ma-card__foot {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: var(--ma-space-4);
+  gap: 0 var(--ma-space-4);
   color: var(--ma-color-muted);
 }
 

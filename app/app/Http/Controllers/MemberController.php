@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Cards\Code;
+use App\Cards\Payloads;
+use App\Cards\Share;
+use App\Media\Photos;
 use App\Models\House;
 use App\Models\Member;
 use App\Models\Membership;
@@ -78,13 +82,18 @@ class MemberController extends Controller
 
         $years = fn (Membership $m) => "{$m->legislature_number}ª legislatura ({$m->legislature->starts_on->year}–{$m->legislature->ends_on->year})";
         $where = "{$member->name} ({$membership->party}-{$membership->uf})";
+        // The card of this mandate, computed and never stored here (share-cards door 8).
+        $payload = Payloads::member($house, $member, $membership);
+        $code = Code::of($payload);
 
         return Inertia::render('Members/Show', [
             'meta' => [
                 'title' => "{$where} na {$legislature}ª legislatura",
                 'description' => "Votos, participação em votações nominais e proposições de {$where} ".Labels::inHouse($house).', com dados oficiais e a base de cada número.',
                 'path' => $latest ? PublicUrl::member($house, $member->source_id) : PublicUrl::member($house, $member->source_id, $legislature),
+                'image' => Share::image($payload, $code),
             ],
+            'card' => Share::card($payload, $code),
             'member' => [
                 'id' => $member->source_id,
                 'name' => $member->name,
@@ -92,6 +101,7 @@ class MemberController extends Controller
                 'houseName' => Labels::house($house),
                 'sourceUrl' => $member->source_url,
             ],
+            'photo' => Photos::forPage($house, $member->source_id),
             'mandate' => [
                 'legislature' => $legislature,
                 'label' => $years($membership),

@@ -170,6 +170,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification round 2: plan.md Assumptions (.specs)
 - last seen: 2026-10-02T22:16:42Z
 
+### L-027 - A 'same for every element' assertion must treat a missing attribute as an empty value, not skip it, and read every colour channel the element can carry (stroke, background-image, box-shadow), or a conditional per-item style passes.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `design/tests` · harmful: 0
+- features: share-cards
+- evidence: verification round 3: design/tests/cards.test.ts:192, design/e2e/cards.spec.ts:131 (design/tests)
+- last seen: 2026-10-03T16:04:09Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

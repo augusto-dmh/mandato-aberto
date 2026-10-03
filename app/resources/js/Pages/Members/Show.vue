@@ -7,9 +7,11 @@ import SourceNote from "mandato-design/components/SourceNote.vue";
 import { formatNumber } from "mandato-design/components/format.js";
 import { computed } from "vue";
 import PublicLayout from "../../Components/PublicLayout.vue";
+import ShareImages from "../../Components/ShareImages.vue";
 
 const props = defineProps({
   member: { type: Object, required: true },
+  photo: { type: Object, default: null }, // { url, credit } on our origin, or null: the initials frame
   mandate: { type: Object, required: true },
   legislatures: { type: Array, required: true }, // [{ number, label, href, current }], newest first; empty with one mandate
   indicators: { type: Array, required: true }, // [{ label, bases: [merit, all] }]
@@ -18,6 +20,7 @@ const props = defineProps({
   proposicoesMethodUrl: { type: String, required: true },
   symbolicMethodUrl: { type: String, required: true },
   scoreMethodUrl: { type: String, required: true },
+  card: { type: Object, required: true }, // share-cards AC 42
   sources: { type: Array, default: () => [] },
 });
 
@@ -32,8 +35,7 @@ const noteIndex = computed(() => (symbolicNote.value ?? 6) + 1);
   <PublicLayout>
     <main class="ma-wrap">
       <section class="ma-hero">
-        <!-- No src: the official photo is served from our origin only once a photo cache exists (plan, out of scope). -->
-        <OfficialPhoto :name="member.name" />
+        <OfficialPhoto :name="member.name" v-bind="photo ? { src: photo.url, credit: photo.credit } : {}" />
         <div class="ma-hero__text">
           <p class="ma-t-micro ma-eyebrow">{{ member.houseName }} · {{ mandate.legislature }}ª legislatura · {{ mandate.party }} · {{ mandate.uf }}</p>
           <h1 class="ma-hero__name ma-t-display-2">{{ member.name }}</h1>
@@ -107,6 +109,8 @@ const noteIndex = computed(() => (symbolicNote.value ?? 6) + 1);
           :collected-at="sources[0]?.collectedAt ?? ''"
         />
       </section>
+
+      <ShareImages :card="card" />
     </main>
   </PublicLayout>
 </template>

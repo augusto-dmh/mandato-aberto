@@ -1,8 +1,12 @@
 <?php
 
+use App\Cards\Code;
+use App\Http\Controllers\CardController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MethodologyController;
+use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\RollCallController;
+use App\Http\Controllers\VerifyController;
 use Illuminate\Support\Facades\Route;
 
 // The public paths (skeleton door 10, plan door 4): a link shared from the static site keeps working
@@ -14,3 +18,18 @@ Route::get('/senadores/{id}/legislatura/{n}/', [MemberController::class, 'senato
 Route::get('/votacoes/{id}/', [RollCallController::class, 'camara'])->where('id', '[0-9]+-[0-9]+')->name('roll-calls.show');
 Route::get('/senado/votacoes/{id}/', [RollCallController::class, 'senado'])->whereNumber('id')->name('senate-roll-calls.show');
 Route::get('/metodologia/', [MethodologyController::class, 'show'])->name('methodology');
+
+// Official photos from our origin, content-addressed (share-cards door 6).
+Route::get('/fotos/{sha256}.jpg', [PhotoController::class, 'show'])->where('sha256', '[0-9a-f]{64}')->name('photos.show');
+
+// Share card images, content-addressed by their verification code (share-cards door 6).
+$card = ['code' => Code::PATTERN, 'format' => '1200x630|1080x1350|1080x1920'];
+Route::get('/deputados/{id}/legislatura/{n}/card/{code}/{format}.png', [CardController::class, 'deputy'])->whereNumber(['id', 'n'])->where($card)->name('deputies.card');
+Route::get('/senadores/{id}/legislatura/{n}/card/{code}/{format}.png', [CardController::class, 'senator'])->whereNumber(['id', 'n'])->where($card)->name('senators.card');
+Route::get('/votacoes/{id}/card/{code}/{format}.png', [CardController::class, 'camara'])->where(['id' => '[0-9]+-[0-9]+', ...$card])->name('roll-calls.card');
+Route::get('/senado/votacoes/{id}/card/{code}/{format}.png', [CardController::class, 'senado'])->whereNumber('id')->where($card)->name('senate-roll-calls.card');
+
+// What a printed code showed, and whether the current data still match (share-cards S5). Any typed
+// form of a code reaches the controller, which redirects it to the canonical one.
+Route::get('/verificar/', [VerifyController::class, 'index'])->name('verify.index');
+Route::get('/verificar/{code}/', [VerifyController::class, 'show'])->name('verify.show');

@@ -1,14 +1,22 @@
 <?php
 
+use App\Cards\Payloads;
+use App\Console\Commands\FetchPhotos;
+use App\Models\House;
+use App\Models\Member;
+use App\Models\RollCall;
 use Dom\Element;
 use Dom\HTMLDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Inertia\Ssr\HttpGateway;
 use Tests\Support\CapturedOutput;
+use Tests\Support\Jpeg;
 use Tests\TestCase;
 
 pest()->extend(TestCase::class)
@@ -148,4 +156,108 @@ function headTags(HTMLDocument $doc): array
     $tags['canonical'] = array_map(fn ($l) => (string) $l->getAttribute('href'), iterator_to_array($doc->querySelectorAll('head link[rel="canonical"]')));
 
     return $tags;
+}
+
+/**
+ * Runs an Artisan command and returns its exit code, standard output and standard error apart.
+ *
+ * @param  array<string, mixed>  $parameters
+ * @return array{code: int, out: string, err: string}
+ */
+function runCommand(string $command, array $parameters = []): array
+{
+    $output = new CapturedOutput;
+    $code = Artisan::call($command, $parameters, $output);
+
+    return ['code' => $code, 'out' => $output->fetch(), 'err' => $output->errors()];
+}
+
+function camaraPhotoUrl(string $id): string
+{
+    return "https://www.camara.leg.br/internet/deputado/bandep/{$id}.jpg";
+}
+
+function senadoPhotoUrl(string $id, bool $final = false): string
+{
+    return 'https://'.($final ? 'legis' : 'www').".senado.leg.br/senadores/img/fotos-oficiais/senador{$id}.jpg";
+}
+
+/**
+ * Fakes the three photo hosts: each deputy answers a 354 x 472 JPEG, each senator a 301 to
+ * `legis.senado.leg.br` and then a 480 x 600 JPEG, each seeded by the member id. `$answers` maps
+ * a URL to a response (or a callable taking the request) that replaces the default, and may be
+ * changed between runs.
+ *
+ * @param  array<string, mixed>  $answers
+ */
+function fakePhotoHosts(array &$answers = []): void
+{
+    // Only the SSR server is reached for real: every other request is faked or refused.
+    Http::preventStrayRequests();
+    Http::allowStrayRequests([rtrim((string) config('inertia.ssr.url'), '/').'/*']);
+    Http::fake(function (Request $request, array $options) use (&$answers) {
+        $url = $request->url();
+        if (array_key_exists($url, $answers)) {
+            $answer = $answers[$url];
+
+            return is_callable($answer) ? $answer($request, $options) : $answer;
+        }
+        if (preg_match('#^https://www\.camara\.leg\.br/internet/deputado/bandep/(\d+)\.jpg$#', $url, $m) === 1) {
+            return Http::response(Jpeg::make(354, 472, (int) $m[1]), 200, ['Content-Type' => 'image/jpeg']);
+        }
+        if (preg_match('#^https://www\.senado\.leg\.br/senadores/img/fotos-oficiais/senador(\d+)\.jpg$#', $url, $m) === 1) {
+            return Http::response('', 301, ['Location' => senadoPhotoUrl($m[1], final: true)]);
+        }
+        if (preg_match('#^https://legis\.senado\.leg\.br/senadores/img/fotos-oficiais/senador(\d+)\.jpg$#', $url, $m) === 1) {
+            return Http::response(Jpeg::make(480, 600, (int) $m[1]), 200, ['Content-Type' => 'image/jpeg']);
+        }
+
+        return in_array($request->toPsrRequest()->getUri()->getHost(), FetchPhotos::HOSTS, true) ? Http::response('not found', 404) : null;
+    });
+}
+
+/** Imports both fixture houses and caches every member's photo through the faked hosts. */
+function storeFixturePhotos(): void
+{
+    importFixtures();
+    fakePhotoHosts();
+    $result = runCommand('mandato:photos');
+    expect($result['code'])->toBe(0, $result['err']);
+}
+
+/** @return list<string> the URLs requested so far, in order */
+function requestedUrls(): array
+{
+    return array_map(fn (array $pair) => $pair[0]->url(), Http::recorded()->all());
+}
+
+/** @return list<string> the directives of a Cache-Control header, sorted */
+function cacheDirectives(TestResponse $response): array
+{
+    $directives = array_map('trim', explode(',', (string) $response->headers->get('Cache-Control')));
+    sort($directives);
+
+    return $directives;
+}
+
+/** Fails, never skips, when the card renderer is not built: the card proofs run the real CLI. */
+function requireCardRenderer(): void
+{
+    if (! is_file(base_path('bootstrap/cards/render.mjs'))) {
+        test()->fail('The card renderer is not built: run `sail npm run build`.');
+    }
+}
+
+/** The current card payload of a member's mandate, as the card route computes it. */
+function memberPayload(House $house, string $id, int $legislature): array
+{
+    $member = Member::query()->where('house', $house)->where('source_id', $id)->sole();
+
+    return Payloads::member($house, $member, $member->memberships()->where('legislature_number', $legislature)->sole());
+}
+
+/** The current card payload of a roll call. */
+function rollCallPayload(House $house, string $id): array
+{
+    return Payloads::rollCall($house, RollCall::query()->where('house', $house)->where('source_id', $id)->sole());
 }

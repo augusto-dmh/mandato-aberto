@@ -34,4 +34,7 @@ export default function setup() {
     stdio: "inherit",
     env: { ...process.env, MANDATO_DATA: data, MANDATO_PHOTO_CACHE: join(data, "no-photos") },
   });
+  // every share card format, beside the prototype so the pages share its tokens, styles and fonts
+  execFileSync("node", ["scripts/cards.mjs", "e2e/cards.pages.mjs", join(OUT, "cards")], { cwd: ROOT, stdio: "inherit" });
+  copyFileSync(join(ROOT, "tests", "fixtures", "photo-480x600.svg"), join(OUT, "cards", "photo-480x600.svg"));
 }

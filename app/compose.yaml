@@ -2,11 +2,11 @@ name: mandato-aberto
 services:
     laravel.test:
         build:
-            context: './vendor/laravel/sail/runtimes/8.5'
+            context: './docker/8.5'
             dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
-        image: 'sail-8.5/app'
+        image: 'mandato-aberto/sail-8.5'
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:

@@ -143,7 +143,8 @@ test('roll call head carries the share tags by ballot', function () {
         ->and($senate['og:type'])->toBe(['website'])
         ->and($senate['og:site_name'])->toBe(['Mandato Aberto'])
         ->and($senate['og:locale'])->toBe(['pt_BR'])
-        ->and($senate['twitter:card'])->toBe(['summary'])
+        // share-cards door 7: a roll-call page previews its card
+        ->and($senate['twitter:card'])->toBe(['summary_large_image'])
         ->and($senate['description'])->toHaveCount(1)
         ->and($senate['og:description'])->toBe($senate['description']);
 

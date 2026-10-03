@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const ROOT = resolve(__dirname, "..");
-const COMPONENTS = ["NDeM", "SourceNote", "VoteMark", "MandateScore", "OfficialPhoto", "TallyBar", "AiSummaryFrame"];
+const COMPONENTS = ["NDeM", "SourceNote", "VoteMark", "MandateScore", "OfficialPhoto", "TallyBar", "AiSummaryFrame", "MemberCard", "RollCallCard"];
 
 describe("package", () => {
   it("readme documents every component", () => {
