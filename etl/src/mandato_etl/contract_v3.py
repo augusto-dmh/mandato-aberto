@@ -266,13 +266,6 @@ def assemble(
                 if key not in store or v["dataHoraVoto"] >= store[key]["dataHoraVoto"]:
                     store[key] = v
 
-    by_member = defaultdict(dict)
-    for rc_id, doc in docs.items():
-        for v in doc["votes"]:
-            by_member[str(v["memberId"])][rc_id] = v
-    plenary = [doc for doc in docs.values() if doc["organ"] == PLENARY]
-    at = {rc_id: data.roll_calls[rc_id]["at"] for rc_id in docs}
-
     members = []
     for dep, legislatures in mandates.items():
         own_mandates = []
@@ -287,7 +280,6 @@ def assemble(
             periods = exercise_periods(histories.get(dep, []), legislature, min(now_local, next_start(legislature)))
             own_mandates.append({
                 "legislature": legislature, "party": party, "uf": uf, "exercisePeriods": periods,
-                **_indicators(dep, legislature, periods, plenary, at, by_member[dep]),
                 **_proposition_counts(dep, legislature, data),
             })
         source = latest.get(dep)
@@ -301,7 +293,6 @@ def assemble(
             "house": HOUSE, "id": int(dep), "name": name.strip(), "party": party, "uf": uf, "photoUrl": photo,
             "sourceUrl": DEPUTY_URL.format(id=dep), "mandates": own_mandates,
         })
-    members.sort(key=lambda m: (sort_name(m["name"]), m["id"]))
 
     authors = defaultdict(list)
     for dep, props in data.authorship.items():
@@ -317,14 +308,41 @@ def assemble(
         _proposition(prop, data, linked.get(prop), sorted(authors.get(prop, []), key=lambda a: a["memberId"]))
         for prop in authored | set(linked)
     ]
-    propositions.sort(key=lambda p: p["id"])
-    propositions.sort(key=lambda p: p["presentedAt"] or "", reverse=True)
 
     types = {p["id"]: p["type"] for p in propositions}
     targets = sorted({
-        doc["propositionId"] for doc in plenary
-        if doc["propositionId"] is not None and doc["votes"] and types[doc["propositionId"]] in TEXT_TYPES
+        doc["propositionId"] for doc in docs.values()
+        if doc["organ"] == PLENARY and doc["propositionId"] is not None and doc["votes"]
+        and types[doc["propositionId"]] in TEXT_TYPES
     })
+    at = {rc_id: data.roll_calls[rc_id]["at"] for rc_id in docs}
+    result = finish(HOUSE, docs, at, members, propositions, ruleset, sorted(lists))
+    return {**result, "targets": targets}
+
+
+def finish(house: str, docs: dict, at: dict, members: list, propositions: list, ruleset: dict,
+           legislatures: list[int], symbolic: bool = True) -> dict:
+    """The house-independent half of the contract: indicators per mandate, ordering, coverage and files.
+
+    `docs` maps a roll-call id to its full document and `at` to its timestamp; each member's
+    mandates already hold their periods and proposition counts. `symbolic=False` is a house that
+    publishes no symbolic roll-call records, whose symbolic counts are `null` (door 9).
+    """
+    by_member = defaultdict(dict)
+    for rc_id, doc in docs.items():
+        for v in doc["votes"]:
+            by_member[str(v["memberId"])][rc_id] = v
+    plenary = [doc for doc in docs.values() if doc["organ"] == PLENARY]
+    for member in members:
+        dep = str(member["id"])
+        for mandate in member["mandates"]:
+            mandate.update(_indicators(dep, mandate["legislature"], mandate["exercisePeriods"], plenary, at,
+                                       by_member[dep]))
+            if not symbolic:
+                mandate["symbolicMerit"] = None
+    members.sort(key=lambda m: (sort_name(m["name"]), m["id"]))
+    propositions.sort(key=lambda p: p["id"])
+    propositions.sort(key=lambda p: p["presentedAt"] or "", reverse=True)
 
     ordered = sorted(docs.values(), key=lambda d: d["id"])
     ordered.sort(key=lambda d: d["date"], reverse=True)
@@ -332,25 +350,26 @@ def assemble(
     roll_calls = [{k: v for k, v in d.items() if k not in summary_keys} for d in ordered]
 
     coverage = []
-    for legislature in sorted(lists):
+    for legislature in legislatures:
         own = [d for d in roll_calls if d["legislature"] == legislature]
         ballots = Counter(d["ballot"] for d in own)
         coverage.append({
             "legislature": legislature,
             "through": max((d["date"] for d in own), default=None),
-            "rollCalls": {b: ballots[b] for b in ("nominal", "secret", "symbolic")},
+            "rollCalls": {"nominal": ballots["nominal"], "secret": ballots["secret"],
+                          "symbolic": ballots["symbolic"] if symbolic else None},
             "unclassified": sum(1 for d in own if d["kind"] == "unclassified"),
-            "members": sum(1 for legislatures in mandates.values() if legislature in legislatures),
+            "members": sum(1 for m in members if any(x["legislature"] == legislature for x in m["mandates"])),
         })
 
     files = {
         "members.json": members,
         "roll-calls.json": roll_calls,
         "propositions.json": propositions,
-        "classification-rules.json": [{**rule, "house": HOUSE} for rule in rules],
+        "classification-rules.json": [{**rule, "house": house} for rule in ruleset["rules"]],
     }
     files |= {f"roll-calls/{rc_id}.json": doc for rc_id, doc in docs.items() if doc["ballot"] != "symbolic"}
-    return {"files": files, "coverage": coverage, "targets": targets}
+    return {"files": files, "coverage": coverage}
 
 
 def _indicators(dep, legislature, periods, plenary, at, own_votes) -> dict:
