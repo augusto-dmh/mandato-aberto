@@ -2,19 +2,21 @@
 
 **Verdict**: FAIL
 **Profile**: standard
-**Diff range**: bc0a4a8..f73b12c3e15c7f3286112730545fe61427dce152
-**Round**: 1 - full
+**Diff range**: bc0a4a8..c0ccf1802b84f2882f4521dee474e5cb150378a8
+**Round**: 2 - scoped
 **Verifier**: independent sub-agent (author != verifier)
 
-One surviving mutant fails the feature. Dropping the `votacoesProposicoes` columns `proposicao_numero` and `proposicao_ano` from the proposition fallback (`etl/src/mandato_etl/contract_v3.py:227-228`, replaced by `None`) leaves all 239 tests green. C58's settling assertion (`etl/tests/test_v3_contract.py:251`) checks proposition 8002. 8002 is also a row of `proposicoes-2023.csv` (`etl/tests/v3data.py:221`), so its `number` and `year` come from that file, not from the link columns. The schema accepts `null` for both fields, so no other proof catches it. The handoff says voted bills often predate the bulk files, so this branch carries most of the voted propositions. Every other check is proven with located evidence. The v2 output stays byte-identical on the repo fixtures, and the golden reproduces from the base commit's own code.
+The fix works for what round 1 named. C58 now passes, and mutant F5 (the link fallback publishing `number`/`year` as `None`) is killed by `etl/tests/test_v3_contract.py:255`. The verdict stays FAIL because of the round-1 set "proposition field sources". Recomputed from the branches of `_proposition` (`etl/src/mandato_etl/contract_v3.py:217-231`) against the fields that `etl/schema/v3/propositions.schema.json` declares, the set has four members with no proof: `summary` from the bulk row and from the link, `status` from the bulk row, and the `null` status of a link-only proposition. That last one is named in the artifact's own prose (`.specs/features/contract-v3/checks.md:299`, "`presentedAt` and `status` null when it predates the bulk files"). Round 1 credited it to C46 `:139`, but that line asserts only `presentedAt is None`. Each of the four was injected as a fault (F6-F9) and survived the full suite, 239 passed. This is a gap in the checks, not a wrong value in the code: no AC or check names a value for `summary` or `status`, and the code reads the expected columns.
+
+Scope of this round: the fix's diff (`f73b12c..c0ccf18`: `etl/tests/test_v3_contract.py` +5/-1, and a handoff line in `checks.md`) plus every verdict that was not PASS in round 1 (C58, the coverage set "proposition field sources", the `contract_v3.py` Test policy row, fault F5). Everything else is carried from round 1 at `f73b12c` and marked as such.
 
 ## Binding sources
 
-The plan marks no binding design source (profile `standard`, not `ui`), so step 1 does not run. The authorities used for the Coverage recompute were the doors 5-7 enums, the Câmara ruleset v1 table in `plan.md`, door 10 / AD-018 and the schema files in `etl/schema/v3/`. They are recorded under Coverage.
+Carried from f73b12c. The plan marks no binding design source (profile `standard`, not `ui`), so step 1 does not run. The fix touched no interface.
 
 ## Checks
 
-All proofs were run at `f73b12c` in one invocation, `uv run --directory etl pytest -v`: exit 0, 239 passed, 0 failed, 0 skipped. Each named test below appears individually as PASSED in that output (parametrised tests show one line per case). C6's command was run separately and exited 0.
+Proofs verified at c0ccf18. All proofs were re-run at `c0ccf18` in one invocation, `uv run --directory etl pytest -v`: exit 0, 239 passed, 0 failed, 0 skipped. Each of the 68 named tests below (including etl-camara's `test_contract_layout`) appears individually as PASSED in that output, with no FAILED, SKIPPED or ERROR line for any of them. Parametrised tests show one line per case. C6's command was re-run and exited 0. Evidence citations are carried from f73b12c, except that the file the fix touched (`etl/tests/test_v3_contract.py`) was re-read: lines at or above 251 did not move, so C52's Senate citations shifted by 4 and C58 is re-cited.
 
 | Check | Claim | Proof run | Evidence | Result |
 | --- | --- | --- | --- | --- |
@@ -69,15 +71,17 @@ All proofs were run at `f73b12c` in one invocation, `uv run --directory etl pyte
 | C49 | both validators reject 8 corruptions | `test_validators_agree_on_invalid[8 cases]` PASSED | `etl/tests/test_v3_contract.py:193` `first_error(...) is not None`; `:194` `not ...is_valid(doc)`; mutations at `:175-182` | PASS |
 | C50 | Senate fixture validates; 2 senators [57,58]; `6923` nominal with the 5 officials | `test_senate_fixture_validates` PASSED | `etl/tests/test_v3_senado.py:20` `== 0`; `:23` mandates `[57, 58]`; `:26` `== ("6923", "nominal", "senado")`; `:27` officials incl. `Licença` | PASS |
 | C51 | `presidencia` / position `other` named by validate, exit 1 | `test_invalid_senate_value_is_named[house,position]` PASSED | `etl/tests/test_v3_senado.py:46` `== 1`; `:48` `relative in err and value in err` | PASS |
-| C52 | nullable symbolic counts accept null/0, reject -1/"0"; Câmara writes ints; Senate null | `test_symbolic_counts_are_nullable[4 cases]`, `test_symbolic_counts_are_nullable_in_senate_fixture` PASSED | `etl/tests/test_v3_contract.py:202` `== [1, 0, 1]`; `:204` `symbolic == 1`; `:209-210` both validators `is valid`; `:263,265` Senate `[None]*n`; `:266` validate `== 0` | PASS |
+| C52 | nullable symbolic counts accept null/0, reject -1/"0"; Câmara writes ints; Senate null | `test_symbolic_counts_are_nullable[4 cases]`, `test_symbolic_counts_are_nullable_in_senate_fixture` PASSED | `etl/tests/test_v3_contract.py:202` `== [1, 0, 1]`; `:204` `symbolic == 1`; `:209-210` both validators `is valid`; `:267,269` Senate `[None]*n`; `:270` validate `== 0` (refreshed: the fix moved these lines by 4) | PASS |
 | C53 | sensitive map; LS/LP/LAP fail validate, Licença passes | `test_sensitive_codes_are_generalised_map`, `test_sensitive_codes_are_generalised_in_validation[4 cases]` PASSED (the `-k` prefix matches both) | `etl/tests/test_v3_contract.py:214` `SENSITIVE_OFFICIAL["camara"] == {}`; `:216` `== "Licença"`; `:217` P-NRV unchanged; `:229` `== exit_code`; `:231` code named on stderr | PASS |
 | C54 | only 8001 gets a full text, exact document | `test_full_text_for_each_target` PASSED | `etl/tests/test_v3_full_texts.py:19` `names == ["8001.json"]`; `:21` exact keys; `:23-27` sourceUrl, sha256 of served PDF, extractor, extractedAt, sentence in text | PASS |
 | C55 | PDF and proposition record cached, listed, 0 requests on rebuild | `test_full_text_sources_are_cached` PASSED | `etl/tests/test_v3_full_texts.py:38` manifest sha256; `:41` in `meta.sources`; `:44` `== []` | PASS |
 | C56 | opening and presentation descriptions stripped, null when empty | `test_roll_call_doc_carries_descriptions` PASSED | `etl/tests/test_v3_full_texts.py:51-52` stripped values (fixture has surrounding spaces, `etl/tests/v3data.py:174`); `:54` `== (None, None)` | PASS |
 | C57 | pypdf pinned in group, default-groups, dependencies `[]`, only full_texts imports it | `test_pypdf_is_pinned_outside_runtime_dependencies`, `test_runtime_dependencies_are_empty` PASSED | `etl/tests/test_v3_full_texts.py:60-65` (one lock entry, `pypdf==<locked>`, default-groups, `[]`, `importers == ["full_texts.py"]`); `etl/tests/test_packaging.py:12` `dependencies == []` | PASS |
-| C58 | allowlist gains exactly 5 columns, and a v3 build reads them through `readers.read` | `test_allowlist_additions` PASSED, but mutant F5 survives it and the whole suite | `etl/tests/test_v3_contract.py:243-246` exact additions (proven); `:249` opening description (proven). `:251` `(linked["type"], linked["number"], linked["year"]) == ("PEC", 2, 2024)` does not settle `proposicao_numero`/`proposicao_ano`: 8002 is also in `proposicoes` (`etl/tests/v3data.py:221`), so `_proposition` takes those values from that row (`etl/src/mandato_etl/contract_v3.py:219-224`) and never reaches the link fallback (`:226-228`) | FAIL |
+| C58 | allowlist gains exactly 5 columns, and a v3 build reads them through `readers.read` | `test_allowlist_additions` PASSED at c0ccf18; F5 re-injected and killed by it | `etl/tests/test_v3_contract.py:243-246` exact additions; `:249` `a1["openingDescription"] == "Votação do DTQ 1: Destaque"` (votacoes column); `:255` `(link_only["type"], link_only["number"], link_only["year"]) == ("PL", 1, 2023)` for 8001. 8001 is absent from `INDICATOR_PROPOSITIONS` (`etl/tests/v3data.py:208-221`) and present only in `INDICATOR_LINKS` (`:204-205`), so `proposicao_siglaTipo`, `proposicao_numero` and `proposicao_ano` are read by the link branch (`etl/src/mandato_etl/contract_v3.py:227-228`). The second `votacoes` column is C56 `etl/tests/test_v3_full_texts.py:52` | PASS |
 
 ## Coverage
+
+Rows carried from {R1}, except "proposition field sources", which was recomputed at {HEAD}. The fix changed only a test, so no other row's authority was touched.
 
 | Set (size) | Recomputed from | Member -> proof | Unproven |
 | --- | --- | --- | --- |
@@ -106,30 +110,31 @@ All proofs were run at `f73b12c` in one invocation, `uv run --directory etl pyte
 | v3 build exit codes (3) | Observable | 0 C2 · 1 C3, C4, C8, C29, C41 · 2 C16 | - |
 | nullable symbolic fields (2) | door 9 | C52 both | - |
 | startup config: v3 output root (2 assemblies) | read directly: `etl/src/mandato_etl/cli.py:17` `V3_DIR = ROOT / "data" / "v3"`, `:94` `out = args.out if args.out is not None else V3_DIR / args.house` | CLI default C2 `etl/tests/test_v3_cli.py:26` · `--out` C2 `:35` | - |
-| proposition field sources (2), swept from AC 33 / Flow hop 3 / C58 and not given a row in checks.md | `contract_v3._proposition` branches `:219-230` | `proposicoes` row: C46 (`presentedAt`), C58 `:251` · `votacoesProposicoes` link fallback: `type` C54 (8001 becomes a target only through its link `PL`), `presentedAt`/`status` null C46 `:139` | link fallback `number` and `year` (`proposicao_numero`, `proposicao_ano`): no assertion, F5 survived |
+| proposition field sources (2 sources x 6 fields = 12), verified at c0ccf18 | `contract_v3._proposition` branches `etl/src/mandato_etl/contract_v3.py:219-230` against the fields `etl/schema/v3/propositions.schema.json` declares (`type`, `number`, `year`, `summary`, `presentedAt`, `status`; `id`, `house`, `sourceUrl`, `authors` are branch-independent and covered by C43, C44, C37) | bulk row: `type`/`number`/`year` C58 `etl/tests/test_v3_contract.py:252` (8002 is in the bulk file, `etl/tests/v3data.py:221`) · `presentedAt` C46 `:135-138` · link: `type`/`number`/`year` C58 `:255` (F5 killed) · `presentedAt` null C46 `:139` | bulk-row `summary` (`contract_v3.py:222`, F7 survived) · link `summary` (`:228`, F6 survived) · bulk-row `status` (`:223`, F8 survived) · link `status` null (`:229`, F9 survived; named in `checks.md:299` and miscredited to C46 `:139` in round 1) |
 
-Precision notes, which are findings about the checks and block nothing on their own:
+Precision notes, carried from f73b12c (findings about the checks; they block nothing on their own):
 - P1 (C46 / AC 41): the tie-breakers are not exercised. Member names in the fixture carry no accents and none repeat. Roll-call dates and proposition `presentedAt` values are distinct within each dataset. So "accent-stripped" and "then `id`" are not discriminated. The code does both (`etl/src/mandato_etl/contract_v3.py:304,320-321,329-330`).
 - P2 (AC 29/30): alignments are not restricted to exercise periods. The handoff (`.specs/features/contract-v3/checks.md:299`) records this, and AC 29/30 do not require it. Noted for the maintainer, not a defect against the checks.
+- P3 (new, round 2): no AC or check states what `summary` and `status` hold. The obvious reading is: the bulk `ementa` and `ultimoStatus_descricaoSituacao`, the link `proposicao_ementa`, and `null` status for a link-only proposition, per `checks.md:299`. Writing that down as a claim is what lets a proof exist for the four unproven members above.
 
 ## Test policy rows
+
+The `contract_v3.py` row was re-judged at c0ccf18. The other rows are carried from f73b12c, because the fix classifies no file they cover.
 
 | Row | Files it classifies | Required proof | Expectation met |
 | --- | --- | --- | --- |
 | Decides, reached across a boundary (CLI, HTTP) | `classify.py` | boundary C25, C29 · own layer C17-C22, C28, C30 | yes - one asserted case per row: ballot 5 cases, 11/11 rules, vote map 7 + unknown, orientation map 5 + empty + unknown |
 | Decides, reached across a boundary (CLI, HTTP) | `cli.py` | CLI C2-C5, C8, C16, C29, C41, C47 | yes - every exit code and stderr content asserted via `cli.main(argv)` |
 | Decides, reached across a boundary (CLI, HTTP) | `sources/camara.py` additions | HTTP to the local FakeCamara C15, C16, C55 | yes - miss, hit, refresh and 404 each asserted across the socket |
-| Decides, not reached across a boundary | `contract_v3.py` | own layer through dataset builds C7-C14, C31-C38 | no - the listed decisions are each asserted, but the `_proposition` fallback branch (`contract_v3.py:225-230`) has no case for `number`/`year`; F5 survived |
+| Decides, not reached across a boundary | `contract_v3.py` | own layer through dataset builds C7-C14, C31-C38, C58 | no - the `_proposition` branches now have their `number`/`year` case (F5 killed), but `summary` (both branches) and `status` (both branches) have no asserted case; F6-F9 survived |
 | Decides (selection) / instrumentation (extraction) | `full_texts.py` | selection C54; extraction covered by consumer | yes - 4 target cases in C54; extracted text asserted at `etl/tests/test_v3_full_texts.py:27` |
 | Instrumentation, pass-throughs | `publish.py` (`version` forwarded), `schema.py` (`kind_of`/`load` by version), `readers.py` (allowlist) | covered by consumer | yes - C40, C41, C5, C49 exercise them; allowlist additions proven statically at C58 `:243` |
 
-etl-camara's `test_contract_layout` edit (f73b12c, `etl/tests/test_publish.py:125`): the expected listing went from the five v2 schema files to the five plus `v3`. It is still an exact `==` over `SCHEMA_DIR.iterdir()`, so an extra or missing file still fails it, and C48 (`etl/tests/test_v3_contract.py:164`) pins the `v3/` contents exactly. Not weakened. The `conftest.py` change only adds real-file columns to the fixture. The v2 golden was regenerated over those inputs, and I reproduced it from the base commit's code (C1 row).
-
-v2 byte identity: proven on the repo fixtures, both variants, with HEAD code and base code each matching `etl/tests/fixtures/v2-golden.json`. `data/` is absent from this worktree, so the handoff's off-suite comparison on the 2026-09-23 snapshot (2,243 files) could not be reproduced here.
+Carried from f73b12c: the edit to etl-camara's `test_contract_layout` is not weakened. It is still an exact listing, and C48 pins `v3/`. v2 byte identity was proven with both the HEAD code and the base code, against `etl/tests/fixtures/v2-golden.json`. This round re-ran `test_v2_build_matches_base_commit[plain,secret]` at c0ccf18 (both PASSED). The fix touched neither the golden nor `etl/src`.
 
 ## Faults injected
 
-Each fault ran in `git worktree add --detach /tmp/cv3-verify HEAD` with its own `uv sync`, without `git stash`, and was reverted with `git checkout -- .` before the next one. The worktree was removed afterwards. `git status --porcelain` of the real tree was empty before and after.
+F1-F4 are carried from f73b12c. F5-F9 were verified at c0ccf18, in `git worktree add --detach /tmp/cv3-verify-r2 HEAD` with its own `uv sync` and no `git stash`. Each fault was reverted with `git checkout -- .` before the next, and the scratch was removed with `git worktree remove --force` and `git worktree prune`. The real tree's `git status --porcelain` was empty before and after, and the two outputs matched under `diff`. F6-F9 probe the members of the recomputed set that no assertion names.
 
 | Mutation | Location | Killed |
 | --- | --- | --- |
@@ -137,11 +142,18 @@ Each fault ran in `git worktree add --detach /tmp/cv3-verify HEAD` with its own 
 | F2 participation ignores exercise periods (dropped `in_periods(...)` from eligibility) | `etl/src/mandato_etl/contract_v3.py:360` | yes - `test_participation_all` failed |
 | F3 next legislature start off by one (`timedelta(days=1)` -> `0`) | `etl/src/mandato_etl/contract_v3.py:47` | yes - `test_exercise_periods_per_legislature` failed |
 | F4 roll-call schema stops refusing LS/LP/LAP (pattern -> `^`) | `etl/schema/v3/roll-call.schema.json:187` | yes - `test_sensitive_codes_are_generalised_in_validation[LS,LP,LAP]` 3 failed |
-| F5 link fallback publishes `number`/`year` as `None` instead of `proposicao_numero`/`proposicao_ano` | `etl/src/mandato_etl/contract_v3.py:227-228` | no - survived: `test_allowlist_additions` passed and the full suite passed (239 passed) |
+| F5 (re-injected) link fallback publishes `number`/`year` as `None` | `etl/src/mandato_etl/contract_v3.py:227-228` | yes - `test_allowlist_additions` failed at `etl/tests/test_v3_contract.py:255`; full suite 1 failed, 238 passed |
+| F6 link fallback publishes `summary` as `None` instead of `proposicao_ementa` | `etl/src/mandato_etl/contract_v3.py:228` | no - survived: full suite 239 passed |
+| F7 bulk row publishes `summary` as `None` instead of `ementa` | `etl/src/mandato_etl/contract_v3.py:222` | no - survived: full suite 239 passed |
+| F8 bulk row publishes `status` as `None` instead of `ultimoStatus_descricaoSituacao` | `etl/src/mandato_etl/contract_v3.py:223` | no - survived: full suite 239 passed |
+| F9 link fallback publishes `status` `"Aguardando Parecer"` instead of `null` | `etl/src/mandato_etl/contract_v3.py:229` | no - survived: full suite 239 passed |
 
 ## Gate
 
+Verified at c0ccf18:
 `uv run --directory etl pytest -v` - 239 passed, 0 failed (exit 0)
 `test -z "$(git diff --name-only bc0a4a8..HEAD -- site design .github/workflows/publish.yml)"` - exit 0
+`scripts/check-commit-msg.sh` on each of the 10 commits in `bc0a4a8..c0ccf18` - exit 0 for all
+
+Carried from f73b12c:
 `PYTHONPATH=<bc0a4a8 etl/src> uv run pytest tests/test_v2_frozen.py` (scratch) - 2 passed: the base code reproduces the golden
-`scripts/check-commit-msg.sh` on each of the 8 commits in range - exit 0 for all
