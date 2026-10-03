@@ -144,6 +144,8 @@ The `mandato:photos` and `mandato:cards:prune` commands (door 9) are called by t
 
 **Independent test:** with the browser shell installed, request each format of one deputy, one senator and one roll call; read status, `image/png` size and headers; request again and assert the CLI ran once; request a stored old code after changing a vote, an unknown code and a malformed one.
 
+**Amendment, decided after batch 2 by the orchestrator under the maintainer's delegation (2026-10-03), additive:** AC 15 holds for a card requested from a running server, not only from the CLI. `php artisan serve` (what Sail runs) drops the image's `ENV PLAYWRIGHT_BROWSERS_PATH` from the PHP it starts, and PHP-FPM clears the environment by default, so every served card answered 503. The renderer now hands the browsers path to the render CLI explicitly: `config('mandato.card_browsers_path')` = `env('PLAYWRIGHT_BROWSERS_PATH')`, passed through `Process::env` when set, and inherited from the environment when null. `.env.example` sets it to the Sail image's `/opt/ms-playwright`, which a served request reads from `.env`; CI sets its own path in job `app`'s environment, which wins over `.env`. Door 3 is unchanged.
+
 ### S4: Card content is fixed, the same for everyone, and limited (P1)
 
 **Acceptance Criteria**
@@ -177,6 +179,8 @@ The `mandato:photos` and `mandato:cards:prune` commands (door 9) are called by t
 **Independent test:** serve a card, change one vote and re-import, open the old code (mismatch sentence) and the new one (match sentence), then a lowercase variant (301) and a random code (404).
 
 **Amendment, decided at batch 2 by the orchestrator under the maintainer's delegation (2026-10-03), additive:** in AC 37's third state (`Este registro não está nos dados atuais.`) the page renders the payload's values as text and no card image, so no `<img>` points at a card URL that AC 20 answers with 404 once the subject is gone. AC 20 and AC 45 are unchanged.
+
+**Amendment, decided after batch 2 by the orchestrator under the maintainer's delegation (2026-10-03), additive:** in the same third state the page points at nothing that answers 404. Its head follows door 7's rule for a page without a card: `twitter:card` `summary` and no `og:image` tag (AC 45's image tags apply to the first two states; `noindex` stays in all three). AC 36's link to the subject's page is not rendered; the subject's name stays on the page as plain text, in the payload's values.
 
 ### S6: Links preview the card and readers can download it (P1)
 
