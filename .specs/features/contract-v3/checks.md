@@ -3,7 +3,7 @@
 Profile: standard
 Plan: `.specs/features/contract-v3/plan.md`
 
-58 checks in 8 slices · 11 one-way doors (8 approved, 2 added by the orchestrator on 2026-10-02, 1 added while deriving checks) · 1 open question, which blocks go-live but not this build (rule descriptions reviewed in the PR)
+59 checks in 8 slices · 11 one-way doors (8 approved, 2 added by the orchestrator on 2026-10-02, 1 added while deriving checks) · 1 open question, which blocks go-live but not this build (rule descriptions reviewed in the PR)
 
 All proofs run from the repository root. `P` below abbreviates `uv run --directory etl pytest`.
 The feature base is `bc0a4a8` (the last commit before any code; its `etl/` equals `main`).
@@ -215,10 +215,14 @@ Proof: `P tests/test_packaging.py::test_runtime_dependencies_are_empty`
 **C58** - `readers.ALLOWLIST` gains exactly `ultimaAberturaVotacao_descricao` and `ultimaApresentacaoProposicao_descricao` (votacoes) and `proposicao_siglaTipo`, `proposicao_numero`, `proposicao_ano` (votacoesProposicoes) over the base, and a v3 build reads them through `readers.read` (Flow hop 3)
 Proof: `P tests/test_v3_contract.py::test_allowlist_additions`
 
+**C59** - A proposition with a row in the `proposicoes` bulk file takes `summary` from `ementa` and `status` from `ultimoStatus_descricaoSituacao` (fixture 8002: "Ementa 8002", "Aguardando Parecer"); a proposition known only through a roll-call link takes `summary` from `proposicao_ementa` and has `status` null (fixture 8001: "Institui o teste.", null) (added by the orchestrator after verification round 2)
+Proof: `P tests/test_v3_contract.py::test_proposition_summary_and_status_by_source`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
+| proposition field sources (12) | bulk `type` C58 · bulk `number` C58 · bulk `year` C58 · bulk `summary` C59 · bulk `presentedAt` C46 · bulk `status` C59 · link `type` C58 · link `number` C58 · link `year` C58 · link `summary` C59 · link `presentedAt` C46 · link `status` C59 | - |
 | `ballot` enum (3) | `nominal` C17, C25 · `secret` C17, C25, C27 · `symbolic` C17, C25, C26 | - |
 | `kind` enum (4) | `final` C21, C25 · `amendment` C21, C25 · `procedural` C21, C25 · `unclassified` C20, C25 | - |
 | Câmara ruleset v1 rules (11) | `camara.01` C21, C19 · `camara.02` C22 · `camara.03` C21, C25 · `camara.04` C21, C25 · `camara.05` C22 · `camara.06` C21 · `camara.07` C21 · `camara.08` C21, C25 · `camara.09` C21, C25 · `camara.10` C22 · `camara.11` C21, C25 | - |
@@ -299,3 +303,5 @@ Carried by `plan.md`.
 - **Settled mid-build:** the orchestrator amended doors 4 and 7 (doors 9 and 10, AD-018) before any code. Alignments follow AC 29 and AC 30 literally (every plenary vote of the legislature, as in v2), so AC 13's all-zero mandate is proven for a member with no vote; a member with votes outside every exercise period would keep non-zero alignment totals. Full-text targets are the ai-summaries scope (`PL`, `PLP`, `PEC`, `MPV`, `PDL` linked to a plenary roll call with at least one record); `urlInteiroTeor` comes from `/proposicoes/<id>` because voted bills often predate the 2023 bulk files. `propositions.json` lists authored propositions of the v2 types plus every proposition a written roll call decided on (`authors` may be empty, `presentedAt` and `status` null when it predates the bulk files); roll calls point to it by `propositionId`. The v2 golden was regenerated once, from the base code, after the fixture gained the real files' columns (only `meta.json`, which hashes the inputs, changed). `/deputados?idLegislatura=57` returns 879 rows for 648 deputies (one row per party change); the last row is the one used for a member with no vote. A 404 on any v3 API file or PDF exits 2, as for the bulk files
 - **Abandoned:** extending `compute.load` for v3 (Flow hop 4 as planned): it filters by `deputado_idLegislatura == 57` and drops roll calls without records, so v3 got its own loader and `compute` is untouched. A README inside the Senate fixture: `validate` rejects any file outside the contract
 - **Orchestrator, after the build (2026-10-02):** etl-camara's `test_contract_layout` (its C35) listed exactly the five v2 schema files, which approved door 1 contradicts by adding `etl/schema/v3/`. Under the maintainer's delegation the expected listing now includes `v3`; it stays an exact listing, so no file can appear unnoticed
+- **After verification round 1 (orchestrator):** C58's test now also asserts number and year of proposition 8001, which only the roll-call link carries; the round-1 surviving mutant (link fallback set to null) fails it
+- **After verification round 2 (orchestrator):** C59 proves `summary` and `status` on both proposition sources; the four round-2 surviving mutants (F6 to F9) fail it

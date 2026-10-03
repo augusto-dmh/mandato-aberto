@@ -247,8 +247,22 @@ def test_allowlist_additions(built_indicators):
     assert all(c in readers.ALLOWLIST[k] for k, base in BASE_ALLOWLIST.items() for c in base)
     a1 = load3(built_indicators, "roll-calls/300-5.json")
     assert a1["openingDescription"] == "Votação do DTQ 1: Destaque"
-    linked = {p["id"]: p for p in load3(built_indicators, "propositions.json")}[8002]
+    props = {p["id"]: p for p in load3(built_indicators, "propositions.json")}
+    linked = props[8002]
     assert (linked["type"], linked["number"], linked["year"]) == ("PEC", 2, 2024)
+    # 8001 is absent from the `proposicoes` bulk file, so its number and year can only come from the roll-call link
+    link_only = props[8001]
+    assert (link_only["type"], link_only["number"], link_only["year"]) == ("PL", 1, 2023)
+
+
+def test_proposition_summary_and_status_by_source(built_indicators):
+    props = {p["id"]: p for p in load3(built_indicators, "propositions.json")}
+    # 8002 has a row in the `proposicoes` bulk file: summary and status come from it, not from the roll-call link
+    bulk = props[8002]
+    assert (bulk["summary"], bulk["status"]) == ("Ementa 8002", "Aguardando Parecer")
+    # 8001 exists only through the roll-call link: summary from `proposicao_ementa`, status unknown
+    link_only = props[8001]
+    assert (link_only["summary"], link_only["status"]) == ("Institui o teste.", None)
 
 
 def test_manifest_hashes_match_stored_files(built_indicators):
