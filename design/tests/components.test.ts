@@ -219,6 +219,14 @@ describe("components", () => {
     expect(await toggle(votes)).toBe("Ver as 4 votações como tabela");
   });
 
+  it("MandateScore strip names one vote in the singular", async () => {
+    const labels = async (v: typeof votes, compact = false) =>
+      [...(await render(MandateScore, { votes: v, compact })).doc.querySelectorAll(".ma-score__strip")].map((s) => s.getAttribute("aria-label"));
+    // 2023: three votes, 2024: one vote
+    expect(await labels(votes)).toEqual(["3 votações nominais em 2023", "1 votação nominal em 2024"]);
+    expect(await labels(votes.slice(0, 1), true)).toEqual(["1 votação nominal"]);
+  });
+
   it("MandateScore without votes", async () => {
     const { doc } = await render(MandateScore, { votes: [] });
     expect(doc.querySelectorAll(".ma-score__row")).toHaveLength(0);
