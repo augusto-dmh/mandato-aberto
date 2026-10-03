@@ -5,17 +5,18 @@ Exit codes: 0 success, 1 usage or invalid output, 2 a source could not be downlo
 
 import argparse
 import sys
+from collections import defaultdict
 from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 
 from mandato_etl import classify, compute, contract_v3, publish, readers, schema
-from mandato_etl.sources import camara, tse
+from mandato_etl.sources import camara, senado, tse
 
 ROOT = Path(__file__).resolve().parents[3]
 RAW_DIR = ROOT / "data" / "raw"
 OUT_DIR = ROOT / "data" / "out"
 V3_DIR = ROOT / "data" / "v3"
-HOUSES = ("camara",)
+HOUSES = ("camara", "senado")
 FIRST_YEAR = 2023
 SCHEMA_VERSION = 2
 BRASILIA = timezone(timedelta(hours=-3))
@@ -82,6 +83,10 @@ def main(argv: list[str] | None = None) -> int:
     if outside:
         build_parser.print_usage(sys.stderr)
         print(f"{build_parser.prog}: error: --years must be within {FIRST_YEAR}-{started.year}", file=sys.stderr)
+        return 1
+    if args.house != "camara" and args.contract != 3:
+        build_parser.print_usage(sys.stderr)
+        print(f"{build_parser.prog}: error: --house {args.house} needs --contract 3", file=sys.stderr)
         return 1
     if args.contract == 3:
         given = [flag for flag, value in (("--tse-csv", args.tse_csv), ("--candidacy-json", args.candidacy_json),
@@ -201,6 +206,10 @@ def build_v3(years: list[int], refresh: bool, house: str, out: Path, started: da
     """Writes `data/v3/<house>/` (contract v3); `data/out/` is not touched."""
     from mandato_etl import full_texts
 
+    if house == "senado":
+        build_senado(years, refresh, out, started, log)
+        return
+
     log(f"sources: {years[0]}-{years[-1]}")
     sources = camara.sync(RAW_DIR, years, refresh, started, log)
 
@@ -242,3 +251,64 @@ def build_v3(years: list[int], refresh: bool, house: str, out: Path, started: da
         log(f"{house} {row['legislature']}: {sum(n or 0 for n in counts.values())} roll calls "
             f"({counts['nominal']} nominal, {counts['secret']} secret, {counts['symbolic']} symbolic), "
             f"{row['unclassified']} unclassified")
+
+
+def build_senado(years: list[int], refresh: bool, out: Path, started: datetime, log) -> None:
+    """Writes `data/v3/senado/` from the Senate open data; nothing else under `data/` changes."""
+    warn = lambda msg: print(msg, file=sys.stderr)  # noqa: E731
+    local_now = started.astimezone(BRASILIA).strftime("%Y-%m-%dT%H:%M:%S")
+    dates = {n: contract_v3.LEGISLATURES[n] for n in contract_v3.started(local_now[:10])}
+    log(f"sources: senado {years[0]}-{years[-1]}, legislatures {', '.join(map(str, dates))}")
+    files, sources = senado.lists(RAW_DIR, dates, years, refresh, started, warn)
+
+    records = [
+        r for relative in files["votacao"] for r in senado.read(RAW_DIR, "senado-votacao", relative)
+        if any(start <= (r.get("dataSessao") or "") <= end for start, end in dates.values())
+    ]
+    records = senado.dedupe_twins(records)
+    orientations = defaultdict(list)
+    for relative in files["orientacao"]:
+        for item in senado.read(RAW_DIR, "senado-orientacao", relative)["votacoes"]:
+            for o in item.get("orientacoesLideranca") or []:
+                if o.get("voto") is not None:
+                    orientations[item["sequencialVotacao"]].append((o["partido"], o["voto"]))
+    lists = {
+        n: readers.as_list(senado.read(RAW_DIR, "senado-legislatura", relative)
+                           ["ListaParlamentarLegislatura"]["Parlamentares"]["Parlamentar"])
+        for n, relative in files["legislatura"].items()
+    }
+    senado.read(RAW_DIR, "senado-atual", files["atual"])
+
+    mandates = contract_v3.senate_mandates(lists, records)
+    starts = {code: contract_v3.LEGISLATURES[legislatures[0]][0] for code, legislatures in mandates.items()}
+    log(f"fetching the authorship of {len(starts)} senators")
+    processes, process_sources = senado.authorship(RAW_DIR, starts, refresh, started, warn)
+    multi = contract_v3.senate_multi_author(processes, mandates)
+    log(f"fetching the authors of {len(multi)} processes with more than one")
+    details, detail_sources = senado.details(RAW_DIR, multi, refresh, started, warn)
+
+    ruleset = classify.load_rules("senado")
+    result = contract_v3.assemble_senado(records, orientations, lists, processes, details, ruleset, local_now)
+    for legislature, count in sorted(result["mismatches"].items()):
+        warn(f"warning: senado {legislature}: {count} vote records disagree with the exercise periods "
+             "(a record outside every period, or none in a roll call inside one)")
+    meta = {
+        "schema_version": contract_v3.SCHEMA_VERSION,
+        "house": "senado",
+        "generatedAt": started.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "legislatures": [
+            {"id": n, "start": start, "end": end,
+             "sourceUrl": contract_v3.SENATE_LEGISLATURE_URL.format(start=start.replace("-", ""))}
+            for n, (start, end) in dates.items()
+        ],
+        "coverage": result["coverage"],
+        "classification": {"version": ruleset["version"]},
+        "sources": sorted([*sources, *process_sources, *detail_sources], key=lambda e: e["file"]),
+    }
+    files_out = {"meta.json": meta, **result["files"]}
+    log(f"writing {len(files_out)} files to {out}")
+    publish.write(out, files_out, version=3)
+    for row in result["coverage"]:
+        counts = row["rollCalls"]
+        log(f"senado {row['legislature']}: {counts['nominal'] + counts['secret']} roll calls "
+            f"({counts['nominal']} nominal, {counts['secret']} secret, 0 symbolic), {row['unclassified']} unclassified")

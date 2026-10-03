@@ -5,12 +5,13 @@ mandate's legislature; nothing here computes a percentage (AD-004). The v2 path 
 used, so v2 output cannot drift.
 """
 
+import re
 from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
-from mandato_etl import classify
+from mandato_etl import classify, readers
 from mandato_etl.compute import (
     AUTHORED_TYPES, DEPUTY_URL, PLENARY, PROPOSITION_URL, REQUIREMENT_TYPES, ROLL_CALL_URL, in_periods, seconds,
     sort_name,
@@ -266,13 +267,6 @@ def assemble(
                 if key not in store or v["dataHoraVoto"] >= store[key]["dataHoraVoto"]:
                     store[key] = v
 
-    by_member = defaultdict(dict)
-    for rc_id, doc in docs.items():
-        for v in doc["votes"]:
-            by_member[str(v["memberId"])][rc_id] = v
-    plenary = [doc for doc in docs.values() if doc["organ"] == PLENARY]
-    at = {rc_id: data.roll_calls[rc_id]["at"] for rc_id in docs}
-
     members = []
     for dep, legislatures in mandates.items():
         own_mandates = []
@@ -287,7 +281,6 @@ def assemble(
             periods = exercise_periods(histories.get(dep, []), legislature, min(now_local, next_start(legislature)))
             own_mandates.append({
                 "legislature": legislature, "party": party, "uf": uf, "exercisePeriods": periods,
-                **_indicators(dep, legislature, periods, plenary, at, by_member[dep]),
                 **_proposition_counts(dep, legislature, data),
             })
         source = latest.get(dep)
@@ -301,7 +294,6 @@ def assemble(
             "house": HOUSE, "id": int(dep), "name": name.strip(), "party": party, "uf": uf, "photoUrl": photo,
             "sourceUrl": DEPUTY_URL.format(id=dep), "mandates": own_mandates,
         })
-    members.sort(key=lambda m: (sort_name(m["name"]), m["id"]))
 
     authors = defaultdict(list)
     for dep, props in data.authorship.items():
@@ -317,14 +309,41 @@ def assemble(
         _proposition(prop, data, linked.get(prop), sorted(authors.get(prop, []), key=lambda a: a["memberId"]))
         for prop in authored | set(linked)
     ]
-    propositions.sort(key=lambda p: p["id"])
-    propositions.sort(key=lambda p: p["presentedAt"] or "", reverse=True)
 
     types = {p["id"]: p["type"] for p in propositions}
     targets = sorted({
-        doc["propositionId"] for doc in plenary
-        if doc["propositionId"] is not None and doc["votes"] and types[doc["propositionId"]] in TEXT_TYPES
+        doc["propositionId"] for doc in docs.values()
+        if doc["organ"] == PLENARY and doc["propositionId"] is not None and doc["votes"]
+        and types[doc["propositionId"]] in TEXT_TYPES
     })
+    at = {rc_id: data.roll_calls[rc_id]["at"] for rc_id in docs}
+    result = finish(HOUSE, docs, at, members, propositions, ruleset, sorted(lists))
+    return {**result, "targets": targets}
+
+
+def finish(house: str, docs: dict, at: dict, members: list, propositions: list, ruleset: dict,
+           legislatures: list[int], symbolic: bool = True) -> dict:
+    """The house-independent half of the contract: indicators per mandate, ordering, coverage and files.
+
+    `docs` maps a roll-call id to its full document and `at` to its timestamp; each member's
+    mandates already hold their periods and proposition counts. `symbolic=False` is a house that
+    publishes no symbolic roll-call records, whose symbolic counts are `null` (door 9).
+    """
+    by_member = defaultdict(dict)
+    for rc_id, doc in docs.items():
+        for v in doc["votes"]:
+            by_member[str(v["memberId"])][rc_id] = v
+    plenary = [doc for doc in docs.values() if doc["organ"] == PLENARY]
+    for member in members:
+        dep = str(member["id"])
+        for mandate in member["mandates"]:
+            mandate.update(_indicators(dep, mandate["legislature"], mandate["exercisePeriods"], plenary, at,
+                                       by_member[dep]))
+            if not symbolic:
+                mandate["symbolicMerit"] = None
+    members.sort(key=lambda m: (sort_name(m["name"]), m["id"]))
+    propositions.sort(key=lambda p: p["id"])
+    propositions.sort(key=lambda p: p["presentedAt"] or "", reverse=True)
 
     ordered = sorted(docs.values(), key=lambda d: d["id"])
     ordered.sort(key=lambda d: d["date"], reverse=True)
@@ -332,25 +351,26 @@ def assemble(
     roll_calls = [{k: v for k, v in d.items() if k not in summary_keys} for d in ordered]
 
     coverage = []
-    for legislature in sorted(lists):
+    for legislature in legislatures:
         own = [d for d in roll_calls if d["legislature"] == legislature]
         ballots = Counter(d["ballot"] for d in own)
         coverage.append({
             "legislature": legislature,
             "through": max((d["date"] for d in own), default=None),
-            "rollCalls": {b: ballots[b] for b in ("nominal", "secret", "symbolic")},
+            "rollCalls": {"nominal": ballots["nominal"], "secret": ballots["secret"],
+                          "symbolic": ballots["symbolic"] if symbolic else None},
             "unclassified": sum(1 for d in own if d["kind"] == "unclassified"),
-            "members": sum(1 for legislatures in mandates.values() if legislature in legislatures),
+            "members": sum(1 for m in members if any(x["legislature"] == legislature for x in m["mandates"])),
         })
 
     files = {
         "members.json": members,
         "roll-calls.json": roll_calls,
         "propositions.json": propositions,
-        "classification-rules.json": [{**rule, "house": HOUSE} for rule in rules],
+        "classification-rules.json": [{**rule, "house": house} for rule in ruleset["rules"]],
     }
     files |= {f"roll-calls/{rc_id}.json": doc for rc_id, doc in docs.items() if doc["ballot"] != "symbolic"}
-    return {"files": files, "coverage": coverage, "targets": targets}
+    return {"files": files, "coverage": coverage}
 
 
 def _indicators(dep, legislature, periods, plenary, at, own_votes) -> dict:
@@ -385,3 +405,284 @@ def _proposition_counts(dep: str, legislature: int, data: Loaded) -> dict:
         "firstSignerCount": sum(1 for kind, first in own if kind in AUTHORED_TYPES and first),
         "requirementsCount": sum(1 for kind, _ in own if kind in REQUIREMENT_TYPES),
     }
+
+
+# --- Senate (etl-senado). The Senate's records are mapped onto the same documents and handed to
+# `finish`; only what the Senate publishes differently lives here.
+
+SENATE = "senado"
+SENATE_MEMBER_URL = "https://www25.senado.leg.br/web/senadores/senador/-/perfil/{id}"
+SENATE_PHOTO_URL = "https://www.senado.leg.br/senadores/img/fotos-oficiais/senador{id}.jpg"
+SENATE_ROLL_CALL_URL = "https://legis.senado.leg.br/dadosabertos/votacao?codigoSessao={session}"
+SENATE_PROPOSITION_URL = "https://www25.senado.leg.br/web/atividade/materias/-/materia/{materia}"
+# A process with no MATE code has no public page; its API record is the source.
+SENATE_PROCESS_URL = "https://legis.senado.leg.br/dadosabertos/processo/{id}"
+SENATE_LEGISLATURE_URL = "https://legis.senado.leg.br/dadosabertos/plenario/legislatura/{start}"
+SENATE_AUTHORED = re.compile(r"^(PL|PLP|PEC|PDL|PRS) (\d+)/(\d{4})$")
+SENATE_REQUIREMENTS = ("RQS ", "REQ ", "INS ")
+NO_PARTY = "S/Partido"
+
+
+def _number(value) -> int | None:
+    return int(value) if value not in (None, "") and str(value).strip().isdigit() else None
+
+
+def senate_roll_calls(records: list[dict], orientations: dict, rules: list[dict]) -> tuple[dict, dict]:
+    """`({id: roll-call document}, {id: at})` for deduplicated `/votacao` records of built legislatures.
+
+    `orientations` maps a `sequencialVotacao` to its non-null `(partido, voto)` pairs.
+    """
+    docs, at = {}, {}
+    for r in records:
+        rc_id = str(r["codigoSessaoVotacao"])
+        ballot = {"S": "secret", "N": "nominal"}.get(r["votacaoSecreta"])
+        if ballot is None:
+            raise ContractError(f"roll call {rc_id}: unknown votacaoSecreta {r['votacaoSecreta']!r}")
+        kind, rule = classify.classify(r, rules)
+        votes = {str(v["codigoParlamentar"]): v for v in r["votos"]}
+        try:
+            positions = {m: classify.senate_position_of(v["siglaVotoParlamentar"]) for m, v in votes.items()}
+            own = orientations.get(r["sequencialVotacao"], []) if r["sequencialVotacao"] is not None else []
+            oriented = [{"bench": bench, "official": official, "position": classify.senate_orientation_of(official)}
+                        for bench, official in own]
+        except classify.UnknownValueError as e:
+            raise ContractError(f"roll call {rc_id}: unknown value {e.args[0]!r}") from None
+        oriented.sort(key=lambda o: (o["bench"].casefold(), o["bench"], o["official"]))
+        government = next((o["position"] for o in oriented if o["bench"].casefold() == "governo"), None)
+        by_party = defaultdict(list)
+        for m, v in votes.items():
+            by_party[v["siglaPartidoParlamentar"]].append(positions[m])
+        if ballot == "secret":
+            official = (r["totalVotosSim"], r["totalVotosNao"], r["totalVotosAbstencao"])
+            tallies = None if None in official else dict(zip(("yes", "no", "others"), map(int, official)))
+        else:
+            values = Counter(v["siglaVotoParlamentar"] for v in votes.values())
+            tallies = {"yes": values["Sim"], "no": values["Não"], "others": values["Abstenção"]}
+        description = (r["descricaoVotacao"] or "").strip()
+        docs[rc_id] = {
+            "house": SENATE,
+            "id": rc_id,
+            "legislature": legislature_of(r["dataSessao"]),
+            "date": r["dataSessao"],
+            "organ": PLENARY,
+            "description": description,
+            "approved": {"A": True, "R": False}.get(r["resultadoVotacao"]),
+            "ballot": ballot,
+            "kind": kind,
+            "kindRule": rule,
+            "propositionId": r["idProcesso"],
+            "tallies": tallies,
+            "governmentOrientation": government,
+            "sourceUrl": SENATE_ROLL_CALL_URL.format(session=r["codigoSessao"]),
+            "openingDescription": description or None,
+            "lastPresentationDescription": None,
+            "orientations": oriented,
+            "votes": [
+                {
+                    "memberId": int(m),
+                    "official": classify.published_official(SENATE, v["siglaVotoParlamentar"]),
+                    "position": positions[m],
+                    "party": v["siglaPartidoParlamentar"],
+                    "partyMajority": None if v["siglaPartidoParlamentar"] == NO_PARTY
+                    else party_majority(by_party[v["siglaPartidoParlamentar"]], positions[m]),
+                }
+                for m, v in sorted(votes.items(), key=lambda item: int(item[0]))
+            ],
+        }
+        at[rc_id] = r["dataSessao"] + "T00:00:00"
+    return docs, at
+
+
+def _exercises(entry: dict) -> list[dict]:
+    return [e for m in readers.as_list(entry.get("Mandatos", {}).get("Mandato"))
+            for e in readers.as_list((m.get("Exercicios") or {}).get("Exercicio"))]
+
+
+def senate_periods(entry: dict, legislature: int, now_local: str) -> list[dict]:
+    """Each `Exercicio` as `[DataInicio, day after DataFim)`, clipped to `legislature`; an open one ends at the
+    earlier of the build time and the next legislature's start (AC 9)."""
+    first, last = LEGISLATURES[legislature]
+    bound = next_start(legislature)
+    periods = []
+    for e in _exercises(entry):
+        start, end = e.get("DataInicio"), e.get("DataFim")
+        if not start or start > last or (end and end < first):
+            continue
+        period_end = ((date.fromisoformat(end) + timedelta(days=1)).isoformat() + "T00:00:00") if end else now_local
+        period = {"start": max(start, first) + "T00:00:00", "end": min(period_end, bound)}
+        if period["start"] < period["end"]:
+            periods.append(period)
+    return sorted(periods, key=lambda p: (p["start"], p["end"]))
+
+
+def _intersects(entry: dict, legislature: int) -> bool:
+    first, last = LEGISLATURES[legislature]
+    return any(e.get("DataInicio") and e["DataInicio"] <= last and (not e.get("DataFim") or e["DataFim"] >= first)
+               for e in _exercises(entry))
+
+
+def _code(entry: dict) -> str:
+    return str(entry["IdentificacaoParlamentar"]["CodigoParlamentar"])
+
+
+def senate_mandates(lists: dict[int, list[dict]], records: list[dict]) -> dict[str, list[int]]:
+    """memberId -> legislatures: listed for it and with an `Exercicio` intersecting it or a vote record in it (AC 8)."""
+    voted = {(str(v["codigoParlamentar"]), legislature_of(r["dataSessao"])) for r in records for v in r["votos"]}
+    mandates = defaultdict(set)
+    for legislature, entries in lists.items():
+        for entry in entries:
+            code = _code(entry)
+            if _intersects(entry, legislature) or (code, legislature) in voted:
+                mandates[code].add(legislature)
+    return {code: sorted(found) for code, found in mandates.items()}
+
+
+def _authored(process: dict) -> re.Match | None:
+    if not (process.get("autoria") or "").startswith("Senador"):
+        return None
+    return SENATE_AUTHORED.match(process.get("identificacao") or "")
+
+
+def _single_author(process: dict) -> bool:
+    autoria = process["autoria"]
+    return "," not in autoria and " e outros" not in autoria
+
+
+def _inside(process: dict, legislature: int) -> bool:
+    first, last = LEGISLATURES[legislature]
+    return first <= (process.get("dataApresentacao") or "")[:10] <= last
+
+
+def senate_multi_author(processes: dict[str, list[dict]], mandates: dict[str, list[int]]) -> list[int]:
+    """Ids of the authored processes that name more than one author; their first signer needs `/processo/<id>`."""
+    return sorted({
+        p["id"] for member, own in processes.items() for p in own
+        if _authored(p) and not _single_author(p) and any(_inside(p, n) for n in mandates.get(member, []))
+    })
+
+
+def assemble_senado(
+    records: list[dict],
+    orientations: dict,
+    lists: dict[int, list[dict]],
+    processes: dict[str, list[dict]],
+    details: dict[int, dict],
+    ruleset: dict,
+    now_local: str,
+) -> dict:
+    """Every Senate v3 document, the coverage rows and, per legislature, the vote records that disagree with
+    the exercise periods (AC 23)."""
+    docs, at = senate_roll_calls(records, orientations, ruleset["rules"])
+    mandates = senate_mandates(lists, records)
+    listed = {(_code(e), n): e for n, entries in lists.items() for e in entries}
+    latest: dict[str, tuple] = {}
+    latest_in: dict[tuple[str, int], tuple] = {}
+    for r in records:
+        rc_id = str(r["codigoSessaoVotacao"])
+        doc = docs[rc_id]
+        for record in r["votos"]:
+            key = (doc["date"], int(rc_id))
+            member = str(record["codigoParlamentar"])
+            for store, k in ((latest, member), (latest_in, (member, doc["legislature"]))):
+                if k not in store or key >= store[k][0]:
+                    store[k] = (key, record)
+
+    first_signer = {}
+    authors = defaultdict(list)
+    authored_rows = {}
+    members = []
+    for code, legislatures in mandates.items():
+        own_mandates = []
+        for legislature in legislatures:
+            entry = listed[(code, legislature)]
+            source = latest_in.get((code, legislature))
+            if source:
+                party, uf = source[1]["siglaPartidoParlamentar"], source[1]["siglaUFParlamentar"]
+            else:
+                party, uf = _list_party(entry), _mandate_uf(entry, legislature)
+            counts = {"authoredCount": 0, "firstSignerCount": 0, "requirementsCount": 0}
+            for p in processes.get(code, []):
+                if not _inside(p, legislature):
+                    continue
+                if (p.get("identificacao") or "").startswith(SENATE_REQUIREMENTS):
+                    counts["requirementsCount"] += 1
+                if _authored(p):
+                    first = _single_author(p) or details.get(p["id"], {}).get(1) == code
+                    first_signer[(p["id"], code)] = first
+                    counts["authoredCount"] += 1
+                    counts["firstSignerCount"] += first
+                    authored_rows[p["id"]] = p
+            own_mandates.append({"legislature": legislature, "party": party, "uf": uf,
+                                 "exercisePeriods": senate_periods(entry, legislature, now_local), **counts})
+        source = latest.get(code)
+        entry = listed[(code, legislatures[-1])]
+        if source:
+            vote = source[1]
+            name, party, uf = vote["nomeParlamentar"], vote["siglaPartidoParlamentar"], vote["siglaUFParlamentar"]
+        else:
+            name, party, uf = (entry["IdentificacaoParlamentar"]["NomeParlamentar"], _list_party(entry),
+                               own_mandates[-1]["uf"])
+        members.append({
+            "house": SENATE, "id": int(code), "name": name.strip(), "party": party, "uf": uf,
+            "photoUrl": SENATE_PHOTO_URL.format(id=code), "sourceUrl": SENATE_MEMBER_URL.format(id=code),
+            "mandates": own_mandates,
+        })
+    for (prop, code), first in sorted(first_signer.items(), key=lambda item: (item[0][0], int(item[0][1]))):
+        authors[prop].append({"memberId": int(code), "firstSigner": first})
+
+    propositions = {}
+    for r in records:
+        if r["idProcesso"] is not None:
+            propositions[r["idProcesso"]] = {
+                "house": SENATE, "id": r["idProcesso"], "type": r["sigla"], "number": _number(r["numero"]),
+                "year": _number(r["ano"]), "summary": (r["ementa"] or "").strip() or None, "presentedAt": None,
+                "status": None, "sourceUrl": _proposition_url(r["idProcesso"], r["codigoMateria"]), "authors": [],
+            }
+    for prop, p in authored_rows.items():
+        match = _authored(p)
+        propositions[prop] = {
+            "house": SENATE, "id": prop, "type": match.group(1), "number": int(match.group(2)),
+            "year": int(match.group(3)), "summary": (p.get("ementa") or "").strip() or None,
+            "presentedAt": p["dataApresentacao"][:10], "status": (p.get("situacaoAtual") or "").strip() or None,
+            "sourceUrl": _proposition_url(prop, p.get("codigoMateria")), "authors": authors[prop],
+        }
+
+    known = {m["id"] for m in members}
+    for rc_id, doc in docs.items():
+        for v in doc["votes"]:
+            if v["memberId"] not in known:
+                raise ContractError(f"roll call {rc_id}: memberId {v['memberId']} voted but is in no legislature "
+                                    "list, so members.json would not hold it")
+
+    mismatches = Counter()
+    periods = {(str(m["id"]), x["legislature"]): x["exercisePeriods"] for m in members for x in m["mandates"]}
+    for rc_id, doc in docs.items():
+        voters = {str(v["memberId"]) for v in doc["votes"]}
+        for member in voters:
+            if not in_periods(at[rc_id], periods.get((member, doc["legislature"]), [])):
+                mismatches[doc["legislature"]] += 1
+        for (member, legislature), own in periods.items():
+            if legislature == doc["legislature"] and member not in voters and in_periods(at[rc_id], own):
+                mismatches[legislature] += 1
+
+    result = finish(SENATE, docs, at, members, list(propositions.values()), ruleset, sorted(lists), symbolic=False)
+    return {**result, "mismatches": dict(mismatches)}
+
+
+def _list_party(entry: dict) -> str:
+    return entry["IdentificacaoParlamentar"].get("SiglaPartidoParlamentar") or NO_PARTY
+
+
+def _mandate_uf(entry: dict, legislature: int) -> str:
+    own = readers.as_list(entry.get("Mandatos", {}).get("Mandato"))
+    for m in own:
+        numbers = {str((m.get(k) or {}).get("NumeroLegislatura")) for k in
+                   ("PrimeiraLegislaturaDoMandato", "SegundaLegislaturaDoMandato")}
+        if str(legislature) in numbers and m.get("UfParlamentar"):
+            return m["UfParlamentar"]
+    return entry["IdentificacaoParlamentar"].get("UfParlamentar") or next(
+        (m["UfParlamentar"] for m in own if m.get("UfParlamentar")), "")
+
+
+def _proposition_url(prop: int, materia) -> str:
+    return SENATE_PROPOSITION_URL.format(materia=materia) if materia else SENATE_PROCESS_URL.format(id=prop)

@@ -26,6 +26,23 @@ ORIENTATION_POSITIONS = {
     "Obstrução": "obstruction",
     "Liberado": "free",
 }
+# Senate `siglaVotoParlamentar` (door 3 of etl-senado). Every absence code, justified or not, is
+# `notVoting`; the reason survives only in `official`.
+SENATE_VOTE_POSITIONS = {
+    "Sim": "yes",
+    "Não": "no",
+    "Abstenção": "abstention",
+    "Votou": "secret",
+    "Presidente (art. 51 RISF)": "presiding",
+    **dict.fromkeys(("P-NRV", "AP", "MIS", "LS", "LP", "LAP", "NCom", "NA"), "notVoting"),
+}
+SENATE_ORIENTATION_POSITIONS = {
+    "SIM": "yes",
+    "NÃO": "no",
+    "ABSTENÇÃO": "abstention",
+    "OBSTRUÇÃO": "obstruction",
+    "LIVRE": "free",
+}
 # Codes whose verbatim value would reveal health or private life (AD-018); published only as the
 # generic value. The Câmara has none today.
 SENSITIVE_OFFICIAL = {
@@ -82,3 +99,15 @@ def orientation_of(official: str) -> str:
     if official not in ORIENTATION_POSITIONS:
         raise UnknownValueError(official)
     return ORIENTATION_POSITIONS[official]
+
+
+def senate_position_of(official: str) -> str:
+    if official not in SENATE_VOTE_POSITIONS:
+        raise UnknownValueError(official)
+    return SENATE_VOTE_POSITIONS[official]
+
+
+def senate_orientation_of(official: str) -> str:
+    if official not in SENATE_ORIENTATION_POSITIONS:
+        raise UnknownValueError(official)
+    return SENATE_ORIENTATION_POSITIONS[official]

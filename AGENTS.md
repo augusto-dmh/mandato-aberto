@@ -23,6 +23,8 @@ A feature `design-system` roda em `ui`: a entrega inteira são telas, e só esse
 
 A feature `contract-v3` roda em `standard`: os indicadores e a classificação das votações são o que um parlamentar pode contestar.
 
+A feature `etl-senado` roda em `standard`: os indicadores dos senadores são o que um parlamentar pode contestar.
+
 ## Convenções
 
 - Código, commits, branches, nomes de arquivo e identificadores em inglês. Copy do site, documentos de pesquisa e corpo de PR em português. Artefatos em `.specs/` em inglês.

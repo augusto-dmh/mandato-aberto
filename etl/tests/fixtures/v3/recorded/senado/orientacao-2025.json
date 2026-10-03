@@ -1,0 +1,272 @@
+{
+ "votacoes": [
+  {
+   "codigoVotacaoSve": 10885,
+   "sequencialVotacao": 4238,
+   "descricaoVotacao": null,
+   "dataInicioVotacao": "2025-03-18T18:37:15",
+   "dataTerminoVotacao": "2025-03-18T18:49:58",
+   "siglaTipoMateria": "PLP",
+   "descricaoMateria": "Decisão da Presidência na Questão de Ordem apresentada pelo sen. Alessandro Vieira",
+   "numeroMateria": 192,
+   "anoMateria": 2023,
+   "dispositivo": null,
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 9,
+   "presidenteSessao": "Davi Alcolumbre",
+   "qtdVotosSim": 34,
+   "qtdVotosNao": 21,
+   "qtdVotosAbstencao": 1,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 64,
+   "quorumFinal": 65,
+   "orientacoesLideranca": [
+    {
+     "dataHora": "2025-03-18T18:41:41",
+     "partido": "PSDB",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2025-03-18T18:40:50",
+     "partido": "PDT",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-03-18T18:40:29",
+     "partido": "PL",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-03-18T18:40:59",
+     "partido": "MDB",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-03-18T18:41:36",
+     "partido": "PSB",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-03-18T18:43:45",
+     "partido": "NOVO",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2025-03-18T18:40:35",
+     "partido": "PT",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-03-18T18:40:41",
+     "partido": "UNIÃO",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-03-18T18:41:47",
+     "partido": "PSD",
+     "voto": "LIVRE"
+    }
+   ],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  },
+  {
+   "codigoVotacaoSve": 11889,
+   "sequencialVotacao": 4333,
+   "descricaoVotacao": "Estabelece programação orçamentária não sujeita às metas fiscais, desvincula recursos, e veda limitação de empenho em projetos estratégicos para a Defesa Nacional.",
+   "dataInicioVotacao": "2025-10-22T17:32:28",
+   "dataTerminoVotacao": "2025-10-22T17:48:58",
+   "siglaTipoMateria": "PLP",
+   "descricaoMateria": "Emenda nº 2 (Substitutivo) ao Projeto de Lei Complementar nº 204, de 2025, nos termos do parecer",
+   "numeroMateria": 204,
+   "anoMateria": 2025,
+   "dispositivo": "Emenda nº 2 (Substitutivo)",
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 151,
+   "presidenteSessao": "Davi Alcolumbre",
+   "qtdVotosSim": 57,
+   "qtdVotosNao": 4,
+   "qtdVotosAbstencao": 0,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 65,
+   "quorumFinal": 65,
+   "orientacoesLideranca": [
+    {
+     "dataHora": "2025-10-22T17:33:57",
+     "partido": "PP",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-10-22T17:37:09",
+     "partido": "Minoria",
+     "voto": null
+    },
+    {
+     "dataHora": "2025-10-22T17:33:43",
+     "partido": "PT",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-10-22T17:34:20",
+     "partido": "UNIÃO",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-10-22T17:36:30",
+     "partido": "Oposição",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-10-22T17:36:06",
+     "partido": "Maioria",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-10-22T17:32:41",
+     "partido": "PL",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-10-22T17:34:35",
+     "partido": "PSB",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-10-22T17:33:36",
+     "partido": "MDB",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-10-22T17:36:18",
+     "partido": "Governo",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-10-22T17:36:57",
+     "partido": "Banc Fem",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-10-22T17:33:23",
+     "partido": "PSD",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-10-22T17:35:37",
+     "partido": "Republica",
+     "voto": "SIM"
+    }
+   ],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  },
+  {
+   "codigoVotacaoSve": 11989,
+   "sequencialVotacao": 4334,
+   "descricaoVotacao": "Escolha do Senhor Severino Medeiros Ramos Neto, para exercer o cargo de Diretor da Agência Nacional de Transportes Terrestres - ANTT, na vaga decorrente da posse do Senhor Guilherme Theo Rodrigues da Rocha Sampaio no cargo de Diretor-Geral da ANTT.",
+   "dataInicioVotacao": "2025-11-12T16:47:51",
+   "dataTerminoVotacao": "2025-11-12T17:18:37",
+   "siglaTipoMateria": "MSF",
+   "descricaoMateria": "Mensagem nº 78, de 2025 - Severino Medeiros Ramos Neto (ANTT)",
+   "numeroMateria": 78,
+   "anoMateria": 2025,
+   "dispositivo": null,
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 167,
+   "presidenteSessao": "Davi Alcolumbre",
+   "qtdVotosSim": 55,
+   "qtdVotosNao": 1,
+   "qtdVotosAbstencao": 0,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 67,
+   "quorumFinal": 71,
+   "orientacoesLideranca": [],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  },
+  {
+   "codigoVotacaoSve": 12303,
+   "sequencialVotacao": 4359,
+   "descricaoVotacao": "Solicita urgência para o Projeto de Lei nº 2.234, de 2022",
+   "dataInicioVotacao": "2025-12-17T22:20:22",
+   "dataTerminoVotacao": "2025-12-17T22:44:11",
+   "siglaTipoMateria": "RQS",
+   "descricaoMateria": "Requerimento nº 857, de 2024, de iniciativa de Líderes",
+   "numeroMateria": 857,
+   "anoMateria": 2024,
+   "dispositivo": null,
+   "descricaoSessao": "Sessão Deliberativa Ordinária, às 14 horas",
+   "tipoSessao": "Deliberativa Ordinária",
+   "numeroSessao": 198,
+   "presidenteSessao": "Eduardo Gomes",
+   "qtdVotosSim": 28,
+   "qtdVotosNao": 36,
+   "qtdVotosAbstencao": 0,
+   "qtdObstrucoes": 0,
+   "quorumInicial": 80,
+   "quorumFinal": 80,
+   "orientacoesLideranca": [
+    {
+     "dataHora": "2025-12-17T22:22:42",
+     "partido": "PSD",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-12-17T22:23:46",
+     "partido": "PDT",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-12-17T22:23:27",
+     "partido": "UNIÃO",
+     "voto": "SIM"
+    },
+    {
+     "dataHora": "2025-12-17T22:26:43",
+     "partido": "Oposição",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-12-17T22:27:57",
+     "partido": "PL",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2025-12-17T22:23:34",
+     "partido": "PSB",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-12-17T22:28:00",
+     "partido": "NOVO",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2025-12-17T22:29:13",
+     "partido": "Republica",
+     "voto": "NÃO"
+    },
+    {
+     "dataHora": "2025-12-17T22:26:18",
+     "partido": "PP",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-12-17T22:22:51",
+     "partido": "MDB",
+     "voto": "LIVRE"
+    },
+    {
+     "dataHora": "2025-12-17T22:22:58",
+     "partido": "PT",
+     "voto": "LIVRE"
+    }
+   ],
+   "votosParlamentar": [],
+   "votosLideranca": []
+  }
+ ]
+}

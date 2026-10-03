@@ -200,5 +200,308 @@
     "photoUrl": "https://www.senado.leg.br/senadores/img/fotos-oficiais/senador9102.jpg",
     "sourceUrl": "https://www25.senado.leg.br/web/senadores/senador/-/perfil/9102",
     "uf": "SP"
+  },
+  {
+    "house": "senado",
+    "id": 9103,
+    "mandates": [
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-02-01T00:00:00",
+            "start": "2023-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 57,
+        "participation": {
+          "all": {
+            "count": 0,
+            "total": 1
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "MDB",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "RJ"
+      },
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-03-01T09:00:00",
+            "start": "2027-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 58,
+        "participation": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "MDB",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "RJ"
+      }
+    ],
+    "name": "Senador Exemplo Tres",
+    "party": "MDB",
+    "photoUrl": "https://www.senado.leg.br/senadores/img/fotos-oficiais/senador9103.jpg",
+    "sourceUrl": "https://www25.senado.leg.br/web/senadores/senador/-/perfil/9103",
+    "uf": "RJ"
+  },
+  {
+    "house": "senado",
+    "id": 9104,
+    "mandates": [
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-02-01T00:00:00",
+            "start": "2023-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 57,
+        "participation": {
+          "all": {
+            "count": 1,
+            "total": 1
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "PSD",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "MG"
+      },
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-03-01T09:00:00",
+            "start": "2027-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 58,
+        "participation": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "PSD",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "MG"
+      }
+    ],
+    "name": "Senador Exemplo Quatro",
+    "party": "PSD",
+    "photoUrl": "https://www.senado.leg.br/senadores/img/fotos-oficiais/senador9104.jpg",
+    "sourceUrl": "https://www25.senado.leg.br/web/senadores/senador/-/perfil/9104",
+    "uf": "MG"
+  },
+  {
+    "house": "senado",
+    "id": 9105,
+    "mandates": [
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-02-01T00:00:00",
+            "start": "2023-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 57,
+        "participation": {
+          "all": {
+            "count": 0,
+            "total": 1
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "PP",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "BA"
+      },
+      {
+        "authoredCount": 0,
+        "exercisePeriods": [
+          {
+            "end": "2027-03-01T09:00:00",
+            "start": "2027-02-01T00:00:00"
+          }
+        ],
+        "firstSignerCount": 0,
+        "governmentAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "legislature": 58,
+        "participation": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "party": "PP",
+        "partyAlignment": {
+          "all": {
+            "count": 0,
+            "total": 0
+          },
+          "merit": {
+            "count": 0,
+            "total": 0
+          }
+        },
+        "requirementsCount": 0,
+        "symbolicMerit": null,
+        "uf": "BA"
+      }
+    ],
+    "name": "Senador Exemplo Cinco",
+    "party": "PP",
+    "photoUrl": "https://www.senado.leg.br/senadores/img/fotos-oficiais/senador9105.jpg",
+    "sourceUrl": "https://www25.senado.leg.br/web/senadores/senador/-/perfil/9105",
+    "uf": "BA"
   }
 ]

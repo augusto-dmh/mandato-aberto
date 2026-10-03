@@ -1,0 +1,55 @@
+{
+  "house": "senado",
+  "version": 1,
+  "rules": [
+    {
+      "id": "senado.01",
+      "kind": "procedural",
+      "field": "descricaoVotacao",
+      "pattern": "^\\(?votacao nominal (?:do |de )?(?:requerimento|rqs)\\b",
+      "description": "Procedimento: a descrição oficial da votação começa com \"Votação nominal do Requerimento\" (ou \"do RQS\")."
+    },
+    {
+      "id": "senado.02",
+      "kind": "procedural",
+      "field": "descricaoVotacao",
+      "pattern": "^(?:solicita|requer)\\b",
+      "description": "Procedimento: a descrição oficial da votação começa com \"Solicita\" ou \"Requer\", como num pedido de urgência."
+    },
+    {
+      "id": "senado.03",
+      "kind": "procedural",
+      "field": "descricaoVotacao",
+      "pattern": "\\bquestao de ordem\\b",
+      "description": "Procedimento: a descrição oficial da votação menciona uma \"Questão de Ordem\"."
+    },
+    {
+      "id": "senado.04",
+      "kind": "amendment",
+      "field": "descricaoVotacao",
+      "pattern": "\\bdestacad[oa]s?\\b",
+      "description": "Emenda ou destaque: a descrição oficial da votação diz que o dispositivo, a emenda ou a expressão votada foi \"destacado\" ou \"destacada\"."
+    },
+    {
+      "id": "senado.05",
+      "kind": "final",
+      "field": "descricaoVotacao",
+      "pattern": "\\bemenda (?:n[oº] ?)?[\\d.]+ ?\\(substitutivo\\)",
+      "description": "Texto principal: a descrição oficial da votação nomeia uma \"Emenda nº ... (Substitutivo)\", votada como texto principal."
+    },
+    {
+      "id": "senado.06",
+      "kind": "final",
+      "field": "descricaoVotacao",
+      "pattern": "\\b(?:mensagem|oficio) n[oº]",
+      "description": "Texto principal: a descrição oficial da votação nomeia uma \"Mensagem nº\" ou um \"Ofício nº\", como na escolha de autoridade."
+    },
+    {
+      "id": "senado.07",
+      "kind": "final",
+      "field": "descricaoVotacao",
+      "pattern": "\\b(?:projeto|proposta de emenda|pec|plp|pl|pdl|plv|prs|substitutivo|medida provisoria|mpv)\\b",
+      "description": "Texto principal: a descrição oficial da votação nomeia um projeto (\"Projeto\", PEC, PLP, PL, PDL, PLV, PRS), um substitutivo ou uma medida provisória."
+    }
+  ]
+}
