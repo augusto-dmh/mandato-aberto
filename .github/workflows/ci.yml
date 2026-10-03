@@ -139,8 +139,9 @@ jobs:
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
       - name: Build the client, SSR and card renderer bundles
         run: npm ci && npm run build
+      # the locked playwright-core, never a registry fetch: its browser revision is the one the lock and the Sail image pin
       - name: Install the card renderer's browser (share-cards door 3)
-        run: npx playwright install --with-deps --only-shell chromium
+        run: npx --no-install playwright-core install --with-deps --only-shell chromium
       - name: Start the SSR server
         run: |
           nohup php artisan inertia:start-ssr > storage/logs/ssr.log 2>&1 &

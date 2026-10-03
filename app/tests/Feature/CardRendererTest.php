@@ -5,7 +5,7 @@ use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 use Tests\Support\Jpeg;
 
-// share-cards door 3: the render CLI, its sources, its network, its weight and its theme (C32-C36, C79).
+// share-cards door 3: the render CLI, its sources, its network, its weight and its theme (C32-C36, C79, C81).
 
 /**
  * Runs the built render CLI with `$input` as JSON on stdin.
@@ -195,11 +195,26 @@ test('the browser shell is installed where cards render', function () {
 
     $steps = Yaml::parseFile(base_path('../.github/workflows/ci.yml'))['jobs']['app']['steps'];
     $runs = array_map(fn (array $s) => $s['run'] ?? '', $steps);
-    $install = array_key_first(array_filter($runs, fn (string $r) => str_contains($r, 'playwright install --with-deps --only-shell chromium')));
+    $install = array_key_first(array_filter($runs, fn (string $r) => str_contains($r, 'install --with-deps --only-shell chromium')));
     $build = array_key_first(array_filter($runs, fn (string $r) => str_contains($r, 'npm run build')));
     $test = array_key_first(array_filter($runs, fn (string $r) => str_contains($r, 'php artisan test')));
     expect($install)->not->toBeNull()
         ->and($build)->not->toBeNull()
         ->and($install)->toBeLessThan($test)
         ->and($build)->toBeLessThan($test);
+});
+
+test('ci installs the browser of the locked playwright-core', function () {
+    $job = Yaml::parseFile(base_path('../.github/workflows/ci.yml'))['jobs']['app'];
+    $runs = array_map(fn (array $s) => $s['run'] ?? '', $job['steps']);
+    $installs = array_keys(array_filter($runs, fn (string $r) => str_contains($r, 'playwright') && str_contains($r, ' install')));
+    $ci = array_key_first(array_filter($runs, fn (string $r) => preg_match('/(^|&& )npm ci( |$)/', $r) === 1));
+
+    // `npx playwright` in app/ would fetch the newest `playwright` from the registry, whose browser can drift from the lock
+    expect($job['defaults']['run']['working-directory'])->toBe('app')
+        ->and($installs)->toHaveCount(1)
+        ->and($runs[$installs[0]])->toBe('npx --no-install playwright-core install --with-deps --only-shell chromium')
+        ->and($ci)->not->toBeNull()
+        ->and($ci)->toBeLessThan($installs[0])
+        ->and(json_decode(File::get(base_path('package-lock.json')), true)['packages'])->not->toHaveKey('node_modules/playwright');
 });
