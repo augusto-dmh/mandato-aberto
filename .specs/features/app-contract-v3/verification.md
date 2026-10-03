@@ -1,74 +1,87 @@
 # app-contract-v3 verification
 
-**Verdict**: FAIL
+**Verdict**: PASS
 **Profile**: ui
-**Diff range**: f0fbdbc..a714a932d8e15540e300fa6325a0c920c31d8357
-**Round**: 1 - full
+**Diff range**: f0fbdbc..42b36fa28f7a09334236a18e05dbeb825ba127c8
+**Round**: 2 - scoped
 **Verifier**: independent sub-agent (author != verifier)
 
-All 73 checks are proven at HEAD, and every named test exists and passed. The build is not done yet. Step 1 and the Coverage recompute found elements that a binding source draws, or a project rule requires, which no check covers:
+Round 2 is scoped to the fix range `27c1c71..42b36fa` (`047a66e`, `51b2ae5`, `f67751d`, `42b36fa`) and to the six gaps of round 1 (FAIL at `a714a93`). Every proof re-ran at HEAD `42b36fa`. All 82 checks are proven. Each of the six round-1 gaps is closed by a new check, or by a plan amendment plus a check:
 
-- the profile's three proposition counts, now per mandate, have no proof
-- the roll-call result and government-orientation labels have no proof; the orientation mapping is new code
-- the symbolic count is a number with no source or method note
-- the methodology page has a sentence that is not in the approved copy, plus a state the plan never drew
-- 15 of door 3's not-null columns have no proof
+| Round-1 gap | Closed by | How |
+| --- | --- | --- |
+| 1. symbolic count with no source or method note | C74 (AC 37, amended) | the counting sentence carries note 7 when `symbolicMerit` is not null, and no note when it is null; a fault was injected and caught |
+| 2. result and orientation labels unproven | C76, C77 | table-driven over 3 and 6 values on both houses |
+| 3. profile stats per mandate unproven | C78 | 3 labels and values over 4 mandates with distinct counts, plus the note's method link |
+| 4. extra `registros-sem-voto` sentence | AC 49 copy table amended, C79 | the sentence is now approved copy and held exactly |
+| 5. 15 door 3 not-null columns unproven | C81 | table-driven over all 15; a fault was injected on the 7 columns the builder's own fault left out, and caught |
+| 6. `sem votações` state not drawn | AC 52 amended, C80 | the cell is now drawn by the plan and held |
 
-Two of these are proofs that the skeleton had and that this feature deleted. The skeleton ACs 12 and 18 were superseded wholesale, but AC 23 and AC 41 brought back only part of them.
+The orchestrator also acted on two round-1 non-findings. The gendered score caption is now neutral copy in AC 31, held by C82. The coverage counts now carry source notes (AC 52), held by C75, with a fault injected and caught.
 
 ## Binding sources
 
-Opened: the plan (Surface, Landing doors 1-6, Criteria, the AC 49 copy table, resolved open question 2), `design/README.md`, `design/components/{vote.js,VoteMark.vue,MandateScore.vue}`, `design/screens/{Profile.vue,RollCall.vue}`, `research/06-pesquisa-design-e-concorrentes.md` sections 3 (P1-P15) and 4 (traps), `AGENTS.md` language rules, `.specs/STATE.md` AD-004 and AD-013 to AD-018, `site/src/lib/forbidden-terms.ts` (19 terms), and the app-skeleton plan's criteria. Rendered HTML of 10 pages was read from the running app (`curl http://localhost:8091/...` after `mandato:import tests/fixtures/v3`).
+Verified at `42b36fa` for the screens the fix touched: the member profile (deputy and senator), the roll-call result area and the methodology page. Carried from `a714a93` for everything else: the Senate roll-call groups, the head and the 404s.
 
-Per-screen enumeration. Each item is a selector-reachable decision and the check that covers it:
+Opened this round:
+- the plan as amended: AC 31, AC 37, AC 49 copy table, AC 52, and door 3 for the not-null set
+- `design/screens/Profile.vue`, which draws the stats and their shared note (`indicators.length + 1`, `:44`-`:58`) and the score caption (`:65`)
+- `design/screens/RollCall.vue`, which draws the result and orientation
+- research 06 §3 P1
+- `AGENTS.md` language rules: no gendered word for the person, every derived number with method and source
 
-- **Deputy profile, with legislature navigation.** Covered:
-  - hero eyebrow (C34) and the only `<h1>` (C34)
-  - `nav[aria-label=Legislaturas]`: presence and absence, count 2, newest first, labels, hrefs, `aria-current` (C36, C37)
-  - one-mandate text inside `.ma-hero` (C37)
-  - bases paragraph: once, before the first `.ma-ndem`, with its link (C46)
-  - 3 `.ma-indicator` groups: headings and order, 2 `.ma-ndem` each in merit-then-all order, labels, the six values, method links (C45)
-  - empty basis (C47); symbolic sentence variants (C48, C49)
-  - partitura: columns, order, links, table labels (C41)
-  - footer (C43), initials with no `<img>` (C44), head (C38, C39), 8 method notes (C66)
+I read the rendered HTML of 7 pages from the running app at HEAD (`curl http://localhost:8091/...` after `mandato:import tests/fixtures/v3`):
+- `/deputados/101/`, `/deputados/101/legislatura/57/`, `/deputados/102/`
+- `/senadores/9101/`
+- `/votacoes/100-1/`, `/senado/votacoes/6923/`
+- `/metodologia/`
 
-  **Not covered:** the `.ma-stat` values (authored, first signer, requirements), which `design/screens/Profile.vue` draws and the page renders per mandate. **Not covered:** a note on the symbolic count (P1, AGENTS.md).
-- **Senator profile.** The same regions are covered (C35, C37, C38, C39, C41, C43, C44). Also covered: the Senate presiding label (C41), "Não registrou voto" with no official code in the HTML or the props (C42), and the Senate symbolic sentence (C49). Uncovered: the same two items as the deputy profile.
-- **Senate roll call.** Covered:
-  - the only `<h1>` (C51, C52) and the classification line with its rule link (C53)
-  - groups in position order with headings, names, `svg.ma-vote` labels and `.ma-muted` "Registro do Senado:" notes (C55)
-  - voter links (C51), symbolic and secret states (C56, C57), head (C58), 404s (C59)
+Per-screen enumeration of the touched regions. Each selector-reachable decision and the check that covers it:
 
-  **Not covered:** the result label (`Aprovada`, `Rejeitada`, `Resultado não informado`) and the government-orientation line (`Orientação do governo: {Sim/Não/Abstenção/Obstrução/Liberado}` / `Sem orientação do governo registrada`). `design/screens/RollCall.vue` draws both. The skeleton proved the result label; that assertion was deleted with the skeleton test.
-- **Methodology page.** Covered:
-  - `<h1>` and the 10 `section[id]` in order, each with its copy (C62)
-  - `registros-sem-voto` table, 15 rows, followed by the AD-018 sentence (C62)
-  - rule tables per house, in order (C63), and empty states (C64)
-  - coverage table, its columns and rows (C65), and head (C66)
+- **Deputy profile.** Everything covered in round 1 still holds (C34-C49, carried from `a714a93`, proofs re-run at HEAD). New this round:
+  - the `.ma-symbolic` marker `#nota-7` and its `SourceNote` (member `sourceUrl`, `Câmara dos Deputados`, `#votacoes-simbolicas`) in the n > 1, n = 1 and 0 states (C74; rendered `app/resources/js/Pages/Members/Show.vue:69`, `:73`, `:75`)
+  - notes renumbered `nota-1`..`nota-9` (C74)
+  - the 3 `.ma-stat` labels and per-mandate values, and their one shared note to `#proposicoes` (C78; `Members/Show.vue:77`)
+  - the `Votações do mandato` caption, exactly the AC 31 text (C82; `Members/Show.vue:98`)
 
-  **Code renders what the plan does not draw:** a second sentence in `registros-sem-voto` (handoff copy choice 1), and the `Dados até` cell `sem votações` for a coverage entry with a null `through`.
+  Rendered HTML matches: `/deputados/101/legislatura/57/` reads "... decidiu 2 votações simbólicas sobre propostas e emendas.⁷ Votação simbólica não registra ..." with stats `2`, `1`, `1` under marker 8.
+- **Senator profile.** The null state has no symbolic marker and no `#votacoes-simbolicas` note. Notes run `nota-1`..`nota-8`, with the stats on 7 and the score on 8 (C74). The stats are `1`, `1`, `0` (C78) and the caption is the same neutral text (C82). No `deste`/`desta` + `deputad`/`senador` appears in `main` on any of the 4 pages (C82).
+- **Roll-call result area (both houses).**
+  - the one `.ma-result .ma-t-title-1` for `approved` true, false and null (C76; `app/app/Http/Controllers/RollCallController.php:77`-`:78`)
+  - the one `.ma-result > p.ma-t-small` for the 5 orientation values and the absent one (C77; `RollCallController.php:82`, `app/app/Presenters/Labels.php:25`)
 
-Arrangement: each screen keeps the composition of its design screen. The member page has hero, then lede, then indicators section, then score section. The roll call has head, then result, then utilities, then members section. The checks hold the arrangement where the plan decides it: the indicator nesting (C45), the paragraph before the indicators (C46), the hero holding the legislature text (C37) and the group structure (C55). Cobertura renders one table per house, not one table. AC 51 speaks of each house's "part" of `cobertura`, so this is read as consistent, not as a finding.
+  The note marker on the result title is stripped by `textOf` (`app/tests/Pest.php:127`), so C76 compares the label alone.
+- **Methodology page.**
+  - `registros-sem-voto`: the table, then the AD-018 sentence, then exactly the senator-page sentence (C62, C79; `app/resources/js/Pages/Methodology/Show.vue:119`)
+  - `cobertura`: per-house tables, each `Casa` cell with marker `#nota-{i+1}`, and the note after each table with portal, Brasília day and `#tipos-de-votacao` (C75; `Methodology/Show.vue:137`, `:148`; `app/app/Presenters/Labels.php:39`; `app/app/Http/Controllers/MethodologyController.php:29`-`:30`, `:58`)
+  - `sem votações` for a null `through` (C80; `Methodology/Show.vue:139`)
 
-| Source | Opened | Contradiction | Uncovered |
-| --- | --- | --- | --- |
-| plan doors 1-6, Surface, AC 1-58 | yes - `.specs/features/app-contract-v3/plan.md` | none | `registros-sem-voto` renders a sentence outside the AC 49 copy (`app/resources/js/Pages/Methodology/Show.vue:117`); the `sem votações` coverage state, which the plan does not draw (`Methodology/Show.vue:136`) |
-| plan resolved open question 2 / door 6 | yes | none | - |
-| `design/README.md` vote encoding + `vote.js`, `VoteMark`, `MandateScore` | yes | none | - |
-| `design/screens/Profile.vue` | yes | none | `.ma-stat` authored / first-signer / requirements values per mandate (`app/resources/js/Pages/Members/Show.vue:76`, `:80`, `:84`): no proof since `DeputyPageTest` was deleted |
-| `design/screens/RollCall.vue` | yes | none | result label (`app/app/Http/Controllers/RollCallController.php:76`) and government-orientation line (`RollCallController.php:82`, `app/app/Presenters/Labels.php:25`): no proof on either house |
-| research 06 §3 P1 / P12 + `AGENTS.md` ("cada número derivado tem metodologia pública e link para a fonte oficial") | yes | none | the symbolic count on the member page has no note to its source or method (`app/resources/js/Pages/Members/Show.vue:68`) |
-| research 06 §4 traps (no hand-picked "votações importantes", no ranking) | yes | none | - (C35/C46 published rule, C50 ranking words) |
-| AD-004, forbidden terms (19) | yes - `site/src/lib/forbidden-terms.ts` | none | - (C50, `ForbiddenTermsTest`) |
-| STATE AD-013 to AD-018 | yes - `.specs/STATE.md` | none | - (AD-016 C26; AD-017 C1-C8; AD-018 C11, C55, C62) |
-| app-skeleton plan criteria still holding | yes - `.specs/features/app-skeleton/plan.md` | none | - (AC 13 table C41; AC 30 `ForbiddenTermsTest`; AC 31 `readme names the commands`) |
+  Rendered: "Fonte: Câmara dos Deputados, dados de 01/03/2027 · Como calculamos" for `generatedAt` `2027-03-02T02:30:00Z`, which is the Brasília day.
+
+Arrangement: the touched regions keep their design composition. On the member page the symbolic sentence and its note sit inside the indicators section, before the stats, which have their own note, as `Profile.vue` orders indicators then stats. Each methodology house part is a table followed by its note.
+
+| Source | Opened | Contradiction | Covered by | Uncovered |
+| --- | --- | --- | --- | --- |
+| plan doors 1-6, Surface, AC 1-58 (amended AC 31, 37, 49, 52) | yes - `.specs/features/app-contract-v3/plan.md`, verified at `42b36fa` | none | `registros-sem-voto` sentence now in the AC 49 table, C79; `sem votações` now in AC 52, C80 | - |
+| plan resolved open question 2 / door 6 | carried from `a714a93` | none | - | - |
+| `design/README.md` vote encoding + `vote.js`, `VoteMark`, `MandateScore` | carried from `a714a93` | none | - | - |
+| `design/screens/Profile.vue` | yes, verified at `42b36fa` | none | stats C78; caption C82, neutral per AC 31 | - |
+| `design/screens/RollCall.vue` | yes, verified at `42b36fa` | none | result C76; orientation C77 | - |
+| research 06 §3 P1 / P12 + `AGENTS.md` ("cada número derivado tem metodologia pública e link para a fonte oficial") | yes, verified at `42b36fa` | none | symbolic count C74; coverage counts C75 | - |
+| research 06 §4 traps (no hand-picked "votações importantes", no ranking) | carried from `a714a93` | none | C35/C46 published rule, C50 ranking words | - |
+| AD-004, forbidden terms (19) | carried from `a714a93` | none | C50, `ForbiddenTermsTest`, re-run at HEAD | - |
+| STATE AD-013 to AD-018 | carried from `a714a93` | none | AD-016 C26; AD-017 C1-C8; AD-018 C11, C55, C62, C79 | - |
+| app-skeleton plan criteria still holding | carried from `a714a93` | none | skeleton AC 12 stats now C78; skeleton AC 18 result label now C76; AC 13 table C41; AC 30 `ForbiddenTermsTest`; AC 31 `readme names the commands` | - |
 
 ## Checks
 
-Proof runs, at HEAD `a714a93`, in Sail project `mandato-acv3` with the SSR server up:
+Verified at `42b36fa`. Proof runs in Sail project `mandato-acv3` (APP_PORT 8091, FORWARD_DB_PORT 54341), after `sail npm run build` and with the SSR server restarted on the new bundle:
 
-- `sail artisan test --log-junit`: 148 passed, 0 failed, 0 skipped. Each filter below matched by name in the JUnit output.
-- `sail npm --prefix /var/www/design test -- --reporter=verbose`: 47 passed.
+- `sail artisan test --log-junit`: 178 passed, 0 failed, 0 skipped (1628 assertions). The 30 new tests are C74 1, C75 1, C76 3, C77 6, C78 1, C79 1, C80 1, C81 15, C82 1.
+- Each of the 86 `--filter` proofs named in checks.md ran on its own, and all 86 passed with the counts shown.
+- Design: `sail npm --prefix /var/www/design test -- --reporter=verbose` gave 47 passed. Run alone, `tests/vote.test.ts -t "positionCase"` gave 4 passed and `tests/components.test.ts -t "by position"` gave 2 passed.
+
+Evidence for C1-C73 is carried from `a714a93`, with line numbers refreshed in the test files the fix touched: `RollCallPageTest.php` +1 from line 4, `SchemaTest.php` +26 after line 172, and `MethodologyPageTest.php` C66.
 
 | Check | Claim | Proof run | Evidence | Result |
 | --- | --- | --- | --- | --- |
@@ -104,7 +117,7 @@ Proof runs, at HEAD `a714a93`, in Sail project `mandato-acv3` with the SSR serve
 | C30 | PostgreSQL 18 | `runs on postgresql 18` 1/1 | `app/tests/Feature/SchemaTest.php:118`-`:119` | PASS |
 | C31 | 9 check violations | `enforces the v3 enum and tally checks` 1/1 | `app/tests/Feature/SchemaTest.php:144` - `sqlState($write)->toBe('23514')`; `:148`-`:150` valid counterparts | PASS |
 | C32 | keys, cascades, nullability, no FK on kind_rule | `enforces the v3 keys cascades and nullability` 1/1 | `app/tests/Feature/SchemaTest.php:156`-`:160` 23505 and 23502; `:164`, `:168` cascades; `:170` accepted | PASS |
-| C33 | migration empties v2 rows | `the v3 migration empties the v2 rows` 1/1 | `app/tests/Feature/SchemaTest.php:203`; `:205` import exits 0 | PASS |
+| C33 | migration empties v2 rows | `the v3 migration empties the v2 rows` 1/1 | `app/tests/Feature/SchemaTest.php:229`; `:231` import exits 0 | PASS |
 | C34 | deputy latest and per legislature | `deputy page shows the latest mandate and each legislature` 1/1 | `app/tests/Feature/MemberPageTest.php:33`-`:34`; `:38`; `:42` | PASS |
 | C35 | senator page | `senator page shows the mandate` 1/1 | `app/tests/Feature/MemberPageTest.php:50`-`:51` | PASS |
 | C36 | legislature nav | `member with two mandates lists the legislatures` 1/1 | `app/tests/Feature/MemberPageTest.php:58`-`:60`; `:63` | PASS |
@@ -122,22 +135,22 @@ Proof runs, at HEAD `a714a93`, in Sail project `mandato-acv3` with the SSR serve
 | C48 | symbolic count sentence | `member page states the symbolic count` 1/1 | `app/tests/Feature/MemberPageTest.php:218`-`:220` | PASS |
 | C49 | no symbolic publication sentence | `member page says when a house publishes no symbolic votes` 1/1 | `app/tests/Feature/MemberPageTest.php:225`-`:227`; `:232`-`:233` | PASS |
 | C50 | no ranking or forbidden word | `no ranking word in rendered pages` 1/1 | `app/tests/Feature/ForbiddenTermsTest.php:47` - `toHaveCount(23)`; `:54` - `inText(...)->toBe([])`; `:57`-`:59` matcher cases | PASS |
-| C51 | Senate roll call lists every senator | `senate roll call page lists every senator` 1/1 | `app/tests/Feature/RollCallPageTest.php:34`; `:36`; `:39` | PASS |
-| C52 | roll-call heading | `roll call heading names the proposition or the ballot` 1/1 | `app/tests/Feature/RollCallPageTest.php:55`-`:56` over 6 cases | PASS |
-| C53 | ballot, kind, rule link | `roll call names its ballot kind and rule` 1/1 | `app/tests/Feature/RollCallPageTest.php:71`-`:74` over 6 cases | PASS |
+| C51 | Senate roll call lists every senator | `senate roll call page lists every senator` 1/1 | `app/tests/Feature/RollCallPageTest.php:35`; `:37`; `:40` | PASS |
+| C52 | roll-call heading | `roll call heading names the proposition or the ballot` 1/1 | `app/tests/Feature/RollCallPageTest.php:56`-`:57` over 6 cases | PASS |
+| C53 | ballot, kind, rule link | `roll call names its ballot kind and rule` 1/1 | `app/tests/Feature/RollCallPageTest.php:72`-`:75` over 6 cases | PASS |
 | C54 | VoteGroups order and headings | `orders vote groups by position` 1/1 | `app/tests/Unit/VoteGroupsTest.php:18`-`:19`; `:22`; `:28` | PASS |
-| C55 | groups, marks, Senate notes | `roll call groups every member by position` 1/1 | `app/tests/Feature/RollCallPageTest.php:80`-`:91`; `:94`-`:101`; `:104`-`:109`; `:112`-`:113`. Row links asserted on 100-2 (`:108`) and, through C51, on 6923; the 7001 and 100-6 links use the same builder | PASS |
-| C56 | symbolic roll call | `symbolic roll call has no tally and no group` 1/1 | `app/tests/Feature/RollCallPageTest.php:119`-`:121` | PASS |
-| C57 | secret without tally | `secret roll call without a tally says so` 1/1 | `app/tests/Feature/RollCallPageTest.php:127`-`:129`; `:132` - `toBe(['2', '1', '0'])` | PASS |
-| C58 | roll-call head by ballot | `roll call head carries the share tags by ballot` 1/1 | `app/tests/Feature/RollCallPageTest.php:138`-`:147`; `:149`-`:150`; `:153`-`:156` | PASS |
-| C59 | 7 roll-call 404s | `roll call pages 404` 7/7 | `app/tests/Feature/RollCallPageTest.php:162`-`:166` | PASS |
+| C55 | groups, marks, Senate notes | `roll call groups every member by position` 1/1 | `app/tests/Feature/RollCallPageTest.php:81`-`:92`; `:95`-`:102`; `:105`-`:110`; `:113`-`:114`. Row links asserted on 100-2 (`:109`) and, through C51, on 6923; the 7001 and 100-6 links use the same builder | PASS |
+| C56 | symbolic roll call | `symbolic roll call has no tally and no group` 1/1 | `app/tests/Feature/RollCallPageTest.php:120`-`:122` | PASS |
+| C57 | secret without tally | `secret roll call without a tally says so` 1/1 | `app/tests/Feature/RollCallPageTest.php:128`-`:130`; `:133` - `toBe(['2', '1', '0'])` | PASS |
+| C58 | roll-call head by ballot | `roll call head carries the share tags by ballot` 1/1 | `app/tests/Feature/RollCallPageTest.php:139`-`:148`; `:150`-`:151`; `:154`-`:157` | PASS |
+| C59 | 7 roll-call 404s | `roll call pages 404` 7/7 | `app/tests/Feature/RollCallPageTest.php:163`-`:167` | PASS |
 | C60 | positionCase table | `npm test -- tests/vote.test.ts -t "positionCase"` 4/4 | `design/tests/vote.test.ts:35`-`:37` 14 pairs; `:52`-`:54` 7 officials + null; `:68` equals `voteCase`; `:73`-`:76` shapes | PASS |
 | C61 | VoteMark / MandateScore by position | `npm test -- tests/components.test.ts -t "by position"` 2/2 | `design/tests/components.test.ts:178`-`:179`; `:203` 6-entry legend; `:208`-`:212` old inputs | PASS |
 | C62 | methodology sections and copy | `methodology page has every section in order` 1/1 | `app/tests/Feature/MethodologyPageTest.php:39`; `:41`; `:44`; `:48`-`:65` 15 rows; `:67` AD-018 sentence | PASS |
 | C63 | rules per house in order | `methodology lists each house's rules in stored order` 1/1 | `app/tests/Feature/MethodologyPageTest.php:75`-`:76`; `:83`-`:87` | PASS |
 | C64 | house without import | `methodology says when a house has no import` 1/1 | `app/tests/Feature/MethodologyPageTest.php:97`-`:100`; `:109`-`:111` | PASS |
 | C65 | coverage table | `methodology shows coverage per house and legislature` 1/1 | `app/tests/Feature/MethodologyPageTest.php:119`-`:126` | PASS |
-| C66 | methodology head, method links | `methodology head and every method link point to the app` 1/1 | `app/tests/Feature/MethodologyPageTest.php:132`-`:134`; `:139`; `:145`-`:147` | PASS |
+| C66 | methodology head, method links | `methodology head and every method link point to the app` 1/1 | `app/tests/Feature/MethodologyPageTest.php:132`-`:134`; `:139`; `:146`-`:148` (9 links on a deputy page, 8 on a senator's, since C74) | PASS |
 | C67 | no Set-Cookie on 15 responses | `public pages set no cookie` 15/15; `curl -sI http://localhost:8091/senadores/9101/` piped to `grep -ci '^set-cookie'` printed `0` (status 200) | `app/tests/Feature/SharedLinksTest.php:92`-`:93` - `assertHeaderMissing('Set-Cookie')` | PASS |
 | C68 | SSR body | `server renders every new page body` 1/1 | `app/tests/Feature/SharedLinksTest.php:22`-`:24`; `:27`; `:31`; `:34`-`:38` | PASS |
 | C69 | head survives SSR outage | `head tags survive an ssr outage` 1/1 | `app/tests/Feature/SharedLinksTest.php:56`-`:65` | PASS |
@@ -145,85 +158,108 @@ Proof runs, at HEAD `a714a93`, in Sail project `mandato-acv3` with the SSR serve
 | C71 | public group, URIs, wheres, one builder | `public routes use the cookie-free group` 1/1; `public urls have one builder` 1/1 | `app/tests/Feature/SharedLinksTest.php:151`-`:153`; `:155`; `:160`-`:165`; `:173` | PASS |
 | C72 | design package pages, no Head import | `consumes the design package` 1/1; `pages leave the share tags to blade` 1/1 | `app/tests/Feature/ProjectFilesTest.php:80`; `:82`; `app/tests/Feature/SharedLinksTest.php:131` | PASS |
 | C73 | Inertia JSON visits | `inertia visits answer with json` 7/7 | `app/tests/Feature/SharedLinksTest.php:74`-`:78` | PASS |
+| C74 | symbolic count points to source and method; null has no note | `the symbolic count points to its source and method` 1/1 | `app/tests/Feature/MemberPageTest.php:255` - `toBe(['#nota-7'])` over 57 (2), 102 (1), 101 (0); `:256`-`:259` source = member `source_url` labelled `Câmara dos Deputados`, method `#votacoes-simbolicas`; `:260` `nota-1..9`; `:264`-`:266` Senate: 0 markers, no `#votacoes-simbolicas`, `nota-1..8` | PASS |
+| C75 | coverage markers per house and their notes | `coverage counts point to their source and method` 1/1 | `app/tests/Feature/MethodologyPageTest.php:173` 2 tables; `:176`-`:177` markers `#nota-1` x2, `#nota-2` x1 and no other marker; `:180`-`:182` portal URL, `#tipos-de-votacao`, note text with Brasília day | PASS |
+| C76 | result label over 3 values, both houses | `roll call shows its result` 3/3 | `app/tests/Feature/RollCallPageTest.php:174` - `toBe([$label])`; data `:177`-`:179` | PASS |
+| C77 | orientation line over 6 values, both houses | `roll call shows the government orientation` 6/6 | `app/tests/Feature/RollCallPageTest.php:186` - `toBe([$line])`; data `:189`-`:194` | PASS |
+| C78 | stats per mandate, 4 mandates, shared note to `#proposicoes` | `the profile counts the propositions of the rendered mandate` 1/1 | `app/tests/Feature/MemberPageTest.php:279` labels; `:280` values per path; `:282`-`:283` one marker, method `https://mandato.test/metodologia/#proposicoes` | PASS |
+| C79 | `registros-sem-voto` ends with the AD-018 sentence then exactly the senator-page sentence | `methodology says where senate non-votes appear` 1/1 | `app/tests/Feature/MethodologyPageTest.php:159`-`:161` - text equality, then `nextElementSibling` null | PASS |
+| C80 | null `through` row reads `sem votações` | `coverage says when a legislature has no roll call` 1/1 | `app/tests/Feature/MethodologyPageTest.php:193` - `toBe(['Câmara dos Deputados', '58ª', 'sem votações', '0', '0', '0', '0'])` | PASS |
+| C81 | 15 not-null columns refuse null (23502), accept a value | `refuses a null in each not-null column of door 3` 15/15 | `app/tests/Feature/SchemaTest.php:174` the 15 columns; `:195` - `toBe('23502')`; `:196` valid row `toBeNull()` | PASS |
+| C82 | neutral score caption on both houses, no gendered person word | `the score caption names no gender` 1/1 | `app/tests/Feature/MemberPageTest.php:292`-`:293` caption equality; `:294` - `main` text does not match `deste`/`desta` followed by `deputad`/`senador` | PASS |
 
-Level: every claim naming a status, a route or a page shape is proven over HTTP through Laravel's test client, reading the server-rendered HTML. Every claim naming an exit code or a printed line runs the Artisan command and reads the exit code, stdout and stderr separately. There is no level gap.
+Level: every new claim naming a page shape (C74-C80, C82) is proven over HTTP through Laravel's test client, reading the server-rendered HTML. The SSR server was up, and `requireSsr` fails a test, never skips it. C81 writes to PostgreSQL 18 and reads the SQLSTATE. There is no level gap.
 
 ## Coverage
 
-Each set is recomputed from its authority: `app/routes/public.php` for routes, the door 3 migration for constraints, the v3 schema enums and door 5 for labels, and `design/screens/*` for elements drawn.
+Rows the fix touched are recomputed from their authority at `42b36fa`. The other rows are carried from `a714a93`, and their proofs re-ran at HEAD.
 
 | Set (size) | Recomputed from | Member -> proof | Unproven |
 | --- | --- | --- | --- |
-| routes x statuses (7 routes, 13 pairs) | `app/routes/public.php` | 200: C34, C35, C51, C52, C62 · 404: C40, C59 · slashless C70 · JSON C73 | - |
-| `mandato:import` exit codes (3) | `ImportContract` | 0 C1 · 1 C9-C13, C19, C20, C22 · 2 C20, C27 | - |
-| refusal causes (9) + references (16) + missing files (5) + schema kinds (7) | V3Reader, plan AC 7-11 | C9, C10 (12 sets), C11, C12 (16 sets), C13, C20, C21, C22 | - |
-| AD-018 codes refused (3) | AD-018 | LS, LP, LAP: C11 | - |
-| door 3 check constraints (9) | migration `app/database/migrations/2026_10_03_000000_reshape_for_contract_v3.php:130` | each one in C31 | - |
-| door 3 unique, cascade, no-FK (6) | migration `:60`, `:108`, `:113` | C32 | - |
-| door 3 not-null columns (17: `legislatures.starts_on`, `ends_on`; `memberships.party`, `uf`; 12 `{indicator}_{basis}_{count,total}`; `contract_imports.house`) | plan door 3; migration `:27`-`:28`, `:42`-`:48` | `memberships.party` C32 · `contract_imports.house` C32 | `legislatures.starts_on`, `legislatures.ends_on`, `memberships.uf`, the 12 indicator count/total columns |
-| vote positions x houses, shown (14) + Senate officials (6 + other + null) | door 5, roll-call schema `position` enum | C54, C60 (table-driven) · page C41, C42, C55 | - |
-| ballot labels (3), kind labels (4), rule link forms (2) | roll-calls schema enums, AC 41-42 | C52, C53, C63 | - |
-| roll-call result label shown (3: `Aprovada`, `Rejeitada`, `Resultado não informado`) | `design/screens/RollCall.vue:37`; `RollCallController.php:76` | none (the skeleton's assertion was deleted) | all 3 |
-| government orientation shown (5 enum values + absent) | door 3 `government_orientation` values; `Labels.php:25`; `design/screens/RollCall.vue:41` | none | `yes`, `no`, `abstention`, `obstruction`, `free` labels and `Sem orientação do governo registrada` |
-| profile stats per mandate (3) | `design/screens/Profile.vue:44`-`:55`; `Members/Show.vue:76`-`:84` | none (skeleton `DeputyPageTest` stats assertion deleted) | authored, first signer, requirements values |
-| member page decisions, indicators x bases (6), basis states (2), symbolic states (4) | plan AC 23-38 | C34-C39, C45, C47, C48, C49 | - |
-| methodology sections (10), house parts (4), coverage symbolic cell (2) | AC 49-52 | C62, C63, C64, C65 | - |
-| cookie-free responses (15), SSR states (2) | AC 55-57 | C67, C68, C69 | - |
-| startup config (2 assemblies) | `bootstrap/app.php` public group; `config/mandato.php` | C71 reads `getMiddlewareGroups()['public']` (`SharedLinksTest.php:155`); C24/C27 read `config(...)` | - |
+| routes x statuses (7 routes, 13 pairs) - carried from `a714a93` | `app/routes/public.php` | 200: C34, C35, C51, C52, C62 · 404: C40, C59 · slashless C70 · JSON C73 | - |
+| `mandato:import` exit codes (3) - carried | `ImportContract` | 0 C1 · 1 C9-C13, C19, C20, C22 · 2 C20, C27 | - |
+| refusal causes (9) + references (16) + missing files (5) + schema kinds (7) - carried | V3Reader, plan AC 7-11 | C9, C10 (12 sets), C11, C12 (16 sets), C13, C20, C21, C22 | - |
+| AD-018 codes refused (3) - carried | AD-018 | LS, LP, LAP: C11 | - |
+| door 3 check constraints (9) - carried | migration `app/database/migrations/2026_10_03_000000_reshape_for_contract_v3.php:130` | each one in C31 | - |
+| door 3 unique, cascade, no-FK (6) - carried | migration `:60`, `:108`, `:113` | C32 | - |
+| door 3 not-null columns (17) - verified at `42b36fa` | plan door 3 names exactly these as not null: `legislatures.starts_on`, `ends_on`; the 12 `{indicator}_{basis}_{count,total}`; `memberships.party`, `uf`; `contract_imports.house` (migration `:27`-`:28`, `:42`-`:48`) | `memberships.party`, `contract_imports.house` C32 · the other 15 C81, table-driven (`SchemaTest.php:174`) | - |
+| vote positions x houses, shown (14) + Senate officials (6 + other + null) - carried | door 5, roll-call schema `position` enum | C54, C60 (table-driven) · page C41, C42, C55 | - |
+| ballot labels (3), kind labels (4), rule link forms (2) - carried | roll-calls schema enums, AC 41-42 | C52, C53, C63 | - |
+| roll-call result label shown (3) - verified at `42b36fa` | `design/screens/RollCall.vue:37`; `RollCallController.php:76`-`:79` match arms | `Aprovada`, `Rejeitada`, `Resultado não informado`: C76 on both houses | - |
+| government orientation shown (5 enum values + absent) - verified at `42b36fa` | door 3 `government_orientation` check values; `Labels.php:25`; `RollCallController.php:82` | `yes`, `no`, `abstention`, `obstruction`, `free`, absent: C77 on both houses | - |
+| profile stats per mandate (3) - verified at `42b36fa` | `design/screens/Profile.vue:44`-`:58`; `Members/Show.vue:77`; props `MemberController.php:101`-`:103` | authored, first signer, requirements: C78 over 4 mandates with distinct values | - |
+| symbolic note by state (2) - verified at `42b36fa` | `Members/Show.vue:27` (`symbolicNote` null vs 7); AC 37, AC 38 | count present (n > 1, 1, 0), marker and note: C74 · null, neither: C74 | - |
+| member note numbering (2 sequences) - verified at `42b36fa` | `Members/Show.vue:27`-`:28` | with symbolic count `nota-1..9`: C74 · without `nota-1..8`: C74; method links 9 / 8: C66 | - |
+| score caption (1 text, 2 houses) - verified at `42b36fa` | AC 31 as amended | C82 on 2 deputies and 2 senators | - |
+| member page decisions, indicators x bases (6), basis states (2), symbolic sentence states (4) - carried | plan AC 23-38 | C34-C39, C45, C47, C48, C49 | - |
+| methodology sections (10), house parts (4), coverage symbolic cell (2) - carried | AC 49-52 | C62, C63, C64, C65 | - |
+| `registros-sem-voto` paragraphs (2) - verified at `42b36fa` | AC 49 copy table as amended | AD-018 sentence C62 · senator-page sentence C79 (and nothing after it) | - |
+| coverage `Dados até` cell (2) - verified at `42b36fa` | `Methodology/Show.vue:139`; AC 52 as amended | date C65 · `through` null C80 | - |
+| coverage notes (2 houses) and `Labels::openData` branches (2) - verified at `42b36fa` | `Methodology/Show.vue:137`, `:148`; `Labels.php:39`-`:42`; AC 52 | Câmara marker and note C75 · Senado marker and note C75 | - |
+| cookie-free responses (15), SSR states (2) - carried | AC 55-57 | C67, C68, C69 | - |
+| startup config (2 assemblies) - carried | `bootstrap/app.php` public group; `config/mandato.php` | C71 reads `getMiddlewareGroups()['public']` (`SharedLinksTest.php:155`); C24/C27 read `config(...)` | - |
 
 ## Test policy rows
 
+Re-judged at `42b36fa`: the two rows that were unmet in round 1, plus every row that classifies a file the fix touched. The rest are carried from `a714a93`.
+
 | Row | Files it classifies | Required proof | Expectation met |
 | --- | --- | --- | --- |
-| Decides, reached across a boundary | `vote.js` `positionCase`, `VoteGroups`, profile copy branches, roll-call presentation (`RollCallController`, `Labels`), `V3Reader`, `Importer`, `ImportContract` | own layer + boundary; one asserted case per decision-table row | no - two decision tables in the roll-call presentation have no row asserted: the result `match` (`RollCallController.php:76`, 3 rows) and `Labels::ORIENTATIONS` (`Labels.php:25`, 5 rows + null). Every other table meets it: C60/C41/C42/C55, C54/C55, C36-C39 and C47-C49, C52, C53, C56-C58, C9-C22 |
-| Decides, not reached across a boundary | `PublicUrl` house branch | own layer | yes - C71 (`SharedLinksTest.php:160`-`:165`) |
-| Entry point that decides nothing | routes, `MethodologyController` | accepted, each rejected input, each error path | yes - C40, C59, C62, C70, C73 |
-| Instrumentation, pass-throughs | `MemberController` props, `RollCallController` props | covered by the consumer's proof | no - the member page props `authoredCount`, `firstSignerCount`, `requirementsCount` (`MemberController.php:101`-`:103`) reach the page with no consumer assertion |
+| Decides, reached across a boundary | `vote.js` `positionCase`, `VoteGroups`, profile copy branches (now including the `symbolicNote` branch, `Members/Show.vue:27`), roll-call presentation (`RollCallController`, `Labels` including `openData`), `V3Reader`, `Importer`, `ImportContract` | own layer + boundary; one asserted case per decision-table row | yes - result `match` 3 rows C76; `Labels::ORIENTATIONS` 5 rows + null C77; `symbolicNote` 2 rows C74; `Labels::openData` 2 rows C75; the rest as in round 1 (C60/C41/C42/C55, C54/C55, C36-C39 and C47-C49, C52, C53, C56-C58, C9-C22). The checks.md row prices presentation tables at the boundary, so boundary-only proof is what it asks for |
+| Decides, not reached across a boundary | `PublicUrl` house branch | own layer | yes - C71 (`SharedLinksTest.php:160`-`:165`), carried from `a714a93` |
+| Entry point that decides nothing | routes, `MethodologyController` | accepted, each rejected input, each error path | yes - C40, C59, C62, C70, C73; the new `MethodologyController` props (`:29`-`:30`, `:58`) reach the page through C75 |
+| Instrumentation, pass-throughs | `MemberController` props, `RollCallController` props, `MethodologyController` props | covered by the consumer's proof | yes - `authoredCount`, `firstSignerCount`, `requirementsCount` (`MemberController.php:101`-`:103`) by C78; `symbolicMethodUrl` (`:115`) by C74; `sourceUrl`, `collectedAt`, `coverageMethodUrl` by C75; `approved`, `governmentOrientation` by C76, C77 |
 
 Swept rows: every row cites a check, and authorization and state transitions are `n/a`. None cites an existing constraint, so there is nothing in the code for them to be wrong about.
 
 ## Faults injected
 
-Isolated in `git worktree add --detach /tmp/acv3-verify-fi HEAD` with its own Sail project `acv3-verify-fi` (APP_PORT 8097, FORWARD_DB_PORT 54347, VITE_PORT 5187) and the SSR server running in that project. The target proofs were green in the scratch before any fault went in (21 Pest, 4 design). The real tree's `git status --porcelain` was empty before and empty after. The scratch containers, network, volume and worktree were removed afterwards.
+Verified at `42b36fa`. The faults ran in `git worktree add --detach /tmp/acv3-v2-fi HEAD`, which had its own Sail project `acv3-v2-fi` (APP_PORT 8098, FORWARD_DB_PORT 54348, VITE_PORT 5188). Its `vendor`, `node_modules` and the generated `design/dist` were copied from the real tree. Every edit ran as `cd /tmp/acv3-v2-fi && ...` and was restored with `git -C /tmp/acv3-v2-fi checkout -- <file>`, and the scratch's `git status --porcelain` was empty after each one.
+
+Before any fault went in, the 3 target proofs were green in the scratch with SSR up: C74 1/1, C75 1/1, C81 15/15. Afterwards `sail down -v` removed the scratch containers, network and volume `acv3-v2-fi_sail-pgsql`, and `git worktree remove --force` removed the worktree. The real tree's `git status --porcelain` was empty before the report was written.
+
+I picked three surfaces the builder's own faults had not exercised:
+- the null branch of the symbolic note (the builder only showed that the marker was absent before the change)
+- the per-house numbering of the coverage markers
+- the 7 not-null columns the builder's migration fault left nullable-proof-free
+
+C76-C80 and C82 were shown to fail by the builder (checks.md Handoff). I did not re-inject on them.
 
 | Mutation | Location | Killed |
 | --- | --- | --- |
-| skip the `kindRule` reference check | `app/app/Contract/V3Reader.php:100` | yes - C12 data set `kindRule` failed (15/16 passed) |
-| store `symbolicMerit ?? 0` | `app/app/Contract/V3Reader.php:249` | yes - C7 failed |
-| send the Senate `notVoting` official to the member page | `app/app/Http/Controllers/MemberController.php:75` | yes - C42 failed |
-| swap `presiding` and `secret` in the group order | `app/app/Presenters/VoteGroups.php:17` | yes - C54 failed |
-| label a Senate `notVoting` with null official `Sem voto: ...` | `design/components/vote.js:60` | yes - C60, 2 of 4 tests failed |
+| `symbolicNote` always `7`, so a null-symbolic member also gets the symbolic `SourceNote` (rebuilt, SSR restarted) | `app/resources/js/Pages/Members/Show.vue:27` | yes - C74 failed at `MemberPageTest.php:265` ("not to contain '.../#votacoes-simbolicas'") |
+| every coverage marker points to `#nota-1`, so the Senate row cites the Câmara note (rebuilt, SSR restarted) | `app/resources/js/Pages/Methodology/Show.vue:137` | yes - C75 failed at `MethodologyPageTest.php:176` (expected `#nota-2`, got `#nota-1`) |
+| `legislatures.ends_on` and all six `{indicator}_{basis}_count` columns made `->nullable()` | `app/database/migrations/2026_10_03_000000_reshape_for_contract_v3.php:28`, `:46` | yes - C81 failed on exactly those 7 data sets (8/15 passed: the 8 untouched columns) |
 
 ## Handoff deviations
 
-- **Senate fixture imported as a completed copy (C25): accepted.** `etl/tests/fixtures/v3/senado/roll-calls/6923.json` has votes by 9103, 9104 and 9105, and its `members.json` does not list them. AC 10 has to refuse that, so importing it in place would contradict AC 10. C25 still validates every file in place (`ImportTest.php:727`-`:733`). The inconsistency in the ETL fixture should be raised with contract-v3.
-- **C12 count corrected from 13 to 15: accepted.** The test carries 16 data sets, the 15 of AC 10 plus the roll-call proposition, and all 16 passed.
-- **Skeleton tests for superseded v2 criteria replaced: partly accepted.** The v2 assertions are rightly gone. But skeleton AC 12 and AC 18 were superseded wholesale, while AC 23 and AC 41 restate only part of them. So the profile stats assertion and the roll-call result-label assertion were deleted with no successor. See the gaps below.
-- **Copy choice: profile lede dropped: accepted.** AC 35 puts the bases paragraph in the lede position before the indicators. A lede that shows only the `all` participation number would set one base above the other, which goes against S4.
-- **Copy choice: extra `registros-sem-voto` sentence: a finding.** It is accurate and consistent with door 6, but it is copy outside the approved AC 49 table, and no check holds it. Either a human amends the copy table or the sentence is removed.
-- **Merge a714a93: accepted.** The three adopted skeleton proofs are present and pass on v3 rows (C27, C29, C73). The v2 reader stays deleted (C26, `ImportTest.php:763`-`:764`).
+Verified at `42b36fa` for the round-1 Handoff lines in checks.md. The rest are carried from `a714a93`.
+
+- **Round 1, item 1 (symbolic count and coverage notes) - accepted.** It matches AC 37 and AC 52 as amended. C66's test now expects 9 method links on a deputy page and 8 on a senator's (`MethodologyPageTest.php:146`). That follows from C74, and C66's claim, "every link starts with the app's `/metodologia/#`", is unchanged.
+- **Round 1, items 2, 3 and 5 (tests for code already built) - accepted.** C76, C77, C78 and C81 pass at HEAD. My own fault on C81 hit the 7 columns the builder's fault did not touch, and was caught.
+- **Round 1, item 4 (methodology copy kept by amending the plan) - accepted.** It was a decision the orchestrator recorded under the maintainer's delegation. AC 49 and AC 52 mark the additions "added at verification round 1", and C79 and C80 hold the exact copy.
+- **Round 1, item 6 (neutral score caption) - accepted.** AC 31 now carries the caption verbatim, and the template matches it character for character (`Members/Show.vue:98`).
+- Senate fixture completed copy (C25), the C12 count of 15, superseded skeleton tests, the dropped profile lede, and merge `a714a93`: carried from `a714a93`. The round-1 partial acceptance of the superseded skeleton tests is now complete, because skeleton AC 12 (stats) and AC 18 (result label) have successors in C78 and C76.
 
 Not findings, for the orchestrator:
 
-- The partitura caption reads "deste deputado" / "deste senador" for every member, women included (`app/resources/js/Pages/Members/Show.vue:94`). The plan's eyebrow assumption rejects gendered titles for this reason.
-- The rule `description` cells publish "Mérito, ..." verbatim from the ETL (plan open question 1).
-- The `cobertura` counts carry no source note (P1).
+- The plan amendments to AC 31, 37, 49 and 52 were made under the maintainer's delegation, not reviewed by a person. AGENTS.md asks for a human-reviewed `plan.md`, so the maintainer may want to read those four criteria before merge.
+- The coverage note number is the house's position (`i + 1`), not a running count. If only the Senate is imported, its only coverage note is `nota-2`. Marker and note agree, so the link works. The plan does not set the numbering.
+- `design/components/MandateScore.vue:87` renders "Ver as 1 votações como tabela" for a single vote (`/deputados/101/`). That is in the design package, outside the fix diff.
+- Carried from `a714a93`: the rule `description` cells publish "Mérito, ..." verbatim from the ETL (plan open question 1, blocking go-live only).
 
 ## Gate
 
-- `sail artisan test`: 148 passed, 0 failed (1506 assertions)
+All at `42b36fa`, in `mandato-acv3`:
+
+- `sail artisan test`: 178 passed, 0 failed (1628 assertions)
+- the 86 named proofs, each with its own `--filter`: 86 passed
 - `sail npm --prefix /var/www/design test`: 47 passed, 0 failed
 - `sail bin pint --test`: passed
 - `sail bin phpstan analyse`: 0 errors
 - `sail npm run build`: wrote `public/build/manifest.json` and `bootstrap/ssr/ssr.js`
-- `inertia:start-ssr`: up for every page proof
-- `curl -sI http://localhost:8091/senadores/9101/ | grep -ci '^set-cookie'`: `0`
+- `inertia:start-ssr`: restarted on the new bundle and up for every page proof (1 `ssr.js` process after the run)
+- `sail artisan mandato:import tests/fixtures/v3`: exit 0, both houses imported
+- `curl -sI http://localhost:8091/senadores/9101/` returned 200, and `grep -ci '^set-cookie'` printed `0`
 
-Ranked gaps:
-
-1. The symbolic count is a derived number with no source or method note (P1, AGENTS.md) - AC 37 / C48 - `app/resources/js/Pages/Members/Show.vue:68`
-2. No proof for the roll-call government-orientation labels (new `Labels::ORIENTATIONS` mapping) or the result label - no check - `app/app/Http/Controllers/RollCallController.php:76`, `:82`; `app/app/Presenters/Labels.php:25`
-3. No proof for the profile stats per mandate (authored, first signer, requirements) - no check - `app/resources/js/Pages/Members/Show.vue:76`; `app/app/Http/Controllers/MemberController.php:101`
-4. A `registros-sem-voto` sentence outside the approved AC 49 copy - C62 - `app/resources/js/Pages/Methodology/Show.vue:117`
-5. 15 of door 3's 17 not-null columns are unproven - C32 - `app/database/migrations/2026_10_03_000000_reshape_for_contract_v3.php:27`
-6. The `sem votações` coverage state is not drawn by the plan - C65 - `app/resources/js/Pages/Methodology/Show.vue:136`
+Ranked gaps: none.
