@@ -3,7 +3,7 @@
 Profile: ui
 Plan: `.specs/features/share-cards/plan.md`
 
-77 checks in 7 slices plus shape checks and the batch 2 and after-batch-2 amendments · 9 one-way doors · 1 open, blocking go-live only (plan open question 1: the public domain; cards print the host of `APP_URL`)
+82 checks in 7 slices plus shape checks and the batch 2, after-batch-2 and verification round 1 amendments · 9 one-way doors · 1 open, blocking go-live only (plan open question 1: the public domain; cards print the host of `APP_URL`)
 
 All commands run from `app/` with this worktree's Sail project up: `app/.env` sets `COMPOSE_PROJECT_NAME=mandato-cards`, `APP_PORT=8094`, `FORWARD_DB_PORT=54344`, `VITE_PORT=5184`; `sail` is `./vendor/bin/sail`, and the image is built from the published `app/docker/8.5/Dockerfile` (door 3). Pest proofs are `sail artisan test --filter="<test name>"`; page proofs read server-rendered HTML, so they need `sail npm run build` and the SSR server (`sail exec -d -u sail laravel.test php artisan inertia:start-ssr`), and fail, never skip, when SSR is down (skeleton `requireSsr`). Card proofs that say "real renderer" run `node bootstrap/cards/render.mjs` with the Chromium headless shell; the others replace it with `Process::fake`. Design proofs are `sail npm --prefix /var/www/design test -- <file> -t "<name>"` and `sail npm --prefix /var/www/design run test:e2e -- -g "<name>"`. `{APP_URL}` is `https://mandato.test` (`phpunit.xml`), so `{host}` is `mandato.test`.
 
@@ -56,6 +56,7 @@ Proof: `sail artisan test --filter="photos rejects bad options with the usage"`
 
 **C14** - When 9104 and 9105 receive identical bytes, each has no current photo: both pages render the initials frame, both card payloads carry `photoSha256` null, and the next run requests both again; when 9105 later receives other bytes, 9104's photo becomes current (AC 8)
 Proof: `sail artisan test --filter="a photo shared by two members is no one's photo"`
+Proof: `sail artisan test --filter="a photo shared by two members leaves both cards without a photo"`
 
 **C15** - `GET /fotos/{sha256}.jpg` for a stored photo answers 200, `Content-Type` `image/jpeg`, a body byte-identical to the stored file, `ETag` `"{sha256}"`, `Cache-Control` holding exactly the directives `public`, `max-age=31536000` and `immutable` (Symfony orders them alphabetically), and no `Set-Cookie` (AC 9, door 6)
 Proof: `sail artisan test --filter="a stored photo is served with immutable headers"`
@@ -270,6 +271,23 @@ Proof: `sail artisan test --filter="a verification page whose subject is gone po
 **C77** - `MandateScore`'s strip `aria-label` is singular for a count of one: the 4 fixture votes give `3 votações nominais em 2023` and `1 votação nominal em 2024`; one vote in the compact score gives `1 votação nominal` (plan S4 amendment, same rule as C73)
 Proof: `sail npm --prefix /var/www/design test -- tests/components.test.ts -t "MandateScore strip names one vote in the singular"`
 
+### Verification round 1 (plan S4 amendment decided by the orchestrator, and the Verifier's gaps)
+
+**C78** - In Chromium, in the feed and story formats of `MemberCard`, the three `.ma-card__figure` boxes are stacked (each top at or below the previous one's bottom, left edges equal within 0.5 px), and `.ma-card__score` starts at `.ma-card__body`'s left edge with a width equal, within 0.5 px, to min(the body's width, votes × 8 px × the body's `zoom`): the 240-vote fixture fills the column and a 2-vote fixture draws 2 × 8 px (plan S4 amendment at verification round 1)
+Proof: `sail npm --prefix /var/www/design run test:e2e -- -g "feed and story stack the figures and size the score by its votes"`
+
+**C79** - Real renderer: the page `cardPage` builds, opened in a Chromium context with `colorScheme` `dark` (where `prefers-color-scheme: dark` matches), resolves `--ma-color-paper` and `--ma-color-ink` on `.ma-card` to the light values of `design/dist/tokens.css` (`oklch(1 0 0)`, `oklch(0.16 0 0)`), while the same page without `data-theme="light"` resolves a different paper there; `capture` screenshots both pages with the pixel at (10, 10) white (255, 255, 255) (plan Assumption "Card theme", door 3 `colorScheme` `light`)
+Proof: `sail artisan test --filter="a card keeps the light theme when the reader asks for dark"`
+
+**C80** - For 101 with no current photo, a 200 × 80 JPEG (width passes, height fails) and an 80 × 200 JPEG (height passes, width fails) each print `photo failed camara 101: smaller than 100 x 100` and write no row and no file; a 100 × 100 JPEG becomes 101's current photo (AC 2, each side apart)
+Proof: `sail artisan test --filter="photos refuses a photo under 100 pixels on either side"`
+
+**C81** - CI job `app` (working directory `app`) has one browser install step, exactly `npx --no-install playwright-core install --with-deps --only-shell chromium`, after the step that runs `npm ci`, and `app/package-lock.json` has no `node_modules/playwright`: the step runs the locked `playwright-core`, whose version C36 ties to the Dockerfile's `PLAYWRIGHT_VERSION`, and fails rather than fetch another (door 3)
+Proof: `sail artisan test --filter="ci installs the browser of the locked playwright-core"`
+
+**C82** - After 101/58's card is served with no photo, `/verificar/{code}/` prints `Sem foto oficial: o card mostra as iniciais do nome.` as the muted paragraph after the name; after 101's photo is fetched, the new code's page prints `Foto oficial: arquivo {sha256}` with the current photo's sha256, and the older code's page still prints the initials sentence (AC 36, the payload's photo value)
+Proof: `sail artisan test --filter="the verification page prints the photo the card showed"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -284,7 +302,7 @@ Proof: `sail npm --prefix /var/www/design test -- tests/components.test.ts -t "M
 | changed member and roll-call pages statuses (2) | 200 C57, C59, C61 · 404 C65 (and app-contract-v3 C40, C59 unchanged) | - |
 | card formats (3) | `1200x630` C22, C34, C37, C45, C46 · `1080x1350` C22, C34, C37, C45, C46 · `1080x1920` C22, C34, C37, C45, C46 | - |
 | card subjects (4) | deputy C22 · senator C22 · Câmara roll call C22 · Senate roll call C22 | - |
-| photo body rules of AC 2 (5) | `FF D8 FF` start C6 · at most 2 MiB C6 · JPEG to `getimagesizefromstring` C6 · width >= 100 C6 · height >= 100 C6 | - |
+| photo body rules of AC 2 (5) | `FF D8 FF` start C6 · at most 2 MiB C6 · JPEG to `getimagesizefromstring` C6 · width >= 100 C6, C80 · height >= 100 C80 | - |
 | photo transport rules of AC 4 (5) | no response / timeout C6, C7 · status other than 200 C6 · more than 3 redirects C6 · host outside the 3 C6, C7 · not `https` C6 | - |
 | allowed photo hosts (3) | `www.camara.leg.br` C3 · `www.senado.leg.br` C3 · `legis.senado.leg.br` C3 | - |
 | photo selection of AC 1 (4) | no photo C1 · stale > 7 days C1 · fresh <= 7 days C1 · `--stale-after` C2 | - |
@@ -293,16 +311,20 @@ Proof: `sail npm --prefix /var/www/design test -- tests/components.test.ts -t "M
 | `mandato:photos` options (3) | `--house` C2, C13 · `--member` C2, C13 · `--stale-after` C1, C2, C13 | - |
 | photo credit by house (2) | `camara` C18, C37 · `senado` C18, C37 | - |
 | photo states on a page (4) | current C18 · none C19 · suppressed C20 · shared C14 | - |
+| photo value on a card payload (2) | shared hash, `photoSha256` null C14 · current, its sha256 C14, C82 | - |
 | card code request cases (5) | current C22, C23 · stored old C25 · unknown well-formed C26 · stored for another subject C26 · malformed C27 | - |
 | card 404 causes (10) | C27, table-driven over all 10 | - |
 | render outcomes (5) | rendered C22 · exit non-zero C28 · timeout C29 · slots full C30 · same card in flight C31 | - |
 | render CLI exit codes (3) | 0 C35 · 1 C35 · 2 C35 | - |
 | verification code cases (8) | canonical stored C52 · lowercase C54 · spaces C54 · no hyphen C54 · `O` for `0` C54 · `I`/`L` for `1` C54 · well-formed unknown C55 · malformed C55 | - |
 | verification states of AC 37 (3) | equal C53 · changed C53 · subject gone C53, C74, C76 | - |
+| photo values on the verification page (2) | sha256 C82 · initials C82 | - |
 | singular counts of the S4 amendment (3) | card score label C73 · score table toggle C73 · score strip label C77 | - |
 | code inputs of AC 35 (8) | C50, table-driven over all 8 | - |
 | member card regions (9) | eyebrow C37 · photo C37 · name C37, C43 · party and UF C37 · basis line C37 · figures C37 · score label C37 · score C37 · footer C37, C41 | - |
 | member card empty states (2) | total 0 C39 · no vote C39 | - |
+| feed and story arrangement (4) | photo above the name C37 · figures stacked C78 · score left-aligned at min(available, votes × 8 px) C78 · same footer C37, C41 | - |
+| card theme (1) | light under a dark scheme request C79 | - |
 | roll-call card regions (6) | eyebrow C40 · heading C40 · ballot, kind and date C40 · result C40 · tallies C40 · footer C40, C41 | - |
 | roll-call results (3) | `Aprovada` C40 · `Rejeitada` C40 · `Resultado não informado` C40 | - |
 | roll-call tally states (3) | present C40, C59 · symbolic C40, C59 · null C40, C59 | - |
@@ -316,15 +338,15 @@ Proof: `sail npm --prefix /var/www/design test -- tests/components.test.ts -t "M
 | prune decisions (3) | old and not latest deleted C66 · latest kept C66 · younger than `--days` kept C66 | - |
 | `mandato:cards:prune` exit codes (2) | 0 C66 · 1 C67 | - |
 | entities of Relations (6) | `Member` C1, C18 · `PhotoVersion` C3, C71 · `PhotoFile` C3, C4, C15 · `RollCall` C22, C40 · `CardSnapshot` C23, C71 · `CardImage` C23, C24, C66 | - |
-| Landing doors (9) | 1 C70, C3 · 2 C71, C68 · 3 C22, C32, C33, C35, C36 · 4 C37, C47 · 5 C48, C49, C51 · 6 C72, C15, C22 · 7 C57, C63, C64 · 8 C23, C62 · 9 C1-C13, C66, C67 | - |
+| Landing doors (9) | 1 C70, C3 · 2 C71, C68 · 3 C22, C32, C33, C35, C36, C79, C81 · 4 C37, C47 · 5 C48, C49, C51 · 6 C72, C15, C22 · 7 C57, C63, C64 · 8 C23, C62 · 9 C1-C13, C66, C67 | - |
 | startup config: media disk (1 shared assembly) | `config/filesystems.php`, read by the routes, the commands and the tests alike, C70 | - |
 | startup config: renderer command, timeout, lock store (1 shared assembly) | `config/mandato.php`, read by the card route and overridden only by tests, C29, C30 | - |
-| startup config: browser shell (3 assemblies) | Sail image C36, C75 · CI job `app` C36, C75 · design e2e in the same image C45 | - |
+| startup config: browser shell (3 assemblies) | Sail image C36, C75 · CI job `app` C36, C75, C81 · design e2e in the same image C45 | - |
 | environments a card render runs in (2) | CLI (Pest, Artisan) C22 · served request, browsers path from config C75 | - |
 
-- Claims naming a status code, route or response shape: C15-C17, C22-C31, C52-C65, C74-C76 - each proof crosses the HTTP boundary through Laravel's test client and reads headers, body or server-rendered HTML
-- Claims naming an exit code or a printed line: C1-C13, C35, C66, C67 - each proof runs the command (Artisan or the CLI through `Process`) and reads exit code, stdout and stderr apart
-- Claims about a browser's layout: C37 (second proof), C43, C45, C46 - Playwright in Chromium
+- Claims naming a status code, route or response shape: C15-C17, C22-C31, C52-C65, C74-C76, C82 - each proof crosses the HTTP boundary through Laravel's test client and reads headers, body or server-rendered HTML
+- Claims naming an exit code or a printed line: C1-C13, C35, C66, C67, C80 - each proof runs the command (Artisan or the CLI through `Process`) and reads exit code, stdout and stderr apart
+- Claims about a browser's layout or theme: C37 (second proof), C43, C45, C46, C78, C79 - Playwright in Chromium
 - No other check claims more than the single case its proof exercises
 
 ## Test policy
@@ -354,7 +376,7 @@ Cost: 4 proofs at their own layer (C48-C51) and 4 design tests (C37, C39, C40, C
 
 ## Swept
 
-- validation: C6, C13, C16, C27, C35, C48, C51, C55
+- validation: C6, C13, C16, C27, C35, C48, C51, C55, C80
 - failure modes: C6, C10, C11, C28, C29, C67
 - idempotency: C4, C5, C24, C49
 - authorization: n/a - public, cookie-free, read-only routes (C65); both commands run only from the shell (door 9), never over HTTP
@@ -379,3 +401,10 @@ Size from `wc -c` on the files each slice reads and writes, divided by four. Rea
 - **After batch 2, item 1 (C75, `3e91b9e`):** served cards answered 503 because `php artisan serve` (run by Sail as `php -d variables_order=EGPCS artisan serve`) drops the image's `PLAYWRIGHT_BROWSERS_PATH` from its PHP. Reproduced before the fix with a real request to the running server on port 8094: `/votacoes/100-1/card/20270301-NHEKA8BX/1200x630.png` and `1080x1350.png` answered 503, logged `Executable doesn't exist at /home/sail/.cache/ms-playwright/...`. C75's proof failed first (`removed`: 503, not 200). Fix: `Renderer::run` passes `config('mandato.card_browsers_path')` through `Process::env`; `.env.example` and this worktree's `app/.env` set `/opt/ms-playwright`; CI job `app` sets `/home/runner/.cache/ms-playwright` (not run here: no push). After it, the same running server answered `200 image/png` for all three formats of `100-1` (25 007, 40 152, 47 498 bytes; `file` reads 1200 × 630, 1080 × 1350, 1080 × 1920) and for `/deputados/101/`'s `og:image`
 - **After batch 2, item 2 (C76, `493b53c`):** the gone subject's verification page now sets `meta.image` null, so the head carries door 7's `summary` and no `og:image`, and `subjectUrl` null, so the subject page link is not rendered; the name stays as the `<h2>` text of the payload's values, chosen over a second unlinked line that would repeat it. C76's proof failed first on the `og:image` tags (5 present, 0 expected). The vote links of the payload still point at their roll calls, which a member's removal does not remove
 - **After batch 2, item 3 (C77, `2d8b8f2`):** `MandateScore`'s strip `aria-label` is singular for one vote; C77's proof failed first (`1 votações nominais em 2024`). Gates at `493b53c` in Sail project `mandato-cards`, design and app bundles built, SSR up: 275 Pest tests green (3028 assertions), 55 design unit and 17 design e2e tests green, `pint --test` and `phpstan analyse` clean, `validate_checks` 0 errors, `validate_plan` 0 errors (1 warning: open question 1). Found, not fixed: the first full Pest run failed C31 (its lock-holder helper took more than 5 s to boot and signal) and, as a cascade, the suppressed-member test (the orphaned helper wrote its PNG into the next test's fake disk); both passed alone and the next full run was green, so C31's 5 s wait is a timing flake under load
+- **Verification round 1, item 1 (C42, `34543a3`):** `CardContentTest.php:137`, `:141`, `:145` now assert one needle per call as `expect(str_contains($text, $needle))->toBeFalse("{$label}: {$needle}")`; Pest's `toContain` read the label as a second needle. C42's claim and proof name are unchanged. Each fault, card bundle rebuilt and the file restored with `git checkout`, failed the proof: ` (75%)` after every `n de m` in `MemberCard.vue` (`member 101: %`), `· Bruno Lima` in the member card's eyebrow (`member 101: Bruno Lima`), `· Rosa Andrade` in `RollCallCard.vue`'s eyebrow (`roll call 100-6: Rosa Andrade`), `Licença ·` in the roll-call footer (`roll call 100-6: Licença`)
+- **Verification round 1, item 2 (C78, `22fffb1`):** the orchestrator kept the 8 px per vote cap; plan S4 records the amendment (figures stacked; score left-aligned, width min(available, votes × 8 px)) and the Assumption row stays as written. C78 adds `short-feed` and `short-story` (2 votes) to `design/e2e/cards.pages.mjs`. Faults that failed it: the `maxWidth` style removed from `MemberCard.vue` (`short-feed score width`), `grid-auto-flow: column` on the feed and story figures (`member-feed figure 2 below figure 1`), `justify-self: end` on `.ma-card__score` (`short-feed score left-aligned`). No component change
+- **Verification round 1, item 3 (C79, `d6b1dc0`):** proof in `CardRendererTest.php`. Faults: `data-theme="light"` removed from `render.js` failed the token assertion (`:148`); `colorScheme: "dark"` in `capture` failed the screenshot assertion (`:151`). A context without any `colorScheme` defaults to light in Playwright, so only an explicit dark value is caught there; the page's own theme is what holds under a dark request
+- **Verification round 1, item 4 (C14 second proof, `6ffcdb7`):** `PhotoCommandTest.php` "a photo shared by two members leaves both cards without a photo" asserts both payloads' `photoSha256` null, 9106's equal to its current photo, and both payloads following the recovery. Fault: `Payloads::member` taking the member's latest `PhotoVersion` failed it (`'383e63fc…' is null`)
+- **Verification round 1, item 5 (C80, `6ffcdb7`):** dataset of 200 × 80, 80 × 200 and 100 × 100. Dropping `$size[1] < self::MIN_SIDE` at `FetchPhotos.php:216` failed `wide enough, too short`; dropping `$size[0] < …` failed `tall enough, too narrow`. C6 is unchanged
+- **Verification round 1, item 6 (C81, `8ef3457`):** `.github/workflows/ci.yml` runs `npx --no-install playwright-core install --with-deps --only-shell chromium`; in the Sail image that command's `--dry-run` resolves `chromium-headless-shell v1243` at `/opt/ms-playwright`, the revision the Dockerfile's `playwright@1.63.0` installed. C36's step matcher changed from `playwright install --with-deps …` to `install --with-deps …` to keep finding the step, at equal strength. Fault: the old `npx playwright install …` restored in `ci.yml` failed C81 (`:216`). Not run on GitHub (no push). Plan door 3 still spells the command `npx playwright install …`; both installs now pin the locked version, and the door's wording is the orchestrator's to update
+- **Verification round 1, item 7 (C82, `29410aa`):** `VerifyPageTest.php` reads the paragraph after the name before and after 101's photo is fetched. Fault: `v-if="false"` on the sha256 branch of `Verify/Show.vue`, with the client and SSR rebuilt and SSR restarted, failed it (`:100`); rebuilt and restarted after the restore. Gates at `29410aa` in Sail project `mandato-cards` with the design tokens, client, SSR and card bundles built and SSR up: `sail artisan test` twice, 282 passed (3070 assertions) each time; design 55 unit and 18 e2e passed; `pint --test` and `phpstan analyse` clean; `validate_checks` 0 errors, `validate_plan` 0 errors (1 warning: open question 1). Served through the running server on port 8094, `/deputados/101/legislatura/58/card/20270301-13HXC7H6/{1200x630,1080x1350,1080x1920}.png` answered 200 `image/png`, `file` 1200 × 630, 1080 × 1350, 1080 × 1920, `immutable, max-age=31536000, public`, no `Set-Cookie`; these added one snapshot and 3 PNGs to the dev database and the gitignored media disk
