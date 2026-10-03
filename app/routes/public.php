@@ -6,6 +6,7 @@ use App\Http\Controllers\MemberController;
 use App\Http\Controllers\MethodologyController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\RollCallController;
+use App\Http\Controllers\VerifyController;
 use Illuminate\Support\Facades\Route;
 
 // The public paths (skeleton door 10, plan door 4): a link shared from the static site keeps working
@@ -27,3 +28,8 @@ Route::get('/deputados/{id}/legislatura/{n}/card/{code}/{format}.png', [CardCont
 Route::get('/senadores/{id}/legislatura/{n}/card/{code}/{format}.png', [CardController::class, 'senator'])->whereNumber(['id', 'n'])->where($card)->name('senators.card');
 Route::get('/votacoes/{id}/card/{code}/{format}.png', [CardController::class, 'camara'])->where(['id' => '[0-9]+-[0-9]+', ...$card])->name('roll-calls.card');
 Route::get('/senado/votacoes/{id}/card/{code}/{format}.png', [CardController::class, 'senado'])->whereNumber('id')->where($card)->name('senate-roll-calls.card');
+
+// What a printed code showed, and whether the current data still match (share-cards S5). Any typed
+// form of a code reaches the controller, which redirects it to the canonical one.
+Route::get('/verificar/', [VerifyController::class, 'index'])->name('verify.index');
+Route::get('/verificar/{code}/', [VerifyController::class, 'show'])->name('verify.show');

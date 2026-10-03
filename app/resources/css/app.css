@@ -3,3 +3,10 @@
 @import "@fontsource-variable/source-serif-4/opsz.css";
 @import "mandato-design/tokens.css";
 @import "mandato-design/styles/components.css";
+
+/* The verification page's card image keeps its aspect inside the column (share-cards S5). */
+.ma-verify__card {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
