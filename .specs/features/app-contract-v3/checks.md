@@ -3,7 +3,7 @@
 Profile: ui
 Plan: `.specs/features/app-contract-v3/plan.md`
 
-72 checks in 8 slices · 6 one-way doors (door 6 discovered while deriving these checks, from resolved open question 2) · 1 open, blocking go-live only (plan open question 1)
+73 checks in 8 slices · 6 one-way doors (door 6 discovered while deriving these checks, from resolved open question 2) · 1 open, blocking go-live only (plan open question 1)
 
 All commands run from `app/` with this worktree's Sail project up: `app/.env` sets `COMPOSE_PROJECT_NAME=mandato-acv3`, `APP_PORT=8091`, `FORWARD_DB_PORT=54341`, `VITE_PORT=5181`; `sail` is `./vendor/bin/sail`. Pest proofs are `sail artisan test --filter="<test name>"`; page proofs read server-rendered HTML, so they need `sail npm run build` and `sail exec -d -u sail laravel.test php artisan inertia:start-ssr`, and a page test fails, never skips, when SSR is down (skeleton `requireSsr`). Design proofs are `sail npm --prefix /var/www/design test -- <file> -t "<name>"`. `{APP_URL}` is the value `phpunit.xml` sets, `https://mandato.test`.
 
@@ -12,7 +12,7 @@ All commands run from `app/` with this worktree's Sail project up: `app/.env` se
 - Câmara: `generatedAt` `2027-03-02T02:30:00Z`, legislatures 57 (`2023-02-01`..`2027-01-31`) and 58 (`2027-02-01`..`2031-01-31`), `classification.version` 1, the 11 rules of `etl/src/mandato_etl/rules/camara.json` in file order. Members 101 Ana Souza (57 PSB-SP with two exercise periods, 58 PT-SP), 102 Bruno Lima (57 PL-RJ), 103 Carla Dias (57 MDB-MG): 4 mandates. Ana's 57th: participation merit 3/4 all 7/10, government merit 2/3 all 4/6, party merit 1/2 all 5/8, `symbolicMerit` 2, authored 2, first signer 1, requirements 1; her 58th: participation 1/1 and 1/1, government 0/0 and 0/0, party 1/1 and 1/1, `symbolicMerit` 0. Bruno: every merit total 0, participation all 3/5, `symbolicMerit` 1. Roll calls (8): `100-1` 2023-03-01 PLEN nominal final `camara.09` on PL 1/2023 (101 `Sim`, 102 `Não`, 103 `Artigo 17`); `200-1` 2023-04-01 CCJC nominal procedural `camara.04` (101 `Sim`); `100-2` 2023-05-10 PLEN nominal amendment `camara.08`, no proposition, rejected (101 `Abstenção`, 102 `Obstrução`, 103 empty -> `notVoting`); `100-3` 2024-03-01 PLEN nominal procedural `camara.04` on PL 1/2023, result null (101 `Não`, 102 `Sim`); `100-4` 2024-08-01 PLEN symbolic final `camara.09` on PEC 3/2024, tallies null, no roll-call file; `100-5` 2025-08-01 PLEN secret final `camara.11`, tallies null, no vote; `100-6` 2025-09-01 PLEN secret unclassified, tallies 2/1/0 (101, 102, 103 empty -> `secret`); `300-1` 2027-02-15 PLEN nominal final `camara.09`, legislature 58 (101 `Sim`). 13 votes. Propositions (5): 5001 PL 1/2023 presented 2023-02-10 (authors 101 first signer, 102), 5003 PEC 3/2024 presented 2024-02-01 (103 first signer), 5005 REQ 5/2023 presented 2023-01-15 (101), 5006 PL 6/2027 presented 2027-02-10 (101 first signer, 102), 5007 INC 7/2024 presented null (102). One full text, `full-texts/5001.json`. Coverage: 57 through 2025-09-01, 4 nominal, 2 secret, 1 symbolic, 1 unclassified; 58 through 2027-02-15, 1, 0, 0, 0.
 - Senate: `generatedAt` `2027-03-05T12:00:00Z`, legislature 57 only, `classification.version` 2, rules `senado.01` (final) and `senado.02` (procedural). Members, each with a 57th mandate only and `symbolicMerit` null: 9101 Rosa Andrade (PT-SP), 9102 Sérgio Prado (PL-RJ), 9103 Teresa Lins (MDB-BA), 9104 Ubiratan Costa (PSD-AM), 9105 Vera Dantas (PP-GO), 9106 Wagner Reis (PSB-PE). Roll calls (2): `6923` 2025-04-01 PLEN nominal unclassified on PL 1/2025, tallies 1/1/0 (9101 `Sim`, 9102 `Não`, 9103 `P-NRV`, 9104 `Presidente (art. 51 RISF)`, 9105 `Licença`, 9106 `NCom`); `7001` 2025-06-10 PLEN secret final `senado.01`, no proposition, tallies 40/20/1 (9101 and 9102 `Votou` -> `secret`, 9103 `Licença`, 9104 `AP`, 9105 `MIS`, 9106 `NA`). 12 votes. Proposition 160000 PL 1/2025 presented 2025-01-10 (9101 first signer). No full text. Coverage: 57 through 2025-06-10, 1 nominal, 1 secret, symbolic null, 1 unclassified.
 
-Skeleton proofs this feature supersedes (plan Impact: skeleton AC 1, 2, 3, 12, 14, 18 to 22, 27, and door 5's reader): skeleton C1-C4, C12, C15, C18-C22, C24-C29, C34; their tests are replaced by the checks below that prove the superseding criteria. Skeleton proofs that still hold are re-pointed at the v3 fixtures with their assertions unchanged, except where an approved door here changes the asserted value: C5, C6 (now C9, C10), C7 (C20), C8 (C14), C9 (C15), C10 (C21), C11 (C22), C13 (C23, which excepts exactly door 3's `roll_calls.ballot` from the `ballot` column-name rule), C14 (C29, row shapes updated to door 3's columns), C16 (C24), C17 (C30), C23 (C40), C30 (C55), C33 (C67), C35 (C70), C36-C38 (C71, C72), C39-C46, C48 (unchanged tests), C47 (C72, page names `Members/Show`, `RollCalls/Show`, `Methodology/Show`).
+Skeleton proofs this feature supersedes (plan Impact: skeleton AC 1, 2, 3, 12, 14, 18 to 22, 27, and door 5's reader): skeleton C1-C4, C12, C15, C18-C22, C24-C29, C34; their tests are replaced by the checks below that prove the superseding criteria. Skeleton proofs that still hold are re-pointed at the v3 fixtures with their assertions unchanged, except where an approved door here changes the asserted value: C5, C6 (now C9, C10), C7 (C20), C8 (C14), C9 (C15), C10 (C21), C11 (C22), C13 (C23, which excepts exactly door 3's `roll_calls.ballot` from the `ballot` column-name rule), C14 (C29, row shapes updated to door 3's columns), C16 (C24), C17 (C30), C23 (C40), C30 (C55), C33 (C67), C35 (C70), C36-C38 (C71, C72), C39-C46, C48 (unchanged tests), C47 (C72, page names `Members/Show`, `RollCalls/Show`, `Methodology/Show`). Three proofs the skeleton gained after its verification (`2bb22c1`, merged here) are adopted with their assertions unchanged: skeleton C14's house check over `members`, `propositions` and `roll_calls` (C29, rows from door 3's columns), skeleton C15's import with no `dir` (C27, against the v3 parent and door 2's default; the v2 reader and `data/out` half stays superseded) and skeleton C49's Inertia JSON visits (C73, component `Members/Show` in place of `Deputies/Show`, the 5 new routes added as data sets).
 
 ## Checks
 
@@ -100,16 +100,18 @@ Proof: `sail artisan test --filter="loads the etl's own senate fixture"`
 **C26** - `ContractReaders::SUPPORTED_SCHEMA_VERSIONS` is `[3]`, `ContractReaders::for(3)` is a `V3Reader`, `for(2)` and `for(4)` are null, and neither `App\Contract\V2Reader` nor `app/Contract/V2Reader.php` exists (door 1)
 Proof: `sail artisan test --filter="resolves only the v3 reader"`
 
-**C27** - `config('mandato.contract_dir')` defaults to `base_path('../data/v3')`, and `mandato:import` with no argument and that config pointed at the parent imports both houses with exit 0 (AC 19, door 2)
+**C27** - `config('mandato.contract_dir')` defaults to `base_path('../data/v3')`, and `mandato:import` with no argument and that config pointed at the parent imports both houses with exit 0, printing the Câmara line and then the Senate line of C8 and leaving 9 `members`; pointed at `/nonexistent-contract-dir` it exits 2 naming that path (AC 19, door 2, skeleton C15)
 Proof: `sail artisan test --filter="defaults the contract directory to data v3"`
+Proof: `sail artisan test --filter="imports from the configured directory when none is given"`
 
 **C28** - `mandato:import <parent> --dry-run` exits 0, prints `Would import schema_version 3 camara generated 2027-03-02T02:30:00Z: 3 members, 4 mandates, 8 roll calls, 13 votes, 5 propositions, 1 full texts` and then `Would import schema_version 3 senado generated 2027-03-05T12:00:00Z: 6 members, 6 mandates, 2 roll calls, 12 votes, 1 propositions, 0 full texts`, and leaves 0 rows in all 11 tables; on a Câmara copy with `schema_version` 2 it exits 1 with 0 rows (AC 20)
 Proof: `sail artisan test --filter="dry run checks each house and writes nothing"`
 
 ### S3 - the stored schema · ~3 files · ~20 KB · ~5k
 
-**C29** - The skeleton's 6 natural keys reject a duplicate with a unique violation, `members.house` rejects `presidencia`, and every `source_id` column is `text`, with rows shaped by door 3's columns (skeleton door 4, unchanged by door 3)
+**C29** - The skeleton's 6 natural keys reject a duplicate with a unique violation, `members.house` rejects `presidencia`, each of `members`, `propositions` and `roll_calls` accepts house `senado` and rejects `presidencia`, `Camara` and the empty string with a check violation naming `{table}_house_check`, and every `source_id` column is `text`, with rows shaped by door 3's columns (skeleton door 4 and C14, unchanged by door 3)
 Proof: `sail artisan test --filter="enforces the natural keys and the house check"`
+Proof: `sail artisan test --filter="rejects a house outside camara and senado"`
 
 **C30** - The test suite runs on `pgsql` against PostgreSQL 18 (skeleton door 3)
 Proof: `sail artisan test --filter="runs on postgresql 18"`
@@ -253,6 +255,9 @@ Proof: `sail artisan test --filter="public urls have one builder"`
 Proof: `sail artisan test --filter="consumes the design package"`
 Proof: `sail artisan test --filter="pages leave the share tags to blade"`
 
+**C73** - With `X-Inertia: true` and the `X-Inertia-Version` the app computes, each of `/deputados/101/`, `/deputados/101/legislatura/57/`, `/senadores/9101/`, `/senadores/9101/legislatura/57/` (component `Members/Show`), `/votacoes/100-1/`, `/senado/votacoes/6923/` (`RollCalls/Show`) and `/metodologia/` (`Methodology/Show`) responds 200 with `X-Inertia: true`, a JSON content type, that `component` and a non-empty `props.meta` array holding a non-empty `title` (skeleton C49)
+Proof: `sail artisan test --filter="inertia visits answer with json"`
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -304,13 +309,14 @@ Proof: `sail artisan test --filter="pages leave the share tags to blade"`
 | cookie-free responses (15) | C67, table-driven over all 15 | - |
 | SSR states (2) | running C68 · unreachable C69 | - |
 | trailing slash (7 routes) | C70, table-driven over all 7 | - |
+| Inertia JSON visits (7 routes) | C73, table-driven over all 7 | - |
 | footer by house (2) | `camara` C43 · `senado` C43 | - |
 | ranking words (23) | C50, table-driven over all 23 | - |
 | Landing doors (6) | 1 C26, C24 · 2 C18, C27, C28 · 3 C31, C32, C33 · 4 C39, C71 · 5 C41, C60, C61 · 6 C42, C55, C60 | - |
 | startup config: `public` group (1 shared assembly) | `bootstrap/app.php`, read by the HTTP kernel and the test harness alike, C71 | - |
 | startup config: contract and schema dirs (1 shared assembly) | `config/mandato.php`, read by the command and the tests alike, C24, C27 | - |
 
-- Claims naming a status code, route or response shape: C34-C47, C51-C59, C62-C70 - each proof crosses the HTTP boundary through Laravel's test client and reads the server-rendered HTML
+- Claims naming a status code, route or response shape: C34-C47, C51-C59, C62-C70, C73 - each proof crosses the HTTP boundary through Laravel's test client and reads the server-rendered HTML (C73 the Inertia JSON)
 - Claims naming an exit code or a printed line: C8-C13, C18-C22, C27, C28 - each proof runs the Artisan command and reads its exit code, stdout and stderr apart
 - No other check claims more than the single case its proof exercises
 
@@ -359,4 +365,4 @@ Size from `wc -c` on the files each slice reads and writes, divided by four. Rea
 - **Boundary:** C1-C72 closed at `5ce4238` (checks `8bbe10a`, import `6aa0a8f`, design `34227f1`, pages `5ce4238`); every named proof run at that commit inside Sail project `mandato-acv3` with the SSR server up: 137 Pest tests green, 47 design tests green (the prototype test needs `npm ci --prefix site`, as CI does), `pint --test` and `phpstan analyse` (level 6) clean, `npm run build` writes both bundles, the C67 `curl` prints `0`
 - **Settled mid-build:** nothing asked or answered. C12 and its Coverage row said 13 references while listing 15 (the house check counts 6 records); corrected to 15 in this commit, the test covering all 15 plus the proposition reference. Door 6 landed in `plan.md` in the checks commit, before its code. Two reversible choices worth a look: the methodology's `registros-sem-voto` adds one sentence beyond the plan's copy (`Na página de cada senador, os registros sem voto aparecem como "Não registrou voto"; o registro oficial aparece na página da votação, como "Registro do Senado".`), and the member page drops the skeleton's participation lede, which the AC 35 paragraph replaces
 - **Abandoned:** importing `etl/tests/fixtures/v3/senado/` in place as the plan's Assumptions row says - its `roll-calls/6923.json` has votes by members 9103, 9104 and 9105, which its `members.json` does not list, so AC 10 refuses it; C25 validates every file in place and imports a copy completed with the three members instead (an ETL fixture gap to raise with contract-v3, `etl/` untouched here). Closures capturing the member set in `V3Reader` - Larastan read the numeric-string keys as never set and flagged the vote loop unreachable; a typed `has()` helper replaced them
-
+- **Merged app-skeleton:** `feat/app-skeleton` (`2bb22c1` tests, `66ccd67`, `8601d4a` reports) merged after the boundary; conflicts in `ImportTest`, `SchemaTest`, `SharedLinksTest` resolved keeping every app-contract-v3 test as it was and adopting the skeleton's three new proofs on v3 rows and fixtures (C27, C29, new C73); the v2 reader and `data/out` tests that came back in the conflict stay dropped (superseded, skeleton C15). Rerun in `mandato-acv3` with SSR up: 148 Pest tests green, `pint --test` and `phpstan analyse` clean, `npm run build` writes both bundles, the C67 `curl` prints `0`

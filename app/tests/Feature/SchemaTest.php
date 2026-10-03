@@ -95,6 +95,25 @@ test('enforces the natural keys and the house check', function () {
     }
 });
 
+test('rejects a house outside camara and senado', function (string $table, string $key) {
+    $row = v3Rows()[$key];
+
+    expect(insertRow($table, [...$row, 'house' => 'senado']))->toBeInt();
+    foreach (['presidencia', 'Camara', ''] as $house) {
+        try {
+            insertRow($table, [...$row, 'house' => $house, 'source_id' => "bad-{$house}"]);
+            $this->fail("a {$table} row of house '{$house}' was accepted");
+        } catch (QueryException $e) {
+            expect($e->getCode())->toBe('23514') // check_violation
+                ->and($e->getMessage())->toContain("{$table}_house_check");
+        }
+    }
+})->with([
+    'members' => ['members', 'member'],
+    'propositions' => ['propositions', 'proposition'],
+    'roll_calls' => ['roll_calls', 'rollCall'],
+]);
+
 test('runs on postgresql 18', function () {
     expect(DB::connection()->getDriverName())->toBe('pgsql')
         ->and(intdiv((int) DB::selectOne('show server_version_num')->server_version_num, 10000))->toBe(18);

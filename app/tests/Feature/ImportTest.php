@@ -774,6 +774,22 @@ test('defaults the contract directory to data v3', function () {
         ->and(DB::table('contract_imports')->orderBy('id')->pluck('house')->all())->toBe(['camara', 'senado']);
 });
 
+test('imports from the configured directory when none is given', function () {
+    config(['mandato.contract_dir' => fixtureDir()]);
+
+    $result = runImport([]);
+
+    expect($result['code'])->toBe(0)
+        ->and(explode("\n", trim($result['out'])))->toBe(['Imported '.CAMARA_LINE, 'Imported '.SENADO_LINE])
+        ->and(DB::table('members')->count())->toBe(9);
+
+    config(['mandato.contract_dir' => '/nonexistent-contract-dir']);
+    $missing = runImport([]);
+
+    expect($missing['code'])->toBe(2)
+        ->and($missing['err'])->toContain('contract directory not found: /nonexistent-contract-dir');
+});
+
 test('dry run checks each house and writes nothing', function () {
     $result = runImport(['dir' => fixtureDir(), '--dry-run' => true]);
 

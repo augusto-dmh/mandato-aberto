@@ -7,7 +7,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
 
-// Checks C67-C72 of .specs/features/app-contract-v3/checks.md (they carry skeleton C31-C33, C35-C38).
+// Checks C67-C73 of .specs/features/app-contract-v3/checks.md (they carry skeleton C31-C33, C35-C38 and C49).
 
 beforeEach(function () {
     importFixtures();
@@ -65,6 +65,26 @@ test('head tags survive an ssr outage', function () {
             ->and($doc->getElementById('app')->childElementCount)->toBe(0);
     }
 });
+
+test('inertia visits answer with json', function (string $path, string $component) {
+    $version = (string) app(HandleInertiaRequests::class)->version(request());
+
+    $response = $this->get($path, ['X-Inertia' => 'true', 'X-Inertia-Version' => $version]);
+
+    $response->assertOk()->assertHeader('X-Inertia', 'true');
+    expect($response->headers->get('Content-Type'))->toContain('application/json')
+        ->and($response->json('component'))->toBe($component)
+        ->and($response->json('props.meta'))->toBeArray()->not->toBeEmpty()
+        ->and($response->json('props.meta.title'))->toBeString()->not->toBeEmpty();
+})->with([
+    'profile' => ['/deputados/101/', 'Members/Show'],
+    'roll call' => ['/votacoes/100-1/', 'RollCalls/Show'],
+    'profile per legislature' => ['/deputados/101/legislatura/57/', 'Members/Show'],
+    'senator' => ['/senadores/9101/', 'Members/Show'],
+    'senator per legislature' => ['/senadores/9101/legislatura/57/', 'Members/Show'],
+    'senate roll call' => ['/senado/votacoes/6923/', 'RollCalls/Show'],
+    'methodology' => ['/metodologia/', 'Methodology/Show'],
+]);
 
 test('public pages set no cookie', function (string $path, int $status) {
     $response = $this->get($path);
