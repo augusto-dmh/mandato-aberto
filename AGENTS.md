@@ -25,6 +25,8 @@ A feature `contract-v3` roda em `standard`: os indicadores e a classificação d
 
 A feature `etl-senado` roda em `standard`: os indicadores dos senadores são o que um parlamentar pode contestar.
 
+A feature `etl-presidencia` roda em `standard`: atos e votos de veto são o que um parlamentar ou o governo pode contestar.
+
 ## Convenções
 
 - Código, commits, branches, nomes de arquivo e identificadores em inglês. Copy do site, documentos de pesquisa e corpo de PR em português. Artefatos em `.specs/` em inglês.
